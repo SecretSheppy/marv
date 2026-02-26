@@ -1,5 +1,9 @@
 package config
 
+import (
+	"os"
+)
+
 type Web struct {
 	Port int `yaml:"port"`
 }
@@ -29,8 +33,12 @@ type Config struct {
 
 // Init returns the default .marv.yml config for creating the default .marv.yml file.
 func Init() *Config {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil
+	}
 	return &Config{
 		Web:   Web{Port: 8080},
-		Paths: Paths{Sources: ".", Reviews: "./marv/reviews"},
+		Paths: Paths{Sources: wd, Reviews: wd + "/.marv/reviews"},
 	}
 }
