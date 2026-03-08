@@ -1,5 +1,7 @@
 package extlib
 
+import "github.com/SecretSheppy/marv/pkg/mutations"
+
 type Meta struct {
 	Name   string
 	Lang   string
@@ -11,8 +13,8 @@ type Meta struct {
 // Extension defines what methods an extension must have in order to interact with the marv system.
 type Extension interface {
 	Meta() *Meta
+	Init(path string) error
+	Mutations() (mutations.Mutations, error)
 }
 
-// TODO: resources static dir
-// TODO: formatted mutations
 // TODO: toggle bits of marv specification/functionality
