@@ -30,14 +30,21 @@ type Range struct {
 
 // Mutation represents a single mutation.
 type Mutation struct {
-	ID     int
-	Name   string // Name functions as the mutations title, it is displayed to the user when they preview the mutation.
-	OpDesc string // OpDesc is an optional (short) description of the operation.
-	Starts *Range
-	Ends   *Range
-	Status Status
-	Type   Modification
-	Source string
+	ID       int
+	IDOffset int    // IDOffset used to specify an offset that should be used to acquire the real mutation ID.
+	Name     string // Name functions as the mutations title, it is displayed to the user when they preview the mutation.
+	OpDesc   string // OpDesc is an optional (short) description of the operation.
+	Starts   *Range
+	Ends     *Range
+	Status   Status
+	Type     Modification
+	Source   string
+}
+
+// TrueID returns the mutation id + its id offset. This method exists as marv expects all Mutation.ID's to be indexed
+// from 0, however this altered mutation id would not reflect the true mutation id that was created by the framework.
+func (m *Mutation) TrueID() int {
+	return m.ID + m.IDOffset
 }
 
 // Conflict represents all mutations that would conflict with each other if they were displayed simultaneously.
