@@ -1,4 +1,4 @@
-package fws
+package fwlib
 
 import (
 	"github.com/SecretSheppy/marv/pkg/mutations"
@@ -31,10 +31,4 @@ type Framework interface {
 	Init() error
 	// Mutations returns the mutations in the marv internal format.
 	Mutations() (mutations.Mutations, error)
-}
-
-func Frameworks() []Framework {
-	return []Framework{
-		&MutestRS{},
-	}
 }

@@ -1,4 +1,4 @@
-package fws
+package mutest_rs
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
 	"gopkg.in/yaml.v3"
 )
@@ -64,7 +65,7 @@ func (m *mutestYamlCfg) IsPopulated() bool {
 	return m.Run != "" || m.Src != "" || m.JsonDir != ""
 }
 
-var meta = &Meta{
+var meta = &fwlib.Meta{
 	Name:   "mutest-rs",
 	Lang:   "rs",
 	URL:    "https://github.com/zalanlevai/mutest-rs",
@@ -78,7 +79,7 @@ type MutestRS struct {
 	muts *Mutations
 }
 
-func (m *MutestRS) Meta() *Meta {
+func (m *MutestRS) Meta() *fwlib.Meta {
 	return meta
 }
 

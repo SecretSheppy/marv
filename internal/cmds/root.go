@@ -48,6 +48,13 @@ third party application to streamline review processes`,
 			//
 			fmt.Println(fw[0])
 
+			err = fw[0].Init()
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println(fw[0])
+
 			// TODO: start main application server here
 		},
 	}
