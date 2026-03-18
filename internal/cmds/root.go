@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
 	"github.com/spf13/cobra"
@@ -14,7 +15,7 @@ const defaultPort = 8080
 
 var (
 	port                     int
-	src, review, configFile  string
+	review, configFile       string
 	toolRunner, fileWatchers bool
 
 	rootCmd = &cobra.Command{
@@ -30,11 +31,22 @@ third party application to streamline review processes`,
 				os.Exit(1)
 			}
 
-			_, err = mergeYmlFlagConfigs(yml)
+			cfg, err := mergeYmlFlagConfigs(yml)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 				os.Exit(1)
 			}
+
+			fmt.Println(cfg)
+
+			fw := fws.Frameworks()
+
+			_, err = fw[0].LoadYamlCfg(yml)
+			if err != nil {
+				fmt.Println(err)
+			}
+			//
+			fmt.Println(fw[0])
 
 			// TODO: start main application server here
 		},
@@ -47,19 +59,16 @@ func mergeYmlFlagConfigs(yml []byte) (*config.Config, error) {
 		return nil, err
 	}
 	if port != defaultPort {
-		cfg.Web.Port = port
-	}
-	if src != "" {
-		cfg.Paths.Sources = src
+		cfg.Marv.Port = port
 	}
 	if review != "" {
-		cfg.Paths.Reviews = review
+		cfg.Marv.ReviewDir = review
 	}
 	if toolRunner {
-		cfg.Features.ToolRunner = true
+		cfg.Marv.Features.ToolRunner = true
 	}
 	if fileWatchers {
-		cfg.Features.FileWatchers = true
+		cfg.Marv.Features.FileWatchers = true
 	}
 	return cfg, nil
 }
@@ -69,7 +78,6 @@ func Execute() {
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 
 	rootCmd.Flags().IntVarP(&port, "port", "p", 8080, "port to listen on")
-	rootCmd.Flags().StringVarP(&src, "src", "s", "", "source files directory")
 	rootCmd.Flags().StringVarP(&review, "review", "r", "", "review output directory")
 	rootCmd.Flags().StringVarP(&configFile, "config", "c", ".marv.yml", ".marv.yml file path")
 	rootCmd.Flags().BoolVarP(&toolRunner, "enable-tool-runner", "t", false, "enable tool runner")

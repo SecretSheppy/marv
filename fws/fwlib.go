@@ -1,12 +1,8 @@
 package fws
 
 import (
-	"errors"
-
 	"github.com/SecretSheppy/marv/pkg/mutations"
 )
-
-var ErrNoExtDeclaration = errors.New("extension has not Ext declaration")
 
 type Meta struct {
 	Name   string
@@ -16,15 +12,29 @@ type Meta struct {
 	RunStr string
 }
 
+// Runnable interface describes Framework instances that have the ability to re-run the framework to generate a
+// new report.
+type Runnable interface {
+	Run()
+}
+
 // Framework defines what methods an extension must have in order to interact with the marv system.
 type Framework interface {
+	// Meta returns the Meta information for the Framework
 	Meta() *Meta
-	Init(path string) error
+	// LoadYamlCfg unmarshals the frameworks YAML config if it exists, and returns whether the YAML config existed for
+	// that Framework. This should be used to initialize all the Framework instances and to filter out all Framework
+	// instances that are not in use in the current project.
+	LoadYamlCfg(yml []byte) (bool, error)
+	// Init initializes the framework plugin by parsing all the mutations and formatting them into the marv internal
+	// format.
+	Init() error
+	// Mutations returns the mutations in the marv internal format.
 	Mutations() (mutations.Mutations, error)
 }
 
-// TODO: toggle bits of marv specification/functionality
-
-var Frameworks = []Framework{
-	&MutestRS{},
+func Frameworks() []Framework {
+	return []Framework{
+		&MutestRS{},
+	}
 }

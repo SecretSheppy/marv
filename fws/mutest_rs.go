@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/SecretSheppy/marv/pkg/mutations"
+	"gopkg.in/yaml.v3"
 )
 
 // Evaluation marshals to evaluation.json from the mutest output data
@@ -49,6 +50,20 @@ type Location struct {
 	End   []int  `json:"end"`
 }
 
+type mutestYamlWrapper struct {
+	Cfg *mutestYamlCfg `yaml:"mutest-rs"`
+}
+
+type mutestYamlCfg struct {
+	Run     string `yaml:"run"`
+	Src     string `yaml:"src"`
+	JsonDir string `yaml:"json-dir"`
+}
+
+func (m *mutestYamlCfg) IsPopulated() bool {
+	return m.Run != "" || m.Src != "" || m.JsonDir != ""
+}
+
 var meta = &Meta{
 	Name:   "mutest-rs",
 	Lang:   "rs",
@@ -58,6 +73,7 @@ var meta = &Meta{
 
 // MutestRS wraps the evaluation.json and mutations.json objects into a single struct.
 type MutestRS struct {
+	cfg  *mutestYamlCfg
 	eval *Evaluation
 	muts *Mutations
 }
@@ -66,15 +82,24 @@ func (m *MutestRS) Meta() *Meta {
 	return meta
 }
 
-func (m *MutestRS) Init(p string) error {
-	eval, err := os.ReadFile(path.Join(p, "evaluation.json"))
+func (m *MutestRS) LoadYamlCfg(yml []byte) (bool, error) {
+	wrapper := &mutestYamlWrapper{}
+	if err := yaml.Unmarshal(yml, wrapper); err != nil {
+		return false, err
+	}
+	m.cfg = wrapper.Cfg
+	return m.cfg.IsPopulated(), nil
+}
+
+func (m *MutestRS) Init() error {
+	eval, err := os.ReadFile(path.Join(m.cfg.JsonDir, "evaluation.json"))
 	if err != nil {
 		return err
 	}
 	if err := json.Unmarshal(eval, &m.eval); err != nil {
 		return err
 	}
-	muts, err := os.ReadFile(path.Join(p, "mutations.json"))
+	muts, err := os.ReadFile(path.Join(m.cfg.JsonDir, "mutations.json"))
 	if err != nil {
 		return err
 	}
