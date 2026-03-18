@@ -1,4 +1,4 @@
-package mutest_rs
+package fws
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/SecretSheppy/marv/extlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
 )
 
@@ -50,7 +49,7 @@ type Location struct {
 	End   []int  `json:"end"`
 }
 
-var meta = &extlib.Meta{
+var meta = &Meta{
 	Name:   "mutest-rs",
 	Lang:   "rs",
 	URL:    "https://github.com/zalanlevai/mutest-rs",
@@ -63,9 +62,7 @@ type MutestRS struct {
 	muts *Mutations
 }
 
-var _ extlib.Extension = &MutestRS{}
-
-func (m *MutestRS) Meta() *extlib.Meta {
+func (m *MutestRS) Meta() *Meta {
 	return meta
 }
 
@@ -159,5 +156,3 @@ func getMutationStatus(id int, ev *Evaluation) (mutations.Status, error) {
 	}
 	return status, nil
 }
-
-var Ext = &MutestRS{}

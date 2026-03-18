@@ -1,6 +1,12 @@
-package extlib
+package fws
 
-import "github.com/SecretSheppy/marv/pkg/mutations"
+import (
+	"errors"
+
+	"github.com/SecretSheppy/marv/pkg/mutations"
+)
+
+var ErrNoExtDeclaration = errors.New("extension has not Ext declaration")
 
 type Meta struct {
 	Name   string
@@ -10,11 +16,15 @@ type Meta struct {
 	RunStr string
 }
 
-// Extension defines what methods an extension must have in order to interact with the marv system.
-type Extension interface {
+// Framework defines what methods an extension must have in order to interact with the marv system.
+type Framework interface {
 	Meta() *Meta
 	Init(path string) error
 	Mutations() (mutations.Mutations, error)
 }
 
 // TODO: toggle bits of marv specification/functionality
+
+var Frameworks = []Framework{
+	&MutestRS{},
+}
