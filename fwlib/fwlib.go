@@ -5,11 +5,10 @@ import (
 )
 
 type Meta struct {
-	Name   string
-	Lang   string
-	TSLang string // TODO: should be replaced with type of tree sitter language, haven't yet decided which tree sitter package to use
-	URL    string
-	RunStr string
+	Name      string
+	Extension string
+	TSLang    string // TODO: should be replaced with type of tree sitter language, haven't yet decided which tree sitter package to use
+	URL       string
 }
 
 // Runnable interface describes Framework instances that have the ability to re-run the framework to generate a

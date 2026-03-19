@@ -51,6 +51,7 @@ type Location struct {
 	End   []int  `json:"end"`
 }
 
+// mutestYamlWrapper used to load the mutest-rs configuration from the .marv.yml file.
 type mutestYamlWrapper struct {
 	Cfg *mutestYamlCfg `yaml:"mutest-rs"`
 }
@@ -62,14 +63,7 @@ type mutestYamlCfg struct {
 }
 
 func (m *mutestYamlCfg) IsPopulated() bool {
-	return m.Run != "" || m.Src != "" || m.JsonDir != ""
-}
-
-var meta = &fwlib.Meta{
-	Name:   "mutest-rs",
-	Lang:   "rs",
-	URL:    "https://github.com/zalanlevai/mutest-rs",
-	RunStr: "cargo mutest",
+	return m.Src != "" || m.JsonDir != ""
 }
 
 // MutestRS wraps the evaluation.json and mutations.json objects into a single struct.
@@ -80,7 +74,11 @@ type MutestRS struct {
 }
 
 func (m *MutestRS) Meta() *fwlib.Meta {
-	return meta
+	return &fwlib.Meta{
+		Name:      "mutest-rs",
+		Extension: "rs",
+		URL:       "https://github.com/zalanlevai/mutest-rs",
+	}
 }
 
 func (m *MutestRS) LoadYamlCfg(yml []byte) (bool, error) {
