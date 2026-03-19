@@ -4,10 +4,11 @@ package mutations
 type Status string
 
 const (
-	Killed   Status = "KILLED"
-	Survived Status = "SURVIVED"
-	Crashed  Status = "CRASHED"
-	Timeout  Status = "TIMEOUT"
+	Killed     Status = "KILLED"
+	Survived   Status = "SURVIVED"
+	Crashed    Status = "CRASHED"
+	Timeout    Status = "TIMEOUT"
+	NoCoverage Status = "NO_COVERAGE"
 )
 
 // Modification represents the type of mutation.
