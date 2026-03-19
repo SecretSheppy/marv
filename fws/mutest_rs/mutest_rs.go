@@ -3,11 +3,13 @@ package mutest_rs
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -99,6 +101,8 @@ func (m *MutestRS) Yaml() fwlib.FWConfig {
 }
 
 func (m *MutestRS) LoadResults() error {
+	log.Info().Msgf("%s - loading results", m.Meta().Name)
+
 	eval, err := os.ReadFile(path.Join(m.yml.Cfg.JsonDir, "evaluation.json"))
 	if err != nil {
 		return err
@@ -106,6 +110,7 @@ func (m *MutestRS) LoadResults() error {
 	if err := json.Unmarshal(eval, &m.eval); err != nil {
 		return err
 	}
+
 	muts, err := os.ReadFile(path.Join(m.yml.Cfg.JsonDir, "mutations.json"))
 	if err != nil {
 		return err
@@ -113,10 +118,13 @@ func (m *MutestRS) LoadResults() error {
 	if err := json.Unmarshal(muts, &m.muts); err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (m *MutestRS) TransformResults() error {
+	log.Info().Msgf("%s - transforming results", m.Meta().Name)
+
 	ms := mutations.Mutations{}
 	for _, mu := range m.muts.Mutations {
 		sl, err := streamlineMutation(mu)
@@ -141,6 +149,8 @@ func (m *MutestRS) TransformResults() error {
 		if !added {
 			ms[mu.Location.Path] = append(ms[mu.Location.Path], mutations.NewConflict(sl))
 		}
+
+		fmt.Print(".")
 	}
 	m.ms = ms
 	return nil

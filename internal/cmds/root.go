@@ -1,13 +1,13 @@
 package cmds
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -33,7 +33,11 @@ third party application to streamline review processes`,
 )
 
 func rootCommand() {
-	_, _ = getConfigAndFws()
+	_, activeFws := getConfigAndFws()
+
+	for _, fw := range activeFws {
+		_ = fw.TransformResults()
+	}
 
 	// TODO: start main application server here
 }
@@ -41,13 +45,13 @@ func rootCommand() {
 func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 	yml, err := os.ReadFile(configFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Error().Err(err)
 		os.Exit(1)
 	}
 
 	cfg, err := mergeYmlFlagConfigs(yml)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Error().Err(err)
 		os.Exit(1)
 	}
 
@@ -55,14 +59,14 @@ func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 	for _, fw := range fws.Frameworks() {
 		loaded, err := fw.Yaml().Load(yml)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error().Err(err)
 			os.Exit(1)
 		}
 		if !loaded {
 			continue
 		}
 		if err := fw.LoadResults(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error().Err(err)
 			os.Exit(1)
 		}
 		activeFws = append(activeFws, fw)
@@ -101,7 +105,7 @@ func Execute() {
 	rootCmd.Flags().BoolVarP(&fileWatchers, "enable-watchers", "w", false, "enable file watchers")
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Error().Err(err)
 		os.Exit(1)
 	}
 }

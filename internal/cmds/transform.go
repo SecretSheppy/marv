@@ -8,6 +8,7 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +27,7 @@ func exportCommand() {
 	if output != "" {
 		p, err := os.Stat(output)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error().Err(err)
 			os.Exit(1)
 		}
 		if !p.IsDir() {
@@ -46,7 +47,7 @@ func individualExport(activeFws []fwlib.Framework) {
 		ms := fw.Mutations()
 		marshal, err := json.Marshal(ms)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error().Err(err)
 			os.Exit(1)
 		}
 		if output == "" {
@@ -65,7 +66,7 @@ func mergeAndExport(activeFws []fwlib.Framework) {
 	}
 	marshal, err := json.Marshal(masterMs)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Error().Err(err)
 		os.Exit(1)
 	}
 	if output == "" {
