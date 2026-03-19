@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
@@ -14,9 +15,10 @@ import (
 const defaultPort = 8080
 
 var (
-	port                     int
-	review, configFile       string
-	toolRunner, fileWatchers bool
+	port                                  int
+	review, configFile, output            string
+	frameworks                            []string
+	mergeOutput, toolRunner, fileWatchers bool
 
 	rootCmd = &cobra.Command{
 		Use:   "marv",
@@ -25,40 +27,48 @@ var (
 review of mutations through visualisations - it can be used 'as is' or can be integrated into a
 third party application to streamline review processes`,
 		Run: func(cmd *cobra.Command, args []string) {
-			yml, err := os.ReadFile(configFile)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				os.Exit(1)
-			}
-
-			cfg, err := mergeYmlFlagConfigs(yml)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				os.Exit(1)
-			}
-
-			fmt.Println(cfg)
-
-			fw := fws.Frameworks()
-
-			_, err = fw[0].LoadYamlCfg(yml)
-			if err != nil {
-				fmt.Println(err)
-			}
-			//
-			fmt.Println(fw[0])
-
-			err = fw[0].Init()
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Println(fw[0])
-
-			// TODO: start main application server here
+			rootCommand()
 		},
 	}
 )
+
+func rootCommand() {
+	_, _ = getConfigAndFws()
+
+	// TODO: start main application server here
+}
+
+func getConfigAndFws() (*config.Config, []fwlib.Framework) {
+	yml, err := os.ReadFile(configFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	cfg, err := mergeYmlFlagConfigs(yml)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	activeFws := make([]fwlib.Framework, 0)
+	for _, fw := range fws.Frameworks() {
+		loaded, err := fw.LoadYamlCfg(yml)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		if !loaded {
+			continue
+		}
+		if err := fw.Init(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		activeFws = append(activeFws, fw)
+	}
+	return cfg, activeFws
+}
 
 func mergeYmlFlagConfigs(yml []byte) (*config.Config, error) {
 	cfg := &config.Config{}
@@ -84,9 +94,9 @@ func Execute() {
 	rootCmd.Version = marvinfo.Get().Version
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 
+	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", ".marv.yml", ".marv.yml file path")
 	rootCmd.Flags().IntVarP(&port, "port", "p", 8080, "port to listen on")
 	rootCmd.Flags().StringVarP(&review, "review", "r", "", "review output directory")
-	rootCmd.Flags().StringVarP(&configFile, "config", "c", ".marv.yml", ".marv.yml file path")
 	rootCmd.Flags().BoolVarP(&toolRunner, "enable-tool-runner", "t", false, "enable tool runner")
 	rootCmd.Flags().BoolVarP(&fileWatchers, "enable-watchers", "w", false, "enable file watchers")
 

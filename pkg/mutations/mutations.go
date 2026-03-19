@@ -80,3 +80,9 @@ type Conflicts []*Conflict
 
 // Mutations is a map of file names to groups of conflicting mutations.
 type Mutations map[string]Conflicts
+
+func (m Mutations) Merge(b Mutations) {
+	for k, v := range b {
+		m[k] = v
+	}
+}

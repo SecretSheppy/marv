@@ -1,13 +1,28 @@
 package cmds
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+	"slices"
+	"strings"
+
+	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/fws"
+	"github.com/spf13/cobra"
+)
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "lists all installed framework extensions",
-	Long:  "lists all installed framework extensions by frameworks name",
+	Use:     "frameworks",
+	Aliases: []string{"list"},
+	Short:   "lists all installed frameworks",
+	Long:    "lists all installed frameworks by name",
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: complete when extension loader is written
+		frameworks := fws.Frameworks()
+		slices.SortFunc(frameworks, func(a, b fwlib.Framework) int {
+			return strings.Compare(a.Meta().Name, b.Meta().Name)
+		})
+		for _, fw := range frameworks {
+			fmt.Println(fw.Meta().Name)
+		}
 	},
 }
 

@@ -21,6 +21,8 @@ type Runnable interface {
 type Framework interface {
 	// Meta returns the Meta information for the Framework
 	Meta() *Meta
+	// YamlInit returns the default YAML configuration struct.
+	YamlInit() interface{}
 	// LoadYamlCfg unmarshals the frameworks YAML config if it exists, and returns whether the YAML config existed for
 	// that Framework. This should be used to initialize all the Framework instances and to filter out all Framework
 	// instances that are not in use in the current project.

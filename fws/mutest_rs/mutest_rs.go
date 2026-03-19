@@ -81,6 +81,10 @@ func (m *MutestRS) Meta() *fwlib.Meta {
 	}
 }
 
+func (m *MutestRS) YamlInit() interface{} {
+	return mutestYamlWrapper{Cfg: &mutestYamlCfg{}}
+}
+
 func (m *MutestRS) LoadYamlCfg(yml []byte) (bool, error) {
 	wrapper := &mutestYamlWrapper{}
 	if err := yaml.Unmarshal(yml, wrapper); err != nil {
