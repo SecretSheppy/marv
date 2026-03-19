@@ -39,7 +39,7 @@ func initCommand() {
 			fmt.Fprintf(os.Stderr, "Err: framework %s not recognised\n", fw)
 		}
 
-		fwMarshal, err := yaml.Marshal(fwsMap[fw].YamlInit())
+		fwMarshal, err := yaml.Marshal(fwsMap[fw].Yaml().Init())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)

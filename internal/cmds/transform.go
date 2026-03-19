@@ -43,11 +43,7 @@ func exportCommand() {
 
 func individualExport(activeFws []fwlib.Framework) {
 	for _, fw := range activeFws {
-		ms, err := fw.Mutations()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
-		}
+		ms := fw.Mutations()
 		marshal, err := json.Marshal(ms)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -65,12 +61,7 @@ func individualExport(activeFws []fwlib.Framework) {
 func mergeAndExport(activeFws []fwlib.Framework) {
 	masterMs := mutations.Mutations{}
 	for _, fw := range activeFws {
-		ms, err := fw.Mutations()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
-		}
-		masterMs.Merge(ms)
+		masterMs.Merge(fw.Mutations())
 	}
 	marshal, err := json.Marshal(masterMs)
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 
 func Frameworks() []fwlib.Framework {
 	return []fwlib.Framework{
-		&mutest_rs.MutestRS{},
+		mutest_rs.NewMutestRS(),
 	}
 }
 

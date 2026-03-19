@@ -53,7 +53,7 @@ func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 
 	activeFws := make([]fwlib.Framework, 0)
 	for _, fw := range fws.Frameworks() {
-		loaded, err := fw.LoadYamlCfg(yml)
+		loaded, err := fw.Yaml().Load(yml)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
@@ -61,7 +61,7 @@ func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 		if !loaded {
 			continue
 		}
-		if err := fw.Init(); err != nil {
+		if err := fw.LoadResults(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			os.Exit(1)
 		}

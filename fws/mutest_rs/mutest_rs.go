@@ -11,6 +11,29 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// YamlConfig represents Mutest-RS yml config data.
+type YamlConfig struct {
+	Run     string `yaml:"run"`
+	Src     string `yaml:"src"`
+	JsonDir string `yaml:"json-dir"`
+}
+
+// YamlWrapper used to load the mutest-rs configuration from the .marv.yml file.
+type YamlWrapper struct {
+	Cfg *YamlConfig `yaml:"mutest-rs"`
+}
+
+func (y *YamlWrapper) Init() interface{} {
+	return &YamlWrapper{Cfg: &YamlConfig{}}
+}
+
+func (y *YamlWrapper) Load(yml []byte) (bool, error) {
+	if err := yaml.Unmarshal(yml, y); err != nil {
+		return false, err
+	}
+	return y.Cfg.Src != "" || y.Cfg.JsonDir != "", nil
+}
+
 // Evaluation marshals to evaluation.json from the mutest output data
 type Evaluation struct {
 	MutationRuns []*MutationRuns `json:"mutation_runs"`
@@ -51,26 +74,16 @@ type Location struct {
 	End   []int  `json:"end"`
 }
 
-// mutestYamlWrapper used to load the mutest-rs configuration from the .marv.yml file.
-type mutestYamlWrapper struct {
-	Cfg *mutestYamlCfg `yaml:"mutest-rs"`
-}
-
-type mutestYamlCfg struct {
-	Run     string `yaml:"run"`
-	Src     string `yaml:"src"`
-	JsonDir string `yaml:"json-dir"`
-}
-
-func (m *mutestYamlCfg) IsPopulated() bool {
-	return m.Src != "" || m.JsonDir != ""
-}
-
 // MutestRS wraps the evaluation.json and mutations.json objects into a single struct.
 type MutestRS struct {
-	cfg  *mutestYamlCfg
+	yml  *YamlWrapper
 	eval *Evaluation
 	muts *Mutations
+	ms   mutations.Mutations
+}
+
+func NewMutestRS() *MutestRS {
+	return &MutestRS{yml: &YamlWrapper{}}
 }
 
 func (m *MutestRS) Meta() *fwlib.Meta {
@@ -81,28 +94,19 @@ func (m *MutestRS) Meta() *fwlib.Meta {
 	}
 }
 
-func (m *MutestRS) YamlInit() interface{} {
-	return mutestYamlWrapper{Cfg: &mutestYamlCfg{}}
+func (m *MutestRS) Yaml() fwlib.FWConfig {
+	return m.yml
 }
 
-func (m *MutestRS) LoadYamlCfg(yml []byte) (bool, error) {
-	wrapper := &mutestYamlWrapper{}
-	if err := yaml.Unmarshal(yml, wrapper); err != nil {
-		return false, err
-	}
-	m.cfg = wrapper.Cfg
-	return m.cfg.IsPopulated(), nil
-}
-
-func (m *MutestRS) Init() error {
-	eval, err := os.ReadFile(path.Join(m.cfg.JsonDir, "evaluation.json"))
+func (m *MutestRS) LoadResults() error {
+	eval, err := os.ReadFile(path.Join(m.yml.Cfg.JsonDir, "evaluation.json"))
 	if err != nil {
 		return err
 	}
 	if err := json.Unmarshal(eval, &m.eval); err != nil {
 		return err
 	}
-	muts, err := os.ReadFile(path.Join(m.cfg.JsonDir, "mutations.json"))
+	muts, err := os.ReadFile(path.Join(m.yml.Cfg.JsonDir, "mutations.json"))
 	if err != nil {
 		return err
 	}
@@ -112,17 +116,17 @@ func (m *MutestRS) Init() error {
 	return nil
 }
 
-func (m *MutestRS) Mutations() (mutations.Mutations, error) {
+func (m *MutestRS) TransformResults() error {
 	ms := mutations.Mutations{}
 	for _, mu := range m.muts.Mutations {
 		sl, err := streamlineMutation(mu)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		sl.Status, err = getMutationStatus(mu.MutationID, m.eval)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		added := false
@@ -138,7 +142,8 @@ func (m *MutestRS) Mutations() (mutations.Mutations, error) {
 			ms[mu.Location.Path] = append(ms[mu.Location.Path], mutations.NewConflict(sl))
 		}
 	}
-	return ms, nil
+	m.ms = ms
+	return nil
 }
 
 func streamlineMutation(m *Mutation) (*mutations.Mutation, error) {
@@ -183,4 +188,8 @@ func getMutationStatus(id int, ev *Evaluation) (mutations.Status, error) {
 		status = mutations.Crashed
 	}
 	return status, nil
+}
+
+func (m *MutestRS) Mutations() mutations.Mutations {
+	return m.ms
 }
