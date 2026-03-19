@@ -152,6 +152,8 @@ func (m *MutestRS) TransformResults() error {
 
 		fmt.Print(".")
 	}
+	fmt.Println()
+
 	m.ms = ms
 	return nil
 }
