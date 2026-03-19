@@ -10,3 +10,11 @@ func Frameworks() []fwlib.Framework {
 		&mutest_rs.MutestRS{},
 	}
 }
+
+func FrameworksMap() map[string]fwlib.Framework {
+	fws := make(map[string]fwlib.Framework)
+	for _, fw := range Frameworks() {
+		fws[fw.Meta().Name] = fw
+	}
+	return fws
+}
