@@ -2,12 +2,38 @@ package pitest
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
+
+// YamlConfig represents Pitest's yml config data.
+type YamlConfig struct {
+	XmlPath         string `yaml:"xml-path"`
+	SrcPath         string `yaml:"src-path"`
+	SrcBytecodePath string `yaml:"src-bytecode-path"`
+	MutBytecodePath string `yaml:"mut-bytecode-path"`
+}
+
+// YamlWrapper used to load the pitest configuration from the .marv.yml file.
+type YamlWrapper struct {
+	Cfg *YamlConfig `yaml:"pitest"`
+}
+
+func (y *YamlWrapper) Init() interface{} {
+	return &YamlWrapper{Cfg: &YamlConfig{}}
+}
+
+func (y *YamlWrapper) Load(yml []byte) (bool, error) {
+	if err := yaml.Unmarshal(yml, y); err != nil {
+		return false, err
+	}
+	return y.Cfg.XmlPath != "" || y.Cfg.SrcPath != "" || y.Cfg.SrcBytecodePath != "" || y.Cfg.MutBytecodePath != "", nil
+}
 
 // Mutation is a struct that can accept the pitest xml output.
 type Mutation struct {
@@ -38,39 +64,20 @@ func (m *Mutation) streamline() *mutations.Mutation {
 	}
 }
 
-func (m *Mutation) sourceFilePath() string {
-	return ""
-}
-
-func (m *Mutation) mutatedFilePath() string {
-	return ""
-}
-
 type PitXML struct {
 	XMLName   xml.Name    `xml:"mutations"`
 	Mutations []*Mutation `xml:"mutation"`
 }
 
-// pitestYamlWrapper used to load the pitest configuration from the .marv.yml file.
-type pitestYamlWrapper struct {
-	Cfg *pitestYamlCfg `yaml:"pitest"`
-}
-
-type pitestYamlCfg struct {
-	Run            string `yaml:"run"`
-	XmlPath        string `yaml:"xml-path"`
-	SrcClassesPath string `yaml:"src-classes-path"`
-	MutClassesPath string `yaml:"mut-classes-path"`
-}
-
-func (p pitestYamlCfg) IsPopulated() bool {
-	return p.XmlPath != "" || p.SrcClassesPath != "" || p.MutClassesPath != ""
-}
-
 // Pitest is the Framework object for the pitest library.
 type Pitest struct {
-	cfg  *pitestYamlCfg
+	yml  *YamlWrapper
 	muts []*Mutation
+	ms   mutations.Mutations
+}
+
+func NewPitest() *Pitest {
+	return &Pitest{yml: &YamlWrapper{}}
 }
 
 func (p *Pitest) Meta() *fwlib.Meta {
@@ -81,33 +88,42 @@ func (p *Pitest) Meta() *fwlib.Meta {
 	}
 }
 
-func (p *Pitest) LoadYamlCfg(yml []byte) (bool, error) {
-	wrapper := &pitestYamlWrapper{}
-	if err := yaml.Unmarshal(yml, wrapper); err != nil {
-		return false, err
-	}
-	p.cfg = wrapper.Cfg
-	return p.cfg.IsPopulated(), nil
+func (p *Pitest) Yaml() fwlib.FWConfig {
+	return p.yml
 }
 
-func (p *Pitest) Init() error {
-	rawxml, err := os.ReadFile(p.cfg.XmlPath)
+func (p *Pitest) LoadResults() error {
+	log.Info().Msgf("%s - loading results", p.Meta().Name)
+
+	rawxml, err := os.ReadFile(p.yml.Cfg.XmlPath)
 	if err != nil {
 		return err
 	}
+
 	pitxml := &PitXML{}
 	if err := xml.Unmarshal(rawxml, pitxml); err != nil {
 		return err
 	}
 	p.muts = pitxml.Mutations
+
 	return nil
 }
 
-func (p *Pitest) Mutations() (mutations.Mutations, error) {
+func (p *Pitest) TransformResults() error {
+	log.Info().Msgf("%s - transforming results", p.Meta().Name)
+
 	ms := mutations.Mutations{}
 	for _, mu := range p.muts {
 		_ = mu.streamline()
 
+		fmt.Print(".")
 	}
-	return ms, nil
+	fmt.Println()
+
+	p.ms = ms
+	return nil
+}
+
+func (p *Pitest) Mutations() mutations.Mutations {
+	return p.ms
 }
