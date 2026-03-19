@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
@@ -25,40 +26,43 @@ var (
 review of mutations through visualisations - it can be used 'as is' or can be integrated into a
 third party application to streamline review processes`,
 		Run: func(cmd *cobra.Command, args []string) {
-			yml, err := os.ReadFile(configFile)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				os.Exit(1)
-			}
-
-			cfg, err := mergeYmlFlagConfigs(yml)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				os.Exit(1)
-			}
-
-			fmt.Println(cfg)
-
-			fw := fws.Frameworks()
-
-			_, err = fw[0].LoadYamlCfg(yml)
-			if err != nil {
-				fmt.Println(err)
-			}
-			//
-			fmt.Println(fw[0])
-
-			err = fw[0].Init()
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Println(fw[0])
-
-			// TODO: start main application server here
+			rootCommand()
 		},
 	}
 )
+
+func rootCommand() {
+	yml, err := os.ReadFile(configFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	_, err = mergeYmlFlagConfigs(yml)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	activeFws := make([]fwlib.Framework, 0)
+	for _, fw := range fws.Frameworks() {
+		loaded, err := fw.LoadYamlCfg(yml)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		if !loaded {
+			continue
+		}
+		if err := fw.Init(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		activeFws = append(activeFws, fw)
+	}
+
+	// TODO: start main application server here
+}
 
 func mergeYmlFlagConfigs(yml []byte) (*config.Config, error) {
 	cfg := &config.Config{}
