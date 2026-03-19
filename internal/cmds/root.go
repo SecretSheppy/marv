@@ -15,9 +15,10 @@ import (
 const defaultPort = 8080
 
 var (
-	port                     int
-	review, configFile       string
-	toolRunner, fileWatchers bool
+	port                                  int
+	review, configFile, output            string
+	frameworks                            []string
+	mergeOutput, toolRunner, fileWatchers bool
 
 	rootCmd = &cobra.Command{
 		Use:   "marv",
@@ -32,13 +33,19 @@ third party application to streamline review processes`,
 )
 
 func rootCommand() {
+	_, _ = getConfigAndFws()
+
+	// TODO: start main application server here
+}
+
+func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 	yml, err := os.ReadFile(configFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	_, err = mergeYmlFlagConfigs(yml)
+	cfg, err := mergeYmlFlagConfigs(yml)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
@@ -60,8 +67,7 @@ func rootCommand() {
 		}
 		activeFws = append(activeFws, fw)
 	}
-
-	// TODO: start main application server here
+	return cfg, activeFws
 }
 
 func mergeYmlFlagConfigs(yml []byte) (*config.Config, error) {
@@ -88,9 +94,9 @@ func Execute() {
 	rootCmd.Version = marvinfo.Get().Version
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 
+	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", ".marv.yml", ".marv.yml file path")
 	rootCmd.Flags().IntVarP(&port, "port", "p", 8080, "port to listen on")
 	rootCmd.Flags().StringVarP(&review, "review", "r", "", "review output directory")
-	rootCmd.Flags().StringVarP(&configFile, "config", "c", ".marv.yml", ".marv.yml file path")
 	rootCmd.Flags().BoolVarP(&toolRunner, "enable-tool-runner", "t", false, "enable tool runner")
 	rootCmd.Flags().BoolVarP(&fileWatchers, "enable-watchers", "w", false, "enable file watchers")
 

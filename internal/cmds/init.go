@@ -12,18 +12,14 @@ import (
 
 const marvYml = ".marv.yml"
 
-var (
-	frameworks []string
-
-	initCmd = &cobra.Command{
-		Use:   "init",
-		Short: "initialises a new default marv.yml file",
-		Long:  "initialises a new default marv.yml file in the current working directory",
-		Run: func(cmd *cobra.Command, args []string) {
-			initCommand()
-		},
-	}
-)
+var initCmd = &cobra.Command{
+	Use:   "init",
+	Short: "initialises a new default marv.yml file",
+	Long:  "initialises a new default marv.yml file in the current working directory",
+	Run: func(cmd *cobra.Command, args []string) {
+		initCommand()
+	},
+}
 
 func initCommand() {
 	if f, _ := os.Stat(marvYml); f != nil {
