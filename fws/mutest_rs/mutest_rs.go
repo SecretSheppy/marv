@@ -10,6 +10,7 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
 	"github.com/rs/zerolog/log"
+	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
 )
 
@@ -125,16 +126,34 @@ func (m *MutestRS) LoadResults() error {
 func (m *MutestRS) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
 
+	bar := progressbar.NewOptions(
+		len(m.muts.Mutations),
+		progressbar.OptionSetWriter(os.Stdout),
+		progressbar.OptionSetDescription("transforming"),
+		progressbar.OptionSetRenderBlankState(true))
+
+	ms, err := m.transformResults(bar)
+	if err != nil {
+		return err
+	}
+	bar.Finish()
+	fmt.Println()
+
+	m.ms = ms
+	return nil
+}
+
+func (m *MutestRS) transformResults(bar *progressbar.ProgressBar) (mutations.Mutations, error) {
 	ms := mutations.Mutations{}
 	for _, mu := range m.muts.Mutations {
 		sl, err := streamlineMutation(mu)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		sl.Status, err = getMutationStatus(mu.MutationID, m.eval)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		added := false
@@ -150,12 +169,9 @@ func (m *MutestRS) TransformResults() error {
 			ms[mu.Location.Path] = append(ms[mu.Location.Path], mutations.NewConflict(sl))
 		}
 
-		fmt.Print(".")
+		bar.Add(1)
 	}
-	fmt.Println()
-
-	m.ms = ms
-	return nil
+	return ms, nil
 }
 
 func streamlineMutation(m *Mutation) (*mutations.Mutation, error) {
