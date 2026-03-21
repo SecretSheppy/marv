@@ -13,9 +13,9 @@ import (
 )
 
 var exportCmd = &cobra.Command{
-	Use:   "transform",
-	Short: "transforms framework output into standardised JSON",
-	Long:  "transforms the output data from the configured frameworks into the marv internal format (JSON) and then exports it.",
+	Use:   "export",
+	Short: "exports framework output into standardised JSON",
+	Long:  "exports the output data from the configured frameworks into the marv internal format (JSON) and then exports it.",
 	Run: func(cmd *cobra.Command, args []string) {
 		exportCommand()
 	},
