@@ -1,11 +1,11 @@
 package cmds
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -23,25 +23,26 @@ var initCmd = &cobra.Command{
 
 func initCommand() {
 	if f, _ := os.Stat(marvYml); f != nil {
-		fmt.Println(".marv.yml already exists in this directory")
+		log.Warn().Msg(".marv.yml already exists in this directory")
 		os.Exit(0)
 	}
 
 	marshal, err := yaml.Marshal(config.Init())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Error().Err(err)
 		os.Exit(1)
 	}
 
 	fwsMap := fws.FrameworksMap()
 	for _, fw := range frameworks {
 		if fwsMap[fw] == nil {
-			fmt.Fprintf(os.Stderr, "Err: framework %s not recognised\n", fw)
+			log.Warn().Msgf("skipping unknown framework %s\n", fw)
+			continue
 		}
 
-		fwMarshal, err := yaml.Marshal(fwsMap[fw].YamlInit())
+		fwMarshal, err := yaml.Marshal(fwsMap[fw].Yaml().Init())
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error().Err(err)
 			os.Exit(1)
 		}
 
@@ -49,7 +50,7 @@ func initCommand() {
 	}
 
 	if err := os.WriteFile(marvYml, marshal, 0644); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Error().Err(err)
 		os.Exit(1)
 	}
 }

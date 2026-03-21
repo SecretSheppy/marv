@@ -17,19 +17,21 @@ type Runnable interface {
 	Run()
 }
 
+type FWConfig interface {
+	Init() interface{}
+	Load(yml []byte) (bool, error)
+}
+
 // Framework defines what methods an extension must have in order to interact with the marv system.
 type Framework interface {
-	// Meta returns the Meta information for the Framework
+	// Meta returns the Framework's Meta information.
 	Meta() *Meta
-	// YamlInit returns the default YAML configuration struct.
-	YamlInit() interface{}
-	// LoadYamlCfg unmarshals the frameworks YAML config if it exists, and returns whether the YAML config existed for
-	// that Framework. This should be used to initialize all the Framework instances and to filter out all Framework
-	// instances that are not in use in the current project.
-	LoadYamlCfg(yml []byte) (bool, error)
-	// Init initializes the framework plugin by parsing all the mutations and formatting them into the marv internal
-	// format.
-	Init() error
-	// Mutations returns the mutations in the marv internal format.
-	Mutations() (mutations.Mutations, error)
+	// Yaml returns the YAML configuration struct.
+	Yaml() FWConfig
+	// LoadResults loads the Framework's output data.
+	LoadResults() error
+	// TransformResults transforms the Framework's output data into the marv format.
+	TransformResults() error
+	// Mutations returns the mutations in the marv format. Returns nil if TransformResults has not been called.
+	Mutations() mutations.Mutations
 }

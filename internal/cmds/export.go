@@ -8,13 +8,14 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
 var exportCmd = &cobra.Command{
-	Use:   "transform",
-	Short: "transforms framework output into standardised JSON",
-	Long:  "transforms the output data from the configured frameworks into the marv internal format (JSON) and then exports it.",
+	Use:   "export",
+	Short: "exports framework output into standardised JSON",
+	Long:  "exports the output data from the configured frameworks into the marv internal format (JSON) and then exports it.",
 	Run: func(cmd *cobra.Command, args []string) {
 		exportCommand()
 	},
@@ -23,10 +24,17 @@ var exportCmd = &cobra.Command{
 func exportCommand() {
 	_, activeFws := getConfigAndFws()
 
+	for _, fw := range activeFws {
+		if err := fw.TransformResults(); err != nil {
+			log.Error().Err(err)
+			os.Exit(1)
+		}
+	}
+
 	if output != "" {
 		p, err := os.Stat(output)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error().Err(err)
 			os.Exit(1)
 		}
 		if !p.IsDir() {
@@ -43,14 +51,10 @@ func exportCommand() {
 
 func individualExport(activeFws []fwlib.Framework) {
 	for _, fw := range activeFws {
-		ms, err := fw.Mutations()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
-		}
+		ms := fw.Mutations()
 		marshal, err := json.Marshal(ms)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			log.Error().Err(err)
 			os.Exit(1)
 		}
 		if output == "" {
@@ -65,16 +69,11 @@ func individualExport(activeFws []fwlib.Framework) {
 func mergeAndExport(activeFws []fwlib.Framework) {
 	masterMs := mutations.Mutations{}
 	for _, fw := range activeFws {
-		ms, err := fw.Mutations()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			os.Exit(1)
-		}
-		masterMs.Merge(ms)
+		masterMs.Merge(fw.Mutations())
 	}
 	marshal, err := json.Marshal(masterMs)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Error().Err(err)
 		os.Exit(1)
 	}
 	if output == "" {
