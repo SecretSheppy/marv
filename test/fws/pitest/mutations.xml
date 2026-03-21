@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mutations partial="true">
+    <mutation detected='false' status='SURVIVED' numberOfTestsRun='1'>
+        <sourceFile>ThisFileDoesNotContainJava.java</sourceFile>
+        <mutatedClass>ThisFileDoesNotContainJava</mutatedClass>
+        <mutatedMethod>thisMethodDoesNotExist</mutatedMethod>
+        <methodDescription>method not real</methodDescription>
+        <lineNumber>1</lineNumber>
+        <mutator>FakeMutator</mutator>
+        <description>removed a smiley face from line 1</description>
+    </mutation>
+    <mutation detected='false' status='SURVIVED' numberOfTestsRun='1'>
+        <sourceFile>ThisFileDoesNotContainJava.java</sourceFile>
+        <mutatedClass>ThisFileDoesNotContainJava</mutatedClass>
+        <mutatedMethod>thisMethodDoesNotExist</mutatedMethod>
+        <methodDescription>method not real</methodDescription>
+        <lineNumber>3</lineNumber>
+        <mutator>FakeMutator</mutator>
+        <description>removed a winky face from line 3</description>
+    </mutation>
+    <mutation detected='false' status='NO_COVERAGE' numberOfTestsRun='1'>
+        <sourceFile>ThisFileDoesNotContainJava.java</sourceFile>
+        <mutatedClass>ThisFileDoesNotContainJava</mutatedClass>
+        <mutatedMethod>thisMethodDoesNotExist</mutatedMethod>
+        <methodDescription>method not real</methodDescription>
+        <lineNumber>3</lineNumber>
+        <mutator>FakeMutator</mutator>
+        <description>removed a winky face from line 3</description>
+    </mutation>
+</mutations>

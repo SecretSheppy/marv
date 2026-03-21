@@ -83,15 +83,22 @@ type PitXML struct {
 	Mutations []*Mutation `xml:"mutation"`
 }
 
+// JavaDecompiler describes an object that can be used to decompile the java bytecode.
+type JavaDecompiler interface {
+	// Decompile takes a string path to a file and returns the decompiled bytes of that file or an error.
+	Decompile(path string) ([]byte, error)
+}
+
 // Pitest is the Framework object for the pitest library.
 type Pitest struct {
-	yml  *YamlWrapper
-	muts []*Mutation
-	ms   mutations.Mutations
+	yml   *YamlWrapper
+	muts  []*Mutation
+	ms    mutations.Mutations
+	dcomp JavaDecompiler
 }
 
 func NewPitest() *Pitest {
-	return &Pitest{yml: &YamlWrapper{}}
+	return &Pitest{yml: &YamlWrapper{}, dcomp: &vineflower.Vineflower{}}
 }
 
 func (p *Pitest) Meta() *fwlib.Meta {
@@ -205,7 +212,7 @@ type TransformWorkerResult struct {
 	Error     error
 }
 
-func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- TransformWorkerResult, wg *sync.WaitGroup, cfg *YamlConfig, bar *progressbar.ProgressBar) {
+func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- TransformWorkerResult, wg *sync.WaitGroup, cfg *YamlConfig, bar *progressbar.ProgressBar, dcomp JavaDecompiler) {
 	defer wg.Done()
 
 	for job := range jobs {
@@ -256,14 +263,14 @@ func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- Tra
 			if m.Status == mutations.NoCoverage {
 				appendMutation(m.SourceCodePath(), streamlineMutation(
 					m,
-					&mutations.Range{Line: m.LineNumber},
-					&mutations.Range{Line: m.LineNumber, Char: len(srcLine) - 1}))
+					&mutations.Range{Line: m.LineNumber - 1},
+					&mutations.Range{Line: m.LineNumber - 1, Char: len(srcLine) - 1}))
 				continue
 			}
 
 			srcClassPath := path.Join(cfg.SrcClassPath, m.SourceClassPath())
 			if decompiled[srcClassPath] == "" {
-				dcomp, err := vineflower.Decompile(srcClassPath)
+				dcomp, err := dcomp.Decompile(srcClassPath)
 				if err != nil {
 					// FIXME: handle this error
 					panic(err)
@@ -272,7 +279,7 @@ func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- Tra
 			}
 
 			mutClassPath := path.Join(cfg.MutClassPath, m.MutatedClassPath())
-			mutated, err := vineflower.Decompile(mutClassPath)
+			mutated, err := dcomp.Decompile(mutClassPath)
 			if err != nil {
 				// FIXME: handle this error
 				panic(err)
@@ -325,7 +332,7 @@ func (p *Pitest) transformMutations(ms map[string][]*Mutation, bar *progressbar.
 	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
-		go transformMutationsWorker(jobs, results, &wg, p.yml.Cfg, bar)
+		go transformMutationsWorker(jobs, results, &wg, p.yml.Cfg, bar, p.dcomp)
 	}
 
 	for _, fileMutations := range ms {
