@@ -6,7 +6,9 @@ import (
 	"path"
 )
 
-func vineflowerJarPath() string {
+type Vineflower struct{}
+
+func (v *Vineflower) JarPath() string {
 	dir := os.Getenv("LIB_PATH")
 	if dir == "" {
 		wd, _ := os.Getwd()
@@ -15,14 +17,14 @@ func vineflowerJarPath() string {
 	return path.Join(dir, "vineflower.jar")
 }
 
-func Help() ([]byte, error) {
-	cmd := exec.Command("java", "-jar", vineflowerJarPath(), "--help")
+func (v *Vineflower) Help() ([]byte, error) {
+	cmd := exec.Command("java", "-jar", v.JarPath(), "--help")
 	cmd.Env = os.Environ()
 	return cmd.Output()
 }
 
-func Decompile(path string) ([]byte, error) {
-	cmd := exec.Command("java", "-jar", vineflowerJarPath(), "--log-level=error", path)
+func (v *Vineflower) Decompile(path string) ([]byte, error) {
+	cmd := exec.Command("java", "-jar", v.JarPath(), "--log-level=error", path)
 	cmd.Env = os.Environ()
 	return cmd.Output()
 }

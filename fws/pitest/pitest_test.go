@@ -1,12 +1,15 @@
 package pitest
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"os"
 	"path"
+	"reflect"
 	"testing"
 
+	"github.com/SecretSheppy/marv/pkg/mutations"
 	"github.com/rs/zerolog"
 )
 
@@ -150,4 +153,46 @@ func TestPitest_LoadResults(t *testing.T) {
 			t.Error(err)
 		}
 	})
+}
+
+// MockDecompiler reads and returns a file. It is used to read a java test file from the repositories test directory.
+type MockDecompiler struct{}
+
+func (m *MockDecompiler) Decompile(p string) ([]byte, error) {
+	return os.ReadFile(p)
+}
+
+func TestPitest_TransformResults(t *testing.T) {
+	zerolog.SetGlobalLevel(zerolog.Disabled)
+
+	yml := `pitest:
+    xml-path: ../../test/fws/pitest/mutations.xml
+    src-code-path: ../../test/fws/pitest/src_code/
+    src-class-path: ../../test/fws/pitest/src_classes/
+    mut-class-path: ../../test/fws/pitest/mut_classes/`
+
+	pt := NewPitest()
+	pt.dcomp = &MockDecompiler{}
+	if _, err := pt.Yaml().Load([]byte(yml)); err != nil {
+		t.Fatal(err)
+	}
+	if err := pt.LoadResults(); err != nil {
+		t.Fatal(err)
+	}
+	if err := pt.TransformResults(); err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := os.ReadFile("../../test/fws/pitest/marv_mutations_results.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ms := make(mutations.Mutations)
+	if err := json.Unmarshal(data, &ms); err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(pt.Mutations(), ms) {
+		t.Fatal("generated mutations map did not match expected mutations map")
+	}
 }
