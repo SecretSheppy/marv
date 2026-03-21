@@ -24,6 +24,13 @@ var exportCmd = &cobra.Command{
 func exportCommand() {
 	_, activeFws := getConfigAndFws()
 
+	for _, fw := range activeFws {
+		if err := fw.TransformResults(); err != nil {
+			log.Error().Err(err)
+			os.Exit(1)
+		}
+	}
+
 	if output != "" {
 		p, err := os.Stat(output)
 		if err != nil {
