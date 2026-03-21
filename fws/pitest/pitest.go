@@ -350,8 +350,6 @@ func (p *Pitest) transformMutations(ms map[string][]*Mutation, bar *progressbar.
 	}
 }
 
-// com.google.common.collect.testing.PerCollectionSizeTestSuiteBuilder$OneSizeTestSuiteBuilder
-
 func streamlineMutation(m *Mutation, starts, ends *mutations.Range) *mutations.Mutation {
 	return &mutations.Mutation{
 		Name:   m.Description,
