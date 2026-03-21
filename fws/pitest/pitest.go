@@ -68,10 +68,14 @@ func (m *Mutation) SourceClassPath() string {
 	return strings.ReplaceAll(m.MutatedClass, ".", "/") + ".class"
 }
 
-func (m *Mutation) MutatedClassPath() string {
+func (m *Mutation) MutantExportDir() string {
 	base := strings.ReplaceAll(m.MutatedClass, ".", "/")
-	file := fmt.Sprintf("mutants/%d/%s.class", m.MutationIndex, m.MutatedClass)
-	return path.Join(base, file)
+	return path.Join(base, "mutants")
+}
+
+func (m *Mutation) MutatedClassPath() string {
+	file := fmt.Sprintf("%d/%s.class", m.MutationIndex, m.MutatedClass)
+	return path.Join(m.MutantExportDir(), file)
 }
 
 type PitXML struct {
@@ -103,6 +107,7 @@ func (p *Pitest) Yaml() fwlib.FWConfig {
 }
 
 func (p *Pitest) LoadResults() error {
+	log.Warn().Msgf("%s - experimental framwork that relies on decompilation of binary files. results may not be 100%% accurate!", p.Meta().Name)
 	log.Info().Msgf("%s - loading results", p.Meta().Name)
 
 	rawxml, err := os.ReadFile(p.yml.Cfg.XmlPath)
@@ -126,16 +131,30 @@ func (p *Pitest) TransformResults() error {
 	groupBar := progressbar.NewOptions(
 		len(p.muts),
 		progressbar.OptionSetWriter(os.Stdout),
-		progressbar.OptionSetDescription("[1/2]     grouping"),
-		progressbar.OptionSetRenderBlankState(true))
-	msMap := groupAndNumberMutations(p.muts, groupBar)
+		progressbar.OptionSetDescription("[1/3]     grouping"),
+		progressbar.OptionSetRenderBlankState(true),
+		progressbar.OptionShowCount())
+	msMap := p.groupMutations(groupBar)
 	groupBar.Finish()
+	fmt.Println()
+
+	indexBar := progressbar.NewOptions(
+		len(p.muts),
+		progressbar.OptionSetWriter(os.Stdout),
+		progressbar.OptionSetDescription("[2/3]     indexing"),
+		progressbar.OptionSetRenderBlankState(true),
+		progressbar.OptionShowCount())
+	err := p.indexMutations(msMap, indexBar)
+	if err != nil {
+		return err
+	}
+	indexBar.Finish()
 	fmt.Println()
 
 	transformBar := progressbar.NewOptions(
 		len(msMap),
 		progressbar.OptionSetWriter(os.Stdout),
-		progressbar.OptionSetDescription("[2/2] transforming"),
+		progressbar.OptionSetDescription("[3/3] transforming"),
 		progressbar.OptionSetRenderBlankState(true),
 		progressbar.OptionShowCount())
 	p.transformMutations(msMap, transformBar)
@@ -145,16 +164,36 @@ func (p *Pitest) TransformResults() error {
 	return nil
 }
 
-// groups mutations by class name (so all mutations of the same file will be grouped together) and then numbers them
-// 0 -> n for that particular class name.
-func groupAndNumberMutations(ms []*Mutation, bar *progressbar.ProgressBar) map[string][]*Mutation {
+// groups mutations by class name (so all mutations of the same file will be grouped together)
+func (p *Pitest) groupMutations(bar *progressbar.ProgressBar) map[string][]*Mutation {
 	msMap := make(map[string][]*Mutation)
-	for _, m := range ms {
-		m.MutationIndex = len(msMap[m.SourceCodePath()])
+	for _, m := range p.muts {
 		msMap[m.SourceCodePath()] = append(msMap[m.SourceCodePath()], m)
 		bar.Add(1)
 	}
 	return msMap
+}
+
+func (p *Pitest) indexMutations(msMap map[string][]*Mutation, bar *progressbar.ProgressBar) error {
+	for _, ms := range msMap {
+		for _, m := range ms {
+			for i := 0; i < len(ms); i++ {
+				details := fmt.Sprintf("%d/details.txt", i)
+				txtpth := path.Join(p.yml.Cfg.MutClassPath, m.MutantExportDir(), details)
+				data, err := os.ReadFile(txtpth)
+				if err != nil {
+					return err
+				}
+				vals := fmt.Sprintf("lineNumber=%d, description=%s", m.LineNumber, m.Description)
+				if strings.Contains(string(data), vals) {
+					m.MutationIndex = i
+					break
+				}
+			}
+			bar.Add(1)
+		}
+	}
+	return nil
 }
 
 type TransformWorkerJob struct {
@@ -249,10 +288,10 @@ func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- Tra
 			rmlines := 0
 			builder := strings.Builder{}
 			for _, h := range d.Hunks {
+				if strings.Contains(h.Lines[0].Content, "import") {
+					continue
+				}
 				for _, l := range h.Lines {
-					if strings.Contains(l.Content, "import") {
-						break
-					}
 					switch l.Kind {
 					case udiff.Delete:
 						rmlines++
@@ -264,12 +303,11 @@ func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- Tra
 
 			// NOTE: m.LineNumber is technically the first line removed in rmlines, so hence the -2 here and -1 in
 			// the below mutations.Range.
-			// FIXME: this doesn't always work because of some things with the way the diffs are calculated :(
 			srcEndLine := srcCodeLines[m.LineNumber+rmlines-2]
 			mutant := streamlineMutation(
 				m,
-				&mutations.Range{Line: m.LineNumber},
-				&mutations.Range{Line: m.LineNumber + rmlines - 1, Char: len(srcEndLine) - 1})
+				&mutations.Range{Line: m.LineNumber - 1},
+				&mutations.Range{Line: m.LineNumber + rmlines - 2, Char: len(srcEndLine) - 1})
 			mutant.Source = builder.String()
 			appendMutation(m.SourceCodePath(), mutant)
 		}
