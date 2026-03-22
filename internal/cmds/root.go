@@ -36,6 +36,10 @@ func rootCommand() {
 	_, activeFws := getConfigAndFws()
 
 	for _, fw := range activeFws {
+		if decompiling, ok := fw.(fwlib.Decompiling); ok {
+			decompiling.SetDecompiler()
+		}
+
 		_ = fw.TransformResults()
 	}
 

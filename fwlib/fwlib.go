@@ -17,6 +17,12 @@ type Runnable interface {
 	Run()
 }
 
+// Decompiling interfaces describes Framework instances that have to decompile binaries in order to extract mutants.
+type Decompiling interface {
+	// SetDecompiler sets the decompiler that is being used.
+	SetDecompiler()
+}
+
 type FWConfig interface {
 	Init() interface{}
 	Load(yml []byte) (bool, error)

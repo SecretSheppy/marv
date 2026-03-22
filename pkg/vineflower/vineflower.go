@@ -23,8 +23,12 @@ func (v *Vineflower) Help() ([]byte, error) {
 	return cmd.Output()
 }
 
-func (v *Vineflower) Decompile(path string) ([]byte, error) {
-	cmd := exec.Command("java", "-jar", v.JarPath(), "--log-level=error", path)
+func (v *Vineflower) Decompile(p string) ([]byte, error) {
+	cmd := exec.Command("java", "-jar", v.JarPath(), "--log-level=error", p)
 	cmd.Env = os.Environ()
 	return cmd.Output()
+}
+
+func (v *Vineflower) String() string {
+	return v.JarPath()
 }
