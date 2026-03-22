@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/formatters/html"
@@ -11,7 +12,11 @@ import (
 	"github.com/alecthomas/chroma/v2/styles"
 )
 
-var ErrNoLexer = errors.New("no lexer for supplied language")
+var (
+	ErrNoLexer = errors.New("no lexer for supplied language")
+
+	reCSS = regexp.MustCompile("(/\\\\*.*\\\\*/)|(\\.chroma)|\\s")
+)
 
 // Highlighter is a wrapper for the chroma library that allows for line by line and substring highlighting.
 type Highlighter struct {
@@ -50,7 +55,7 @@ func (h *Highlighter) CSS() (string, error) {
 	if err := h.formatter.WriteCSS(&result, h.style); err != nil {
 		return "", err
 	}
-	return result.String(), nil
+	return reCSS.ReplaceAllString(result.String(), ""), nil
 }
 
 func (h *Highlighter) highlightStr(line string) (string, error) {
