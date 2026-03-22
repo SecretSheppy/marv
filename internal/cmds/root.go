@@ -40,7 +40,10 @@ func rootCommand() {
 			decompiling.SetDecompiler()
 		}
 
-		_ = fw.TransformResults()
+		if err := fw.TransformResults(); err != nil {
+			log.Fatal().Err(err)
+			os.Exit(0)
+		}
 	}
 
 	// TODO: start main application server here
@@ -49,13 +52,13 @@ func rootCommand() {
 func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 	yml, err := os.ReadFile(configFile)
 	if err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err)
 		os.Exit(1)
 	}
 
 	cfg, err := mergeYmlFlagConfigs(yml)
 	if err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err)
 		os.Exit(1)
 	}
 
@@ -63,14 +66,14 @@ func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 	for _, fw := range fws.Frameworks() {
 		loaded, err := fw.Yaml().Load(yml)
 		if err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err)
 			os.Exit(1)
 		}
 		if !loaded {
 			continue
 		}
 		if err := fw.LoadResults(); err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err)
 			os.Exit(1)
 		}
 		activeFws = append(activeFws, fw)

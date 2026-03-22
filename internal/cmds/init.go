@@ -29,7 +29,7 @@ func initCommand() {
 
 	marshal, err := yaml.Marshal(config.Init())
 	if err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err)
 		os.Exit(1)
 	}
 
@@ -42,7 +42,7 @@ func initCommand() {
 
 		fwMarshal, err := yaml.Marshal(fwsMap[fw].Yaml().Init())
 		if err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err)
 			os.Exit(1)
 		}
 
@@ -50,7 +50,7 @@ func initCommand() {
 	}
 
 	if err := os.WriteFile(marvYml, marshal, 0644); err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err)
 		os.Exit(1)
 	}
 }
