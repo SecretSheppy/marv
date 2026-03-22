@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/pkg/garlic"
 	"github.com/SecretSheppy/marv/pkg/mutations"
 	"github.com/SecretSheppy/marv/pkg/vineflower"
 	"github.com/aymanbagabas/go-udiff"
@@ -25,6 +26,7 @@ type YamlConfig struct {
 	SrcCodePath  string `yaml:"src-code-path"`
 	SrcClassPath string `yaml:"src-class-path"`
 	MutClassPath string `yaml:"mut-class-path"`
+	Decompiler   string `yaml:"decompiler"`
 }
 
 // YamlWrapper used to load the pitest configuration from the .marv.yml file.
@@ -98,7 +100,16 @@ type Pitest struct {
 }
 
 func NewPitest() *Pitest {
-	return &Pitest{yml: &YamlWrapper{}, dcomp: &vineflower.Vineflower{}}
+	return &Pitest{yml: &YamlWrapper{}}
+}
+
+func (p *Pitest) SetDecompiler() {
+	switch strings.ToLower(p.yml.Cfg.Decompiler) {
+	case "garlic":
+		p.dcomp = &garlic.Garlic{}
+	default:
+		p.dcomp = &vineflower.Vineflower{}
+	}
 }
 
 func (p *Pitest) Meta() *fwlib.Meta {
@@ -157,6 +168,8 @@ func (p *Pitest) TransformResults() error {
 	}
 	indexBar.Finish()
 	fmt.Println()
+
+	log.Info().Msgf("%s - using %s", p.Meta().Name, p.dcomp)
 
 	transformBar := progressbar.NewOptions(
 		len(msMap),
