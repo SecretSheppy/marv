@@ -37,6 +37,10 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 	return y.Cfg.Src != "" || y.Cfg.JsonDir != "", nil
 }
 
+func (y *YamlWrapper) SourceCodeDir() string {
+	return y.Cfg.Src
+}
+
 // Evaluation marshals to evaluation.json from the mutest output data
 type Evaluation struct {
 	MutationRuns []*MutationRuns `json:"mutation_runs"`

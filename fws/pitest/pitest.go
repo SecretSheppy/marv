@@ -45,6 +45,10 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 	return y.Cfg.XmlPath != "" || y.Cfg.SrcCodePath != "" || y.Cfg.SrcClassPath != "" || y.Cfg.MutClassPath != "", nil
 }
 
+func (y *YamlWrapper) SourceCodeDir() string {
+	return y.Cfg.SrcCodePath
+}
+
 // Mutation is a struct that can accept the pitest xml output.
 type Mutation struct {
 	Detected          bool             `xml:"detected,attr"`

@@ -26,6 +26,7 @@ type Decompiling interface {
 type FWConfig interface {
 	Init() interface{}
 	Load(yml []byte) (bool, error)
+	SourceCodeDir() string
 }
 
 // Framework defines what methods an extension must have in order to interact with the marv system.
