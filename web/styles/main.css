@@ -24,5 +24,11 @@ tr {
 }
 
 .highlight {
-    background: red !important;
+    &.red {
+        background: red !important;
+    }
+
+    &.green {
+        background: green !important ;
+    }
 }

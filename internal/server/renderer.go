@@ -160,6 +160,16 @@ func (r *Renderer) conflict(c *mutations.Conflict) (*renderedConflict, error) {
 
 func (r *Renderer) mutation(start, end int, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
+	buff.WriteString(fmt.Sprintf("<tbody data-mutation-desc=\"%s\">", m.Name))
+
+	for i := start; i < m.Starts.Line; i++ {
+		line, err := r.highlight.HighlightLine(i)
+		if err != nil {
+			return "", err
+		}
+		r.codeline(&buff, i+1, LineEqual, line)
+	}
+
 	for i := m.Starts.Line; i <= m.Ends.Line; i++ {
 		var pre, post string
 		diff := r.lines[i]
@@ -184,16 +194,47 @@ func (r *Renderer) mutation(start, end int, m *mutations.Mutation) (string, erro
 				lines[j] = line[19 : len(line)-7]
 			}
 		}
-		code := fmt.Sprintf("%s<span class=\"highlight\">%s</span>%s", lines[0], lines[1], lines[2])
+		code := fmt.Sprintf("%s<span class=\"highlight red\">%s</span>%s", lines[0], lines[1], lines[2])
 		r.codeline(&buff, i+1, LineRemoved, code)
 	}
 
-	// TODO: highlight inserted lines
+	mutLines := make([]string, 0)
+	for line := range strings.Lines(m.Source) {
+		mutLines = append(mutLines, strings.ReplaceAll(line, "\n", ""))
+	}
+	for i, diff := range mutLines {
+		var pre, post string
+		if i == len(mutLines)-1 { // NOTE: last mutated line
+			post = r.lines[m.Ends.Line][m.Ends.Char:]
+		}
+		if i == 0 { // NOTE: first mutated line
+			pre = r.lines[m.Starts.Line][:m.Starts.Char]
+		}
+		hl, err := highlighter.NewHighlighter(r.highlight.Lang(), []string{pre, diff, post}, r.highlight.Style())
+		if err != nil {
+			return "", err
+		}
+		lines, err := hl.HighlightLines(0, 2)
+		if err != nil {
+			return "", err
+		}
+		for j := 0; j < len(lines); j++ {
+			if line := lines[j]; line != "" {
+				lines[j] = line[19 : len(line)-7]
+			}
+		}
+		code := fmt.Sprintf("%s<span class=\"highlight green\">%s</span>%s", lines[0], lines[1], lines[2])
+		r.codeline(&buff, 0, LineInserted, code)
+	}
 
-	// TODO: pad (if necessary) with lines from before and after the mutation so that it is the same lines as the
-	//  conflict.
+	for i := m.Ends.Line; i < end; i++ {
+		line, err := r.highlight.HighlightLine(i)
+		if err != nil {
+			return "", err
+		}
+		r.codeline(&buff, i+1, LineEqual, line)
+	}
 
-	// FIXME: all mutant blocks require same size to make sense
-	//str := fmt.Sprintf("<tr><td>desc: %s, mutant: \"%s\"</td></tr>", m.Name, m.Source)
+	buff.WriteString("</tbody>")
 	return buff.String(), nil
 }

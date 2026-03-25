@@ -52,7 +52,7 @@ func rootCommand() {
 
 	// TODO: highlighter cannot currently deal with mutations that insert or replace more than one line...
 	//  might be best to deal with this in the actual html formatting.
-	fw0 := activeFws[0]
+	fw0 := activeFws[1]
 	for k, cs := range fw0.Mutations() {
 		data, err := os.ReadFile(path.Join(fw0.Yaml().SourceCodeDir(), k))
 		if err != nil {
