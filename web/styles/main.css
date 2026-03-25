@@ -1,0 +1,28 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+*:not(dialog) {
+    margin: 0;
+}
+
+.code {
+    font-family: monospace;
+    width: 100%;
+    border-collapse: collapse;
+    white-space: break-spaces;
+    font-size: 0.83rem;
+}
+
+tr {
+    height: 20px;
+}
+
+.ln {
+    text-align: right;
+    color: gray;
+}
+
+.highlight {
+    background: red !important;
+}

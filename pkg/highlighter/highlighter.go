@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/formatters/html"
@@ -49,6 +50,16 @@ func NewHighlighter(lang string, lines []string, style *chroma.Style) (*Highligh
 	return h, nil
 }
 
+// Lang returns the highlighters language
+func (h *Highlighter) Lang() string {
+	return h.lang
+}
+
+// Style returns the highlighters chroma style
+func (h *Highlighter) Style() *chroma.Style {
+	return h.style
+}
+
 // CSS returns the formatted CSS classes for the chroma highlighting without being wrapped in <style> tags.
 func (h *Highlighter) CSS() (string, error) {
 	var result bytes.Buffer
@@ -67,7 +78,8 @@ func (h *Highlighter) highlightStr(line string) (string, error) {
 	if err := h.formatter.Format(&result, h.style, iterator); err != nil {
 		return "", err
 	}
-	highlighted := result.String()
+	// NOTE: necessary because chroma adds new \n characters into its output
+	highlighted := strings.ReplaceAll(result.String(), "\n", "")
 	return highlighted[26 : len(highlighted)-13], nil
 }
 
@@ -80,8 +92,8 @@ func (h *Highlighter) HighlightLine(line int) (string, error) {
 // HighlightLines calls HighlightLine over a range of lines and returns a list of the results.
 func (h *Highlighter) HighlightLines(start, end int) ([]string, error) {
 	var err error
-	lines := make([]string, end-start)
-	for line := start; line < end; line++ {
+	lines := make([]string, end-start+1)
+	for line := start; line <= end; line++ {
 		lines[line], err = h.HighlightLine(line)
 		if err != nil {
 			return nil, err

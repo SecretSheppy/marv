@@ -194,12 +194,12 @@ func streamlineMutation(m *Mutation) (*mutations.Mutation, error) {
 		Name:     m.DisplayName,
 		OpDesc:   m.MutationOp,
 		Starts: &mutations.Range{
-			Line: m.Location.Begin[0],
-			Char: m.Location.Begin[1],
+			Line: m.Location.Begin[0] - 1, // NOTE: line numbers start from 1 in mutest-rs, but marv indexes from 0
+			Char: m.Location.Begin[1] - 1,
 		},
 		Ends: &mutations.Range{
-			Line: m.Location.End[0],
-			Char: m.Location.End[1],
+			Line: m.Location.End[0] - 1,
+			Char: m.Location.End[1] - 1,
 		},
 		Type:   mutations.Replacement, // for now all mutest does is replacement
 		Source: m.Substitutions[0].Substitution.Replacement,
@@ -212,6 +212,8 @@ func getMutationStatus(id int, ev *Evaluation) (mutations.Status, error) {
 	}
 	status := mutations.Survived
 	switch ev.MutationRuns[0].DetectionMatrix.OverallDetections[id-1] {
+	case '.':
+		status = mutations.NoCoverage
 	case 'D':
 		status = mutations.Killed
 	case 'T':

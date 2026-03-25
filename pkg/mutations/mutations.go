@@ -1,5 +1,9 @@
 package mutations
 
+import (
+	"sort"
+)
+
 // Status represents the outcome of a mutation.
 type Status string
 
@@ -77,6 +81,12 @@ func (c *Conflict) Append(m *Mutation) {
 
 // Conflicts is a slice of Conflict instances.
 type Conflicts []*Conflict
+
+func (c Conflicts) Sort() {
+	sort.Slice(c, func(i, j int) bool {
+		return c[i].StartLine < c[j].StartLine
+	})
+}
 
 // Mutations is a map of file names to groups of conflicting mutations.
 type Mutations map[string]Conflicts
