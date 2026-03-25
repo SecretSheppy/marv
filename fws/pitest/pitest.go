@@ -42,6 +42,9 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 	if err := yaml.Unmarshal(yml, y); err != nil {
 		return false, err
 	}
+	if y.Cfg == nil {
+		return false, nil
+	}
 	return y.Cfg.XmlPath != "" || y.Cfg.SrcCodePath != "" || y.Cfg.SrcClassPath != "" || y.Cfg.MutClassPath != "", nil
 }
 
