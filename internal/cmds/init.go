@@ -29,7 +29,7 @@ func initCommand() {
 
 	marshal, err := yaml.Marshal(config.Init())
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("Failed to marshal marv config")
 		os.Exit(1)
 	}
 
@@ -42,7 +42,7 @@ func initCommand() {
 
 		fwMarshal, err := yaml.Marshal(fwsMap[fw].Yaml().Init())
 		if err != nil {
-			log.Fatal().Err(err)
+			log.Fatal().Err(err).Str("framework", fw).Msg("Failed to marshal framework config")
 			os.Exit(1)
 		}
 
@@ -50,7 +50,7 @@ func initCommand() {
 	}
 
 	if err := os.WriteFile(marvYml, marshal, 0644); err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("Failed to write config file")
 		os.Exit(1)
 	}
 }
