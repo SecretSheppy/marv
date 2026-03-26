@@ -8,7 +8,7 @@ import (
 
 type Garlic struct{}
 
-func (g *Garlic) GarlicPath() string {
+func (g *Garlic) ExePath() string {
 	dir := os.Getenv("LIB_PATH")
 	if dir == "" {
 		wd, _ := os.Getwd()
@@ -21,11 +21,11 @@ func (g *Garlic) Setup() error    { return nil }
 func (g *Garlic) Teardown() error { return nil }
 
 func (g *Garlic) Decompile(p string) ([]byte, error) {
-	cmd := exec.Command(g.GarlicPath(), p)
+	cmd := exec.Command(g.ExePath(), p)
 	cmd.Env = os.Environ()
 	return cmd.Output()
 }
 
 func (g *Garlic) String() string {
-	return g.GarlicPath()
+	return g.ExePath()
 }

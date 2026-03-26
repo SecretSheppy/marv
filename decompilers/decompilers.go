@@ -10,6 +10,8 @@ import (
 
 // Decompiler describes an object that can be used to decompile a binary.
 type Decompiler interface {
+	// ExePath returns the executable path for the decompiler object.
+	ExePath() string
 	// Setup performs any necessary setup for the decompiler.
 	Setup() error
 	// Teardown performs any necessary teardown for the decompiler.

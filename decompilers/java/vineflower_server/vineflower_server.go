@@ -18,7 +18,7 @@ type VFServer struct {
 	cmd *exec.Cmd
 }
 
-func (v *VFServer) JarPath() string {
+func (v *VFServer) ExePath() string {
 	dir := os.Getenv("LIB_PATH")
 	if dir == "" {
 		wd, _ := os.Getwd()
@@ -31,7 +31,7 @@ func (v *VFServer) Setup() error {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	v.cmd = exec.Command("java", "-jar", v.JarPath())
+	v.cmd = exec.Command("java", "-jar", v.ExePath())
 	v.cmd.Env = os.Environ()
 	stdout, err := v.cmd.StdoutPipe()
 	if err != nil {
@@ -74,7 +74,7 @@ func (v *VFServer) Decompile(p string) ([]byte, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("%s returned status %d", v.JarPath(), resp.StatusCode))
+		return nil, errors.New(fmt.Sprintf("%s returned status %d", v.ExePath(), resp.StatusCode))
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -91,5 +91,5 @@ func (v *VFServer) Decompile(p string) ([]byte, error) {
 }
 
 func (v *VFServer) String() string {
-	return v.JarPath()
+	return v.ExePath()
 }
