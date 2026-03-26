@@ -41,7 +41,7 @@ func (r *Renderer) render() ([]byte, error) {
 		err  error
 	)
 
-	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get("monokai"))
+	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get("darcula"))
 	if err != nil {
 		return nil, err
 	}
