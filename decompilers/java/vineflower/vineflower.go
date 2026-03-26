@@ -1,7 +1,6 @@
 package vineflower
 
 import (
-	"os"
 	"os/exec"
 	"path"
 
@@ -9,6 +8,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Vineflower is a decompiler that directly calls the vineflower.jar and reads the decompiled code from stdout. This
+// process is very slow, but it does work well and was the first decompiler method implemented.
+//
 // Deprecated: VFServer is now the intended Vineflower decompiler for Marv. This still works but is very, very slow.
 type Vineflower struct{}
 
@@ -24,9 +26,7 @@ func (v *Vineflower) Setup() error {
 func (v *Vineflower) Teardown() error { return nil }
 
 func (v *Vineflower) Decompile(p string) ([]byte, error) {
-	cmd := exec.Command("java", "-jar", v.ExePath(), "--log-level=error", p)
-	cmd.Env = os.Environ()
-	return cmd.Output()
+	return exec.Command("java", "-jar", v.ExePath(), "--log-level=error", p).Output()
 }
 
 func (v *Vineflower) String() string {

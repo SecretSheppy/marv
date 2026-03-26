@@ -16,6 +16,9 @@ import (
 	"github.com/SecretSheppy/marv/decompilers/dcomplib"
 )
 
+// VFServer is a decompiler that utilizes the Vineflower decompiler but calls it through http requests to the
+// vineflower-server process that I wrote for Marv. This process is slower than Garlic, but not by that much. Due to
+// its great compatibility, this is the default Java decompiler that Marv will use.
 type VFServer struct {
 	cmd *exec.Cmd
 }
