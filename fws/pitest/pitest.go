@@ -10,10 +10,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/SecretSheppy/marv/decompilers"
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/pkg/garlic"
 	"github.com/SecretSheppy/marv/pkg/mutations"
-	"github.com/SecretSheppy/marv/pkg/vineflower"
 	"github.com/aymanbagabas/go-udiff"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
@@ -92,18 +91,12 @@ type PitXML struct {
 	Mutations []*Mutation `xml:"mutation"`
 }
 
-// JavaDecompiler describes an object that can be used to decompile the java bytecode.
-type JavaDecompiler interface {
-	// Decompile takes a string path to a file and returns the decompiled bytes of that file or an error.
-	Decompile(path string) ([]byte, error)
-}
-
 // Pitest is the Framework object for the pitest library.
 type Pitest struct {
 	yml   *YamlWrapper
 	muts  []*Mutation
 	ms    mutations.Mutations
-	dcomp JavaDecompiler
+	dcomp decompilers.Decompiler
 }
 
 func NewPitest() *Pitest {
@@ -111,12 +104,7 @@ func NewPitest() *Pitest {
 }
 
 func (p *Pitest) SetDecompiler() {
-	switch strings.ToLower(p.yml.Cfg.Decompiler) {
-	case "garlic":
-		p.dcomp = &garlic.Garlic{}
-	default:
-		p.dcomp = &vineflower.Vineflower{}
-	}
+	p.dcomp = decompilers.JavaDecompiler(p.yml.Cfg.Decompiler)
 }
 
 func (p *Pitest) Meta() *fwlib.Meta {
@@ -178,6 +166,9 @@ func (p *Pitest) TransformResults() error {
 
 	log.Info().Msgf("%s - using %s", p.Meta().Name, p.dcomp)
 
+	if err := p.dcomp.Setup(); err != nil {
+		return err
+	}
 	transformBar := progressbar.NewOptions(
 		len(msMap),
 		progressbar.OptionSetWriter(os.Stdout),
@@ -187,8 +178,7 @@ func (p *Pitest) TransformResults() error {
 	p.transformMutations(msMap, transformBar)
 	transformBar.Finish()
 	fmt.Println()
-
-	return nil
+	return p.dcomp.Teardown()
 }
 
 // groups mutations by class name (so all mutations of the same file will be grouped together)
@@ -232,7 +222,7 @@ type TransformWorkerResult struct {
 	Error     error
 }
 
-func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- TransformWorkerResult, wg *sync.WaitGroup, cfg *YamlConfig, bar *progressbar.ProgressBar, dcomp JavaDecompiler) {
+func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- TransformWorkerResult, wg *sync.WaitGroup, cfg *YamlConfig, bar *progressbar.ProgressBar, dcomp decompilers.Decompiler) {
 	defer wg.Done()
 
 	for job := range jobs {
