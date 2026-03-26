@@ -4,8 +4,11 @@ import (
 	"os"
 	"os/exec"
 	"path"
+
+	"github.com/rs/zerolog/log"
 )
 
+// Deprecated: VFServer is now the intended Vineflower decompiler for Marv. This still works but is very, very slow.
 type Vineflower struct{}
 
 func (v *Vineflower) JarPath() string {
@@ -16,6 +19,13 @@ func (v *Vineflower) JarPath() string {
 	}
 	return path.Join(dir, "vineflower.jar")
 }
+
+func (v *Vineflower) Setup() error {
+	log.Warn().Msg("vineflower (standalone) decompiler support deprecated, decompiling will be slow.")
+	return nil
+}
+
+func (v *Vineflower) Teardown() error { return nil }
 
 func (v *Vineflower) Help() ([]byte, error) {
 	cmd := exec.Command("java", "-jar", v.JarPath(), "--help")

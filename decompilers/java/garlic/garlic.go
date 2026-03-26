@@ -17,6 +17,9 @@ func (g *Garlic) GarlicPath() string {
 	return path.Join(dir, "garlic")
 }
 
+func (g *Garlic) Setup() error    { return nil }
+func (g *Garlic) Teardown() error { return nil }
+
 func (g *Garlic) Decompile(p string) ([]byte, error) {
 	cmd := exec.Command(g.GarlicPath(), p)
 	cmd.Env = os.Environ()
