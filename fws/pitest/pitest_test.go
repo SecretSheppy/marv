@@ -158,6 +158,9 @@ func TestPitest_LoadResults(t *testing.T) {
 // MockDecompiler reads and returns a file. It is used to read a java test file from the repositories test directory.
 type MockDecompiler struct{}
 
+func (m *MockDecompiler) ExePath() string { return "MockDecompiler" }
+func (m *MockDecompiler) Setup() error    { return nil }
+func (m *MockDecompiler) Teardown() error { return nil }
 func (m *MockDecompiler) Decompile(p string) ([]byte, error) {
 	return os.ReadFile(p)
 }
