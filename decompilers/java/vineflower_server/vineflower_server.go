@@ -12,6 +12,8 @@ import (
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/SecretSheppy/marv/decompilers/dcomplib"
 )
 
 type VFServer struct {
@@ -19,12 +21,7 @@ type VFServer struct {
 }
 
 func (v *VFServer) ExePath() string {
-	dir := os.Getenv("LIB_PATH")
-	if dir == "" {
-		wd, _ := os.Getwd()
-		dir = path.Join(wd, "lib")
-	}
-	return path.Join(dir, "vineflower-server.jar")
+	return path.Join(dcomplib.ExeBasePath(), "vineflower-server.jar")
 }
 
 func (v *VFServer) Setup() error {

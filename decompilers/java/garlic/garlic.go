@@ -4,17 +4,14 @@ import (
 	"os"
 	"os/exec"
 	"path"
+
+	"github.com/SecretSheppy/marv/decompilers/dcomplib"
 )
 
 type Garlic struct{}
 
 func (g *Garlic) ExePath() string {
-	dir := os.Getenv("LIB_PATH")
-	if dir == "" {
-		wd, _ := os.Getwd()
-		dir = path.Join(wd, "lib")
-	}
-	return path.Join(dir, "garlic")
+	return path.Join(dcomplib.ExeBasePath(), "garlic")
 }
 
 func (g *Garlic) Setup() error    { return nil }
