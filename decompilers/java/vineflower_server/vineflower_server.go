@@ -9,11 +9,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/SecretSheppy/marv/decompilers/dcomplib"
+	"github.com/rs/zerolog/log"
 )
 
 // VFServer is a decompiler that utilizes the Vineflower decompiler but calls it through http requests to the
@@ -53,6 +56,16 @@ func (v *VFServer) Setup() error {
 	}()
 
 	wg.Wait()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		_ = <-sigs
+		if err := v.Teardown(); err != nil {
+			log.Error().Err(err).Msgf("Failed to kill subprocess %s", v.ExePath())
+		}
+	}()
+
 	return nil
 }
 
