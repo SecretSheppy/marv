@@ -2,22 +2,20 @@ package pitest
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"os"
 	"path"
-	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/SecretSheppy/marv/decompilers"
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
-	"github.com/aymanbagabas/go-udiff"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
 )
+
+const FWName = "Pitest"
 
 // YamlConfig represents Pitest's yml config data.
 type YamlConfig struct {
@@ -50,6 +48,9 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 func (y *YamlWrapper) SourceCodeDir() string {
 	return y.Cfg.SrcCodePath
 }
+
+// FileMutations stores all mutants of the same file against the string of the full file path.
+type FileMutations map[string][]*Mutation
 
 // Mutation is a struct that can accept the pitest xml output.
 type Mutation struct {
@@ -103,13 +104,21 @@ func NewPitest() *Pitest {
 	return &Pitest{yml: &YamlWrapper{}}
 }
 
+func (p *Pitest) config() *YamlConfig {
+	return p.yml.Cfg
+}
+
+func (p *Pitest) decompiler() decompilers.Decompiler {
+	return p.dcomp
+}
+
 func (p *Pitest) SetDecompiler() {
 	p.dcomp = decompilers.JavaDecompiler(p.yml.Cfg.Decompiler)
 }
 
 func (p *Pitest) Meta() *fwlib.Meta {
 	return &fwlib.Meta{
-		Name:      "Pitest",
+		Name:      FWName,
 		Extension: "java",
 		URL:       "https://pitest.org/",
 	}
@@ -146,7 +155,7 @@ func (p *Pitest) TransformResults() error {
 		progressbar.OptionSetDescription("[1/3]     grouping"),
 		progressbar.OptionSetRenderBlankState(true),
 		progressbar.OptionShowCount())
-	msMap := p.groupMutations(groupBar)
+	fileMutations := p.groupMutants(groupBar)
 	groupBar.Finish()
 	fmt.Println()
 
@@ -156,7 +165,7 @@ func (p *Pitest) TransformResults() error {
 		progressbar.OptionSetDescription("[2/3]     indexing"),
 		progressbar.OptionSetRenderBlankState(true),
 		progressbar.OptionShowCount())
-	err := p.indexMutations(msMap, indexBar)
+	err := p.indexMutants(fileMutations, indexBar)
 	if err != nil {
 		return err
 	}
@@ -169,189 +178,26 @@ func (p *Pitest) TransformResults() error {
 		return err
 	}
 	transformBar := progressbar.NewOptions(
-		len(msMap),
+		len(fileMutations),
 		progressbar.OptionSetWriter(os.Stdout),
 		progressbar.OptionSetDescription("[3/3] transforming"),
 		progressbar.OptionSetRenderBlankState(true),
 		progressbar.OptionShowCount())
-	p.transformMutations(msMap, transformBar)
+	var errs []error
+	p.ms, errs = transform(p, fileMutations, transformBar)
+	// NOTE: perform stdout cleanup before printing errors.
 	transformBar.Finish()
 	fmt.Println()
+	if len(errs) > 0 {
+		for _, err := range errs {
+			err.(*transformError).log()
+		}
+	}
 	return p.dcomp.Teardown()
 }
 
-// groups mutations by class name (so all mutations of the same file will be grouped together)
-func (p *Pitest) groupMutations(bar *progressbar.ProgressBar) map[string][]*Mutation {
-	msMap := make(map[string][]*Mutation)
-	for _, m := range p.muts {
-		msMap[m.SourceCodePath()] = append(msMap[m.SourceCodePath()], m)
-		bar.Add(1)
-	}
-	return msMap
-}
-
-func (p *Pitest) indexMutations(msMap map[string][]*Mutation, bar *progressbar.ProgressBar) error {
-	for _, ms := range msMap {
-		for _, m := range ms {
-			for i := 0; i < len(ms); i++ {
-				details := fmt.Sprintf("%d/details.txt", i)
-				txtpth := path.Join(p.yml.Cfg.MutClassPath, m.MutantExportDir(), details)
-				data, err := os.ReadFile(txtpth)
-				if err != nil {
-					return err
-				}
-				vals := fmt.Sprintf("lineNumber=%d, description=%s", m.LineNumber, m.Description)
-				if strings.Contains(string(data), vals) {
-					m.MutationIndex = i
-					break
-				}
-			}
-			bar.Add(1)
-		}
-	}
-	return nil
-}
-
-type TransformWorkerJob struct {
-	Mutations []*Mutation
-}
-
-type TransformWorkerResult struct {
-	Mutations mutations.Mutations
-	Error     error
-}
-
-func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- TransformWorkerResult, wg *sync.WaitGroup, cfg *YamlConfig, bar *progressbar.ProgressBar, dcomp decompilers.Decompiler) {
-	defer wg.Done()
-
-	for job := range jobs {
-
-		// NOTE: Errors will be printed into stderr but will not interrupt the main process. Files for which this
-		// process fails will just be left out of the visualizations.
-		srcCodePath := path.Join(cfg.SrcCodePath, job.Mutations[0].SourceCodePath())
-		rawSrcCode, err := os.ReadFile(srcCodePath)
-		if err != nil {
-			results <- TransformWorkerResult{
-				Error: errors.New("failed to process mutations for " + srcCodePath),
-			}
-			bar.Add(1)
-			continue
-		}
-
-		var srcCodeLines []string
-		lines := strings.Lines(string(rawSrcCode))
-		for line := range lines {
-			srcCodeLines = append(srcCodeLines, line)
-		}
-
-		// Cache the decompiled class files where they can be reused.
-		decompiled := make(map[string]string)
-
-		ms := make(mutations.Mutations)
-		// Adds the mutation to the mutations map.
-		appendMutation := func(pth string, mu *mutations.Mutation) {
-			added := false
-			for _, c := range ms[pth] {
-				if c.Conflicts(mu) {
-					c.Append(mu)
-					added = true
-					break
-				}
-			}
-
-			if !added {
-				ms[pth] = append(ms[pth], mutations.NewConflict(mu))
-			}
-		}
-
-		for _, m := range job.Mutations {
-			srcClassPath := path.Join(cfg.SrcClassPath, m.SourceClassPath())
-			if decompiled[srcClassPath] == "" {
-				result, err := dcomp.Decompile(srcClassPath)
-				if err != nil {
-					// FIXME: handle this error
-					panic(err)
-				}
-				decompiled[srcClassPath] = string(result)
-			}
-
-			mutClassPath := path.Join(cfg.MutClassPath, m.MutatedClassPath())
-			mutated, err := dcomp.Decompile(mutClassPath)
-			if err != nil {
-				// FIXME: handle this error
-				panic(err)
-			}
-
-			edits := udiff.Strings(decompiled[srcClassPath], string(mutated))
-			d, err := udiff.ToUnifiedDiff("old", "new", decompiled[srcClassPath], edits, 0)
-			if err != nil {
-				// FIXME: handle this error
-				panic(err)
-			}
-
-			rmlines := 0
-			builder := strings.Builder{}
-			for _, h := range d.Hunks {
-				if strings.Contains(h.Lines[0].Content, "import") {
-					continue
-				}
-				for _, l := range h.Lines {
-					switch l.Kind {
-					case udiff.Delete:
-						rmlines++
-					case udiff.Insert, udiff.Equal:
-						builder.WriteString(l.Content)
-					}
-				}
-			}
-
-			// NOTE: m.LineNumber is technically the first line removed in rmlines, so hence the -2 here and -1 in
-			// the below mutations.Range.
-			srcEndLine := srcCodeLines[m.LineNumber+rmlines-2]
-			mutant := streamlineMutation(
-				m,
-				&mutations.Range{Line: m.LineNumber - 1},
-				&mutations.Range{Line: m.LineNumber + rmlines - 2, Char: len(srcEndLine) - 1})
-			mutant.Source = builder.String()
-			appendMutation(m.SourceCodePath(), mutant)
-		}
-
-		results <- TransformWorkerResult{Mutations: ms}
-		bar.Add(1)
-	}
-}
-
-func (p *Pitest) transformMutations(ms map[string][]*Mutation, bar *progressbar.ProgressBar) {
-	numWorkers := runtime.NumCPU()
-	jobs := make(chan TransformWorkerJob, len(ms))
-	results := make(chan TransformWorkerResult, len(ms))
-
-	var wg sync.WaitGroup
-	for i := 0; i < numWorkers; i++ {
-		wg.Add(1)
-		go transformMutationsWorker(jobs, results, &wg, p.yml.Cfg, bar, p.dcomp)
-	}
-
-	for _, fileMutations := range ms {
-		jobs <- TransformWorkerJob{Mutations: fileMutations}
-	}
-	close(jobs)
-
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	p.ms = make(mutations.Mutations)
-	for result := range results {
-		if result.Error != nil {
-			// FIXME: this is not printing errors
-			log.Error().Err(result.Error)
-		}
-		for k, v := range result.Mutations {
-			p.ms[k] = v
-		}
-	}
+func (p *Pitest) Mutations() mutations.Mutations {
+	return p.ms
 }
 
 func streamlineMutation(m *Mutation, starts, ends *mutations.Range) *mutations.Mutation {
@@ -362,8 +208,4 @@ func streamlineMutation(m *Mutation, starts, ends *mutations.Range) *mutations.M
 		Starts: starts,
 		Ends:   ends,
 	}
-}
-
-func (p *Pitest) Mutations() mutations.Mutations {
-	return p.ms
 }
