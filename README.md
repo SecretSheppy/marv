@@ -33,3 +33,8 @@ listed below, hence the large number of currently not supported frameworks.
 | [mutant](https://github.com/mbj/mutant)                       | Ruby       |   🚫    |                   |                                                                                                                                                                                                                |                                                                                                                                                    |
 | [mutest-rs](https://github.com/zalanlevai/mutest-rs)          | Rust       |   🏆    | pre&#8209;release | Native                                                                                                                                                                                                         |                                                                                                                                                    |
 | [muter](https://github.com/muter-mutation-testing/muter)      | Swift      |   🚫    |                   |                                                                                                                                                                                                                |                                                                                                                                                    |
+
+## Pitest
+
+> [!CAUTION]
+> The `garlic` decompiler is currently unstable and using it could cause some mutants to be skipped due to a segmentation fault that occurs when running `garlic` on some class files.

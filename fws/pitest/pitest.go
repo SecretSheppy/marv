@@ -139,7 +139,6 @@ func (p *Pitest) LoadResults() error {
 
 func (p *Pitest) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", p.Meta().Name)
-	log.Warn().Msgf("%s - mutations of status NO_COVERAGE will not be decompiled", p.Meta().Name)
 
 	groupBar := progressbar.NewOptions(
 		len(p.muts),
@@ -266,26 +265,14 @@ func transformMutationsWorker(jobs <-chan TransformWorkerJob, results chan<- Tra
 		}
 
 		for _, m := range job.Mutations {
-			srcLine := srcCodeLines[m.LineNumber-1]
-
-			// NOTE: Ignore mutations with status NO_COVERAGE in order to save time. Marv is not useful where there is
-			// no coverage, so this does not affect the quality of its visualizations.
-			if m.Status == mutations.NoCoverage {
-				appendMutation(m.SourceCodePath(), streamlineMutation(
-					m,
-					&mutations.Range{Line: m.LineNumber - 1},
-					&mutations.Range{Line: m.LineNumber - 1, Char: len(srcLine) - 1}))
-				continue
-			}
-
 			srcClassPath := path.Join(cfg.SrcClassPath, m.SourceClassPath())
 			if decompiled[srcClassPath] == "" {
-				dcomp, err := dcomp.Decompile(srcClassPath)
+				result, err := dcomp.Decompile(srcClassPath)
 				if err != nil {
 					// FIXME: handle this error
 					panic(err)
 				}
-				decompiled[srcClassPath] = string(dcomp)
+				decompiled[srcClassPath] = string(result)
 			}
 
 			mutClassPath := path.Join(cfg.MutClassPath, m.MutatedClassPath())

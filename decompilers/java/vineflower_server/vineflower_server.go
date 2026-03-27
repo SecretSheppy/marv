@@ -63,6 +63,10 @@ func (v *VFServer) Teardown() error {
 	return nil
 }
 
+type VFServerErrorResponse struct {
+	Message string `json:"message"`
+}
+
 type VFServerResponse struct {
 	Output map[string]string `json:"output"`
 }
@@ -82,12 +86,25 @@ func (v *VFServer) Decompile(p string) ([]byte, error) {
 		return nil, err
 	}
 
+	errRes := &VFServerErrorResponse{}
+	if err := json.Unmarshal(body, errRes); err != nil {
+		return nil, err
+	}
+	if errRes.Message != "" {
+		return nil, errors.New(errRes.Message)
+	}
+
 	res := &VFServerResponse{}
 	if err := json.Unmarshal(body, res); err != nil {
 		return nil, err
 	}
 
-	return []byte(res.Output[p]), nil
+	var val string
+	for _, val = range res.Output {
+		break
+	}
+
+	return []byte(val), nil
 }
 
 func (v *VFServer) String() string {

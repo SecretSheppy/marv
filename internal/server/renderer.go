@@ -160,7 +160,7 @@ func (r *Renderer) conflict(c *mutations.Conflict) (*renderedConflict, error) {
 
 func (r *Renderer) mutation(start, end int, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
-	buff.WriteString(fmt.Sprintf("<tbody data-mutation-desc=\"%s\">", m.Name))
+	buff.WriteString(fmt.Sprintf("<tbody data-mutation-desc=\"%s\" data-mutation-status\"%s\">", m.Name, m.Status))
 
 	for i := start; i < m.Starts.Line; i++ {
 		line, err := r.highlight.HighlightLine(i)

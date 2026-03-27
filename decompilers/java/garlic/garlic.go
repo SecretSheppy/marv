@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/SecretSheppy/marv/decompilers/dcomplib"
+	"github.com/rs/zerolog/log"
 )
 
 // Garlic is a decompiler that directly calls the garlic executable and reads the decompiled code from stdout. This is
@@ -18,7 +19,11 @@ func (g *Garlic) ExePath() string {
 	return path.Join(dcomplib.ExeBasePath(), "garlic")
 }
 
-func (g *Garlic) Setup() error    { return nil }
+func (g *Garlic) Setup() error {
+	log.Warn().Msgf("garlic decompiler is unstable, using it could cause mutants to be skipped")
+	return nil
+}
+
 func (g *Garlic) Teardown() error { return nil }
 
 func (g *Garlic) Decompile(p string) ([]byte, error) {
