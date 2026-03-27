@@ -163,19 +163,7 @@ func (m *MutestRS) transformResults(bar *progressbar.ProgressBar) (mutations.Mut
 			return nil, err
 		}
 
-		added := false
-		for _, c := range ms[mu.Location.Path] {
-			if c.Conflicts(sl) {
-				c.Append(sl)
-				added = true
-				break
-			}
-		}
-
-		if !added {
-			ms[mu.Location.Path] = append(ms[mu.Location.Path], mutations.NewConflict(sl))
-		}
-
+		ms.Append(mu.Location.Path, sl)
 		bar.Add(1)
 	}
 	return ms, nil

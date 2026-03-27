@@ -96,3 +96,18 @@ func (m Mutations) Merge(b Mutations) {
 		m[k] = v
 	}
 }
+
+func (m Mutations) Append(file string, mutation *Mutation) {
+	added := false
+	for _, c := range m[file] {
+		if c.Conflicts(mutation) {
+			c.Append(mutation)
+			added = true
+			break
+		}
+	}
+
+	if !added {
+		m[file] = append(m[file], NewConflict(mutation))
+	}
+}
