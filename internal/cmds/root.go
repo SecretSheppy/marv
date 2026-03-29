@@ -9,8 +9,8 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
+	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
-	"github.com/SecretSheppy/marv/internal/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -66,14 +66,14 @@ func rootCommand() {
 			lines = append(lines, strings.ReplaceAll(line, "\n", ""))
 		}
 
-		meta := &server.Meta{
+		meta := &html.Meta{
 			StylePaths: []string{"web/styles/main.css"},
 		}
 		if err := meta.MinifyAndCache(); err != nil {
 			log.Fatal().Err(err).Msg("Failed to minify or cache styles and scripts")
 			os.Exit(1)
 		}
-		r := server.NewRenderer(fw0.Meta().Extension, lines, meta, cs)
+		r := html.NewRenderer(fw0.Meta().Extension, lines, meta, cs)
 		var buff bytes.Buffer
 		if err := r.Render(&buff); err != nil {
 			log.Fatal().Err(err).Msg("Failed to render HTML")

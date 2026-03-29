@@ -1,4 +1,4 @@
-package server
+package html
 
 import (
 	"bytes"
@@ -181,18 +181,9 @@ func (r *Renderer) mutation(start, end int, m *mutations.Mutation) (string, erro
 			pre = diff[:m.Starts.Char]
 			diff = diff[m.Starts.Char:]
 		}
-		hl, err := highlighter.NewHighlighter(r.highlight.Lang(), []string{pre, diff, post}, r.highlight.Style())
+		lines, err := r.highlightMutationParts(pre, diff, post)
 		if err != nil {
 			return "", err
-		}
-		lines, err := hl.HighlightLines(0, 2)
-		if err != nil {
-			return "", err
-		}
-		for j := 0; j < len(lines); j++ {
-			if line := lines[j]; line != "" {
-				lines[j] = line[19 : len(line)-7]
-			}
 		}
 		code := fmt.Sprintf("%s<span class=\"highlight red\">%s</span>%s", lines[0], lines[1], lines[2])
 		r.codeline(&buff, i+1, LineRemoved, code)
@@ -210,18 +201,9 @@ func (r *Renderer) mutation(start, end int, m *mutations.Mutation) (string, erro
 		if i == 0 { // NOTE: first mutated line
 			pre = r.lines[m.Starts.Line][:m.Starts.Char]
 		}
-		hl, err := highlighter.NewHighlighter(r.highlight.Lang(), []string{pre, diff, post}, r.highlight.Style())
+		lines, err := r.highlightMutationParts(pre, diff, post)
 		if err != nil {
 			return "", err
-		}
-		lines, err := hl.HighlightLines(0, 2)
-		if err != nil {
-			return "", err
-		}
-		for j := 0; j < len(lines); j++ {
-			if line := lines[j]; line != "" {
-				lines[j] = line[19 : len(line)-7]
-			}
 		}
 		code := fmt.Sprintf("%s<span class=\"highlight green\">%s</span>%s", lines[0], lines[1], lines[2])
 		r.codeline(&buff, 0, LineInserted, code)
@@ -237,4 +219,21 @@ func (r *Renderer) mutation(start, end int, m *mutations.Mutation) (string, erro
 
 	buff.WriteString("</tbody>")
 	return buff.String(), nil
+}
+
+func (r *Renderer) highlightMutationParts(pre, diff, post string) ([]string, error) {
+	hl, err := highlighter.NewHighlighter(r.highlight.Lang(), []string{pre, diff, post}, r.highlight.Style())
+	if err != nil {
+		return nil, err
+	}
+	lines, err := hl.HighlightLines(0, 2)
+	if err != nil {
+		return nil, err
+	}
+	for j := 0; j < len(lines); j++ {
+		if line := lines[j]; line != "" {
+			lines[j] = line[19 : len(line)-7]
+		}
+	}
+	return lines, nil
 }
