@@ -73,7 +73,11 @@ func rootCommand() {
 			log.Fatal().Err(err).Msg("Failed to minify or cache styles and scripts")
 			os.Exit(1)
 		}
-		r := html.NewRenderer(fw0.Meta().Extension, lines, meta, cs)
+		r, err := html.NewRenderer(meta, fw0.Meta().Extension, lines, cs)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to initialize HTML renderer")
+			os.Exit(1)
+		}
 		var buff bytes.Buffer
 		if err := r.Render(&buff); err != nil {
 			log.Fatal().Err(err).Msg("Failed to render HTML")
