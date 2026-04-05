@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/pkg/highlighter"
-	"github.com/SecretSheppy/marv/pkg/mutations"
 	"github.com/alecthomas/chroma/v2/styles"
 )
 

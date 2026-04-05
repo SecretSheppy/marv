@@ -1,7 +1,7 @@
 package fwlib
 
 import (
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
 type Meta struct {

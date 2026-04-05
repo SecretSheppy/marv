@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
 // Renderer produces the entire HTML output that is displayed to the user. It does this by calling and combining the

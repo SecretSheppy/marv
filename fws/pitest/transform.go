@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/SecretSheppy/marv/decompilers"
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/aymanbagabas/go-udiff"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"

@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
