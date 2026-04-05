@@ -106,7 +106,7 @@ func (r *CodeRenderer) renderLine(w *bytes.Buffer, ln int, lt LineDiffType, code
 func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
 	var builder strings.Builder
 	for _, mutation := range c.Mutations {
-		render, err := r.renderMutation(c.StartLine, c.EndLine, mutation)
+		render, err := r.renderMutation(c, mutation)
 		if err != nil {
 			return nil, err
 		}
@@ -119,11 +119,11 @@ func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 	}, nil
 }
 
-func (r *CodeRenderer) renderMutation(start, end int, m *mutations.Mutation) (string, error) {
+func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
-	buff.WriteString(fmt.Sprintf("<tbody data-mutation-desc=\"%s\" data-mutation-status\"%s\">", m.Name, m.Status))
+	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\">", m.ID, c.ID))
 
-	for i := start; i < m.Starts.Line; i++ {
+	for i := c.StartLine; i < m.Start.Line; i++ {
 		line, err := r.highlight.HighlightLine(i)
 		if err != nil {
 			return "", err
@@ -131,16 +131,16 @@ func (r *CodeRenderer) renderMutation(start, end int, m *mutations.Mutation) (st
 		r.renderLine(&buff, i+1, LineEqual, line)
 	}
 
-	for i := m.Starts.Line; i <= m.Ends.Line; i++ {
+	for i := m.Start.Line; i <= m.End.Line; i++ {
 		var pre, post string
 		diff := r.lines[i]
-		if i == m.Ends.Line {
-			post = diff[m.Ends.Char:]
-			diff = diff[:m.Ends.Char]
+		if i == m.End.Line {
+			post = diff[m.End.Char:]
+			diff = diff[:m.End.Char]
 		}
-		if i == m.Starts.Line {
-			pre = diff[:m.Starts.Char]
-			diff = diff[m.Starts.Char:]
+		if i == m.Start.Line {
+			pre = diff[:m.Start.Char]
+			diff = diff[m.Start.Char:]
 		}
 		lines, err := r.highlightMutationParts(pre, diff, post)
 		if err != nil {
@@ -151,16 +151,16 @@ func (r *CodeRenderer) renderMutation(start, end int, m *mutations.Mutation) (st
 	}
 
 	mutLines := make([]string, 0)
-	for line := range strings.Lines(m.Source) {
+	for line := range strings.Lines(m.Replacement) {
 		mutLines = append(mutLines, strings.ReplaceAll(line, "\n", ""))
 	}
 	for i, diff := range mutLines {
 		var pre, post string
 		if i == len(mutLines)-1 { // NOTE: last mutated line
-			post = r.lines[m.Ends.Line][m.Ends.Char:]
+			post = r.lines[m.End.Line][m.End.Char:]
 		}
 		if i == 0 { // NOTE: first mutated line
-			pre = r.lines[m.Starts.Line][:m.Starts.Char]
+			pre = r.lines[m.Start.Line][:m.Start.Char]
 		}
 		lines, err := r.highlightMutationParts(pre, diff, post)
 		if err != nil {
@@ -170,7 +170,7 @@ func (r *CodeRenderer) renderMutation(start, end int, m *mutations.Mutation) (st
 		r.renderLine(&buff, 0, LineInserted, code)
 	}
 
-	for i := m.Ends.Line; i < end; i++ {
+	for i := m.End.Line; i < c.EndLine; i++ {
 		line, err := r.highlight.HighlightLine(i)
 		if err != nil {
 			return "", err

@@ -202,10 +202,10 @@ func (p *Pitest) Mutations() mutations.Mutations {
 
 func streamlineMutation(m *Mutation, starts, ends *mutations.Range) *mutations.Mutation {
 	return &mutations.Mutation{
-		Name:   m.Description,
-		OpDesc: m.Mutator,
-		Status: m.Status,
-		Starts: starts,
-		Ends:   ends,
+		Description: m.Description,
+		Operation:   m.Mutator,
+		Status:      m.Status,
+		Start:       starts,
+		End:         ends,
 	}
 }

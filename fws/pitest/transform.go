@@ -200,7 +200,7 @@ func transformWorker(jobs <-chan transformJob, results chan<- transformResult, e
 				mutant,
 				&mutations.Range{Line: mutant.LineNumber - 1},
 				&mutations.Range{Line: endLineNumber, Char: len(srcEndLine) - 1})
-			sl.Source = builder.String()
+			sl.Replacement = builder.String()
 			ms.Append(mutant.SourceCodePath(), sl)
 		}
 

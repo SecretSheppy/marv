@@ -2,6 +2,8 @@ package mutations
 
 import (
 	"sort"
+
+	"github.com/google/uuid"
 )
 
 // Status represents the outcome of a mutation.
@@ -15,18 +17,6 @@ const (
 	NoCoverage Status = "NO_COVERAGE"
 )
 
-// Modification represents the type of mutation.
-type Modification string
-
-const (
-	Replacement Modification = "REPLACEMENT"
-	Deletion    Modification = "DELETION"
-	Insertion   Modification = "INSERTION"
-	Swap        Modification = "SWAP"
-	Negation    Modification = "NEGATION"
-	Reorder     Modification = "REORDER"
-)
-
 // Range holds a line and char index.
 type Range struct {
 	Line int
@@ -35,25 +25,19 @@ type Range struct {
 
 // Mutation represents a single mutation.
 type Mutation struct {
-	ID       int
-	IDOffset int    // IDOffset used to specify an offset that should be used to acquire the real mutation ID.
-	Name     string // Name functions as the mutations title, it is displayed to the user when they preview the mutation.
-	OpDesc   string // OpDesc is an optional (short) description of the operation.
-	Starts   *Range
-	Ends     *Range
-	Status   Status
-	Type     Modification
-	Source   string
-}
-
-// TrueID returns the mutation id + its id offset. This method exists as marv expects all Mutation.ID's to be indexed
-// from 0, however this altered mutation id would not reflect the true mutation id that was created by the framework.
-func (m *Mutation) TrueID() int {
-	return m.ID + m.IDOffset
+	ID                uuid.UUID
+	FrameworkMutantID string // FrameworkMutantID is an optional identifier provided by a framework.
+	Description       string // Description functions as the mutations title, it is displayed to the user when they preview the mutation.
+	Operation         string // Operation is an optional (short) description of the operation.
+	Start             *Range
+	End               *Range
+	Status            Status
+	Replacement       string
 }
 
 // Conflict represents all mutations that would conflict with each other if they were displayed simultaneously.
 type Conflict struct {
+	ID        uuid.UUID
 	StartLine int
 	EndLine   int
 	Mutations []*Mutation
@@ -61,20 +45,20 @@ type Conflict struct {
 
 func NewConflict(m *Mutation) *Conflict {
 	return &Conflict{
-		StartLine: m.Starts.Line,
-		EndLine:   m.Ends.Line,
+		StartLine: m.Start.Line,
+		EndLine:   m.End.Line,
 		Mutations: []*Mutation{m},
 	}
 }
 
 func (c *Conflict) Conflicts(m *Mutation) bool {
-	return m.Starts.Line >= c.StartLine && m.Starts.Line <= c.EndLine ||
-		m.Ends.Line >= c.StartLine && m.Ends.Line <= c.EndLine
+	return m.Start.Line >= c.StartLine && m.Start.Line <= c.EndLine ||
+		m.End.Line >= c.StartLine && m.End.Line <= c.EndLine
 }
 
 func (c *Conflict) Append(m *Mutation) {
-	if m.Ends.Line > c.EndLine {
-		c.EndLine = m.Ends.Line
+	if m.End.Line > c.EndLine {
+		c.EndLine = m.End.Line
 	}
 	c.Mutations = append(c.Mutations, m)
 }
@@ -109,5 +93,17 @@ func (m Mutations) Append(file string, mutation *Mutation) {
 
 	if !added {
 		m[file] = append(m[file], NewConflict(mutation))
+	}
+}
+
+// GenerateIDs generates UUIDs for all conflicts and mutations
+func (m Mutations) GenerateIDs() {
+	for _, conflicts := range m {
+		for _, conflict := range conflicts {
+			conflict.ID = uuid.New()
+			for _, mutation := range conflict.Mutations {
+				mutation.ID = uuid.New()
+			}
+		}
 	}
 }

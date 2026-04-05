@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/pkg/mutations"
@@ -180,20 +181,18 @@ func streamlineMutation(m *Mutation) (*mutations.Mutation, error) {
 		return nil, errors.New("plugin mutest_rs: Mutation.Location.Substitutions is empty")
 	}
 	return &mutations.Mutation{
-		ID:       m.MutationID - 1, // NOTE: mutest-rs mutation id start from 1, but they are used to index an array from 0
-		IDOffset: 1,
-		Name:     m.DisplayName,
-		OpDesc:   m.MutationOp,
-		Starts: &mutations.Range{
+		FrameworkMutantID: strconv.Itoa(m.MutationID),
+		Description:       m.DisplayName,
+		Operation:         m.MutationOp,
+		Start: &mutations.Range{
 			Line: m.Location.Begin[0] - 1, // NOTE: line numbers start from 1 in mutest-rs, but marv indexes from 0
 			Char: m.Location.Begin[1] - 1,
 		},
-		Ends: &mutations.Range{
+		End: &mutations.Range{
 			Line: m.Location.End[0] - 1,
 			Char: m.Location.End[1] - 1,
 		},
-		Type:   mutations.Replacement, // for now all mutest does is replacement
-		Source: m.Substitutions[0].Substitution.Replacement,
+		Replacement: m.Substitutions[0].Substitution.Replacement,
 	}, nil
 }
 
