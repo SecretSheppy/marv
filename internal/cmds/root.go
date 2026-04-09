@@ -54,7 +54,7 @@ func rootCommand() {
 
 	// TODO: highlighter cannot currently deal with mutations that insert or replace more than one line...
 	//  might be best to deal with this in the actual html formatting.
-	fw0 := activeFws[1]
+	fw0 := activeFws[0]
 	for k, cs := range fw0.Mutations() {
 		data, err := os.ReadFile(path.Join(fw0.Yaml().SourceCodeDir(), k))
 		if err != nil {
@@ -69,7 +69,7 @@ func rootCommand() {
 		}
 
 		meta := &html.Meta{
-			StylePaths: []string{"web/styles/main.css"},
+			StylePaths: []string{"web/styles/main.css", "web/styles/code.css"},
 		}
 		if err := meta.MinifyAndCache(); err != nil {
 			log.Fatal().Err(err).Msg("Failed to minify or cache styles and scripts")

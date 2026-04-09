@@ -1,0 +1,63 @@
+.code {
+    /* NOTE: Transparent diff highlights style inserted/removed lines so the background will have to be set outside
+        of the table. */
+    background: none !important;
+    width: 100%;
+    font-size: var(--code-font-size);
+    font-family: monospace;
+    white-space: break-spaces;
+    border-collapse: collapse; /* TODO: this might need to be changed */
+
+    tr {
+        height: var(--code-line-height);
+
+        &.remove {
+            background: var(--diff-remove);
+
+            .line-number {
+                background: var(--diff-remove-dark)
+            }
+        }
+
+        &.insert {
+            background: var(--diff-insert);
+
+            .line-number {
+                background: var(--diff-insert-dark)
+            }
+        }
+
+        .line-number, .line-type {
+            user-select: none;
+        };
+
+        .line-number {
+            width: 1%;
+            white-space: nowrap;
+            text-align: right;
+            padding: 0 4px 0 16px;
+            color: #b0b0b0;
+        }
+
+        .line-type {
+            width: 26px;
+            text-align: center;
+        }
+
+        .line-content {
+            width: auto;
+
+            .highlight {
+                border-radius: 2px;
+
+                &.remove {
+                    background: var(--diff-inline-remove)
+                }
+
+                &.insert {
+                    background: var(--diff-inline-insert)
+                }
+            }
+        }
+    }
+}

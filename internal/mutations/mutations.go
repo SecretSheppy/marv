@@ -3,6 +3,7 @@ package mutations
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -45,6 +46,10 @@ func (s Status) Icon(colour string) string {
 	return fmt.Sprintf("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\" fill=\"%s\"><!--!"+
 		"Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/lice"+
 		"nse/free Copyright 2026 Fonticons, Inc.-->%s</svg>", colour, svgPath)
+}
+
+func (s Status) Text() string {
+	return strings.ToLower(string(s))
 }
 
 // Range holds a line and char index.

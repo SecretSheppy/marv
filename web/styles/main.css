@@ -1,3 +1,4 @@
+/* Reset */
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -6,29 +7,18 @@
     margin: 0;
 }
 
-.code {
-    font-family: monospace;
-    width: 100%;
-    border-collapse: collapse;
-    white-space: break-spaces;
-    font-size: 0.83rem;
+:root {
+    --code-line-height: 24px;
+    --code-font-size: 0.83rem;
+
+    --diff-remove: rgba(250, 70, 70, 0.15);
+    --diff-remove-dark: rgba(115, 0, 0, 0.33);
+    --diff-inline-remove: rgba(255, 0, 0, 0.45);
+    --diff-insert: rgba(114, 252, 114, 0.15);
+    --diff-insert-dark: rgba(0, 103, 0, 0.43);
+    --diff-inline-insert: rgba(6, 171, 6, 0.42);
 }
 
-tr {
-    height: 20px;
-}
-
-.ln {
-    text-align: right;
-    color: gray;
-}
-
-.highlight {
-    &.red {
-        background: red !important;
-    }
-
-    &.green {
-        background: green !important ;
-    }
+body {
+    background: #2b2b2b;
 }

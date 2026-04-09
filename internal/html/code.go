@@ -34,6 +34,17 @@ func (l LineDiffType) String() string {
 	}
 }
 
+func (l LineDiffType) CSSClass() string {
+	switch l {
+	case LineRemoved:
+		return "remove"
+	case LineInserted:
+		return "insert"
+	default:
+		return ""
+	}
+}
+
 type CodeRenderer struct {
 	ext       string
 	lines     []string
@@ -96,10 +107,14 @@ func (r *CodeRenderer) render() ([]byte, error) {
 }
 
 func (r *CodeRenderer) renderLine(w *bytes.Buffer, ln int, lt LineDiffType, code string) {
-	w.WriteString("<tr>")
-	w.WriteString(fmt.Sprintf("<td class=\"ln\">%d</td>", ln))
-	w.WriteString(fmt.Sprintf("<td class=\"lt\">%s</td>", lt))
-	w.WriteString(fmt.Sprintf("<td class=\"code\">%s</td>", code))
+	w.WriteString(fmt.Sprintf("<tr class=\"%s\">", lt.CSSClass()))
+	w.WriteString("<td class=\"line-number\">")
+	if ln != 0 {
+		w.WriteString(fmt.Sprintf("%d", ln))
+	}
+	w.WriteString("</td>")
+	w.WriteString(fmt.Sprintf("<td class=\"line-type\">%s</td>", lt))
+	w.WriteString(fmt.Sprintf("<td class=\"line-content\">%s</td>", code))
 	w.WriteString("</tr>")
 }
 
@@ -121,7 +136,7 @@ func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 
 func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
-	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\">", m.ID, c.ID))
+	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\">", m.ID, c.ID, m.Status.Text()))
 
 	for i := c.StartLine; i < m.Start.Line; i++ {
 		line, err := r.highlight.HighlightLine(i)
@@ -146,7 +161,7 @@ func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		if err != nil {
 			return "", err
 		}
-		code := fmt.Sprintf("%s<span class=\"highlight red\">%s</span>%s", lines[0], lines[1], lines[2])
+		code := fmt.Sprintf("%s<span class=\"highlight remove\">%s</span>%s", lines[0], lines[1], lines[2])
 		r.renderLine(&buff, i+1, LineRemoved, code)
 	}
 
@@ -166,7 +181,7 @@ func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		if err != nil {
 			return "", err
 		}
-		code := fmt.Sprintf("%s<span class=\"highlight green\">%s</span>%s", lines[0], lines[1], lines[2])
+		code := fmt.Sprintf("%s<span class=\"highlight insert\">%s</span>%s", lines[0], lines[1], lines[2])
 		r.renderLine(&buff, 0, LineInserted, code)
 	}
 
