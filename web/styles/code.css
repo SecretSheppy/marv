@@ -59,5 +59,65 @@
                 }
             }
         }
+
+        td .mutation-header {
+            padding: 6px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+        }
+    }
+}
+
+.status-icon {
+    width: 14px;
+
+    &.killed {
+        fill: var(--status-killed-fg);
+    }
+
+    &.survived {
+        fill: var(--status-survived-fg);
+    }
+
+    &.crashed {
+        fill: var(--status-crashed-fg)
+    }
+
+    &.timeout {
+        fill: var(--status-timeout-fg)
+    }
+
+    &.no_coverage {
+        fill: var(--status-no-coverage-fg)
+    }
+}
+
+.status-wrapper {
+    display: flex;
+    gap: 5px;
+    padding: 5px 10px 5px 5px;
+    border-radius: 15px;
+    height: fit-content;
+
+    &.killed {
+        background: var(--status-killed-bg);
+    }
+
+    &.survived {
+        background: var(--status-survived-bg);
+    }
+
+    &.crashed {
+        background: var(--status-crashed-bg)
+    }
+
+    &.timeout {
+        background: var(--status-timeout-bg)
+    }
+
+    &.no_coverage {
+        background: var(--status-no-coverage-bg)
     }
 }

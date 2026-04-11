@@ -17,6 +17,17 @@
     --diff-insert: rgba(114, 252, 114, 0.15);
     --diff-insert-dark: rgba(0, 103, 0, 0.43);
     --diff-inline-insert: rgba(6, 171, 6, 0.42);
+
+    --status-killed-fg: green;
+    --status-killed-bg: rgba(0, 128, 0, 0.25);
+    --status-survived-fg: red;
+    --status-survived-bg: rgba(255, 0, 0, 0.25);
+    --status-crashed-fg: orange;
+    --status-crashed-bg: rgba(255, 165, 0, 0.25);
+    --status-timeout-fg: yellow;
+    --status-timeout-bg: rgba(255, 255, 0, 0.25);
+    --status-no-coverage-fg: gray;
+    --status-no-coverage-bg: rgba(128, 128, 128, 0.25);
 }
 
 body {

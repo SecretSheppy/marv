@@ -3,6 +3,7 @@ package html
 import (
 	"bytes"
 	"fmt"
+	"html"
 	"strings"
 
 	"github.com/SecretSheppy/marv/internal/mutations"
@@ -137,6 +138,7 @@ func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\">", m.ID, c.ID, m.Status.Text()))
+	r.renderMutationHeader(&buff, m)
 
 	for i := c.StartLine; i < m.Start.Line; i++ {
 		line, err := r.highlight.HighlightLine(i)
@@ -212,4 +214,12 @@ func (r *CodeRenderer) highlightMutationParts(pre, diff, post string) ([]string,
 		}
 	}
 	return lines, nil
+}
+
+func (r *CodeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mutation) {
+	// TODO: round outside corners and inside corners and give it a border etc...
+	buff.WriteString("<tr><td colspan=\"100%\"><div class=\"mutation-header\">")
+	buff.WriteString(m.Status.IconWithText())
+	buff.WriteString(html.EscapeString(m.Description))
+	buff.WriteString("</div></td></tr>")
 }

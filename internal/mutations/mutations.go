@@ -21,8 +21,8 @@ const (
 
 var statusPaths = map[Status]string{
 	Killed: "<path d=\"M256 512a256 256 0 1 1 0-512 256 256 0 1 1 0 512zM374 145.7c-10.7-7.8-25.7-5.4-33.5 5.3L221" +
-		".1315.2 169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 18.8 7s13.4-4.1 17.5-9.8L3" +
-		"79.3 179.2c7.8-10.7 5.4-25.7-5.3-33.5z\"/>",
+		".1 315.2 169 263.1c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l72 72c5 5 11.8 7.5 18.8 7s13.4-4.1 17.5-9.8L" +
+		"379.3 179.2c7.8-10.7 5.4-25.7-5.3-33.5z\"/>",
 	Survived: "<path d=\"M256 512a256 256 0 1 0 0-512 256 256 0 1 0 0 512zM167 167c9.4-9.4 24.6-9.4 33.9 0l55 55 5" +
 		"5-55c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-55 55 55 55c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-55-55" +
 		"-55 55c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l55-55-55-55c-9.4-9.4-9.4-24.6 0-33.9z\"/>",
@@ -37,19 +37,23 @@ var statusPaths = map[Status]string{
 		" 0-17.7-14.3-32-32-32zM224 368a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z\"/>",
 }
 
+func (s Status) Text() string {
+	return strings.ToLower(string(s))
+}
+
 // Icon returns the icon belonging to the respective Status.
-func (s Status) Icon(colour string) string {
+func (s Status) Icon() string {
 	svgPath, exists := statusPaths[s]
 	if !exists {
 		svgPath = statusPaths[NoCoverage]
 	}
-	return fmt.Sprintf("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\" fill=\"%s\"><!--!"+
-		"Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/lice"+
-		"nse/free Copyright 2026 Fonticons, Inc.-->%s</svg>", colour, svgPath)
+	return fmt.Sprintf("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 512 512\" class=\"status-icon %s\">"+
+		"<!--!Font Awesome Free v7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/"+
+		"license/free Copyright 2026 Fonticons, Inc.-->%s</svg>", s.Text(), svgPath)
 }
 
-func (s Status) Text() string {
-	return strings.ToLower(string(s))
+func (s Status) IconWithText() string {
+	return fmt.Sprintf("<div class=\"status-wrapper %s\">%s<p class=\"status-text\">%s</p></div>", s.Text(), s.Icon(), s.Text())
 }
 
 // Range holds a line and char index.
