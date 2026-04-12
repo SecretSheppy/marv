@@ -8,11 +8,20 @@
     white-space: break-spaces;
     border-collapse: collapse; /* TODO: this might need to be changed */
 
+    tbody {
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    /* Styles the main table contents. Lots of embedded classes like .remove and .insert which feature several times
+    to ensure that the class naming approach remains standard whilst still rendering the desired effect. */
     tr {
         height: var(--code-line-height);
 
         &.remove {
-            background: var(--diff-remove);
+            .line-type, .line-content {
+                background: var(--diff-remove);
+            }
 
             .line-number {
                 background: var(--diff-remove-dark)
@@ -20,7 +29,9 @@
         }
 
         &.insert {
-            background: var(--diff-insert);
+            .line-type, .line-content {
+                background: var(--diff-insert);
+            }
 
             .line-number {
                 background: var(--diff-insert-dark)
@@ -59,17 +70,47 @@
                 }
             }
         }
+    }
+
+    td {
+        padding: 0;
+    }
+
+    /* Styling for the mutation <tbody> regions. */
+    tbody.mutation {
+        position: relative;
 
         td .mutation-header {
-            padding: 6px;
             display: flex;
             gap: 10px;
             align-items: center;
             width: 100%;
+            background: #3f3f3f;
+            height: 30px;
+
+            *:not(.spacer) {
+                flex-shrink: 0;
+            }
+
+            .mutation-options {
+                padding: 0 10px 0 0;
+                display: flex;
+                gap: 10px;
+            }
+        }
+
+        tr:first-child {
+            border-top: var(--mutation-border);
+            border-bottom: var(--mutation-border);
+        }
+
+        tr:last-child {
+            border-bottom: var(--mutation-border);
         }
     }
 }
 
+/* colours for the various status icons, set by class */
 .status-icon {
     width: 14px;
 
@@ -94,30 +135,62 @@
     }
 }
 
+/* Provides the coloured status box and left side indicator. Also defines positions of status icon and text */
 .status-wrapper {
     display: flex;
     gap: 5px;
-    padding: 5px 10px 5px 5px;
-    border-radius: 15px;
-    height: fit-content;
+    padding: 0 10px;
+    height: 100%;
+    align-items: center;
+
+    /* Status indicator that spans the entire left hand side of the mutation due to position: relative on the
+    mutation class. */
+    &::before {
+        position: absolute;
+        height: 100%;
+        width: 4px;
+        left: 0;
+        content: "";
+        top: 0;
+    }
 
     &.killed {
         background: var(--status-killed-bg);
+
+        &::before {
+            background: var(--status-killed-fg);
+        }
     }
 
     &.survived {
         background: var(--status-survived-bg);
+
+        &::before {
+            background: var(--status-survived-fg);
+        }
     }
 
     &.crashed {
-        background: var(--status-crashed-bg)
+        background: var(--status-crashed-bg);
+
+        &::before {
+            background: var(--status-crashed-fg);
+        }
     }
 
     &.timeout {
-        background: var(--status-timeout-bg)
+        background: var(--status-timeout-bg);
+
+        &::before {
+            background: var(--status-timeout-fg);
+        }
     }
 
     &.no_coverage {
-        background: var(--status-no-coverage-bg)
+        background: var(--status-no-coverage-bg);
+
+        &::before {
+            background: var(--status-no-coverage-fg);
+        }
     }
 }

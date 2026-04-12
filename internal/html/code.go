@@ -47,14 +47,20 @@ func (l LineDiffType) CSSClass() string {
 }
 
 type CodeRenderer struct {
-	ext       string
-	lines     []string
-	conflicts mutations.Conflicts
-	highlight *highlighter.Highlighter
+	ext, framework, file string
+	lines                []string
+	conflicts            mutations.Conflicts
+	highlight            *highlighter.Highlighter
 }
 
-func NewCodeRenderer(ext string, lines []string, conflicts mutations.Conflicts) (*CodeRenderer, error) {
-	r := &CodeRenderer{ext: ext, lines: lines, conflicts: conflicts}
+func NewCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts) (*CodeRenderer, error) {
+	r := &CodeRenderer{
+		ext:       ext,
+		framework: framework,
+		file:      file,
+		lines:     lines,
+		conflicts: conflicts,
+	}
 	var err error
 	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get("darcula"))
 	return r, err
@@ -137,7 +143,7 @@ func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 
 func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
-	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\">", m.ID, c.ID, m.Status.Text()))
+	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\" class=\"mutation\">", m.ID, c.ID, m.Status.Text()))
 	r.renderMutationHeader(&buff, m)
 
 	for i := c.StartLine; i < m.Start.Line; i++ {
@@ -217,9 +223,10 @@ func (r *CodeRenderer) highlightMutationParts(pre, diff, post string) ([]string,
 }
 
 func (r *CodeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mutation) {
-	// TODO: round outside corners and inside corners and give it a border etc...
 	buff.WriteString("<tr><td colspan=\"100%\"><div class=\"mutation-header\">")
 	buff.WriteString(m.Status.IconWithText())
-	buff.WriteString(html.EscapeString(m.Description))
-	buff.WriteString("</div></td></tr>")
+	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.Description)))
+	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
+	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID))
+	buff.WriteString("</div></div></td></tr>")
 }

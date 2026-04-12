@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 
+	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
@@ -14,8 +15,8 @@ type Renderer struct {
 	code *CodeRenderer
 }
 
-func NewRenderer(meta *Meta, ext string, lines []string, conflicts mutations.Conflicts) (*Renderer, error) {
-	code, err := NewCodeRenderer(ext, lines, conflicts)
+func NewRenderer(meta *Meta, fwMeta *fwlib.Meta, file string, lines []string, conflicts mutations.Conflicts) (*Renderer, error) {
+	code, err := NewCodeRenderer(fwMeta.Extension, fwMeta.Name, file, lines, conflicts)
 	if err != nil {
 		return nil, err
 	}
