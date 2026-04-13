@@ -33,6 +33,8 @@ func exportCommand() {
 			log.Fatal().Err(err).Msg("Failed to transform results")
 			os.Exit(1)
 		}
+
+		fw.Mutations().GenerateIDs()
 	}
 
 	if output != "" {
