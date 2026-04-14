@@ -1,13 +1,14 @@
 package fwlib
 
 import (
+	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
 type Meta struct {
-	Name      string
-	Extension string
-	URL       string
+	Name     string
+	Language languages.Language
+	URL      string
 }
 
 // Runnable interface describes Framework instances that have the ability to re-run the framework to generate a

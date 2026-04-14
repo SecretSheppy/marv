@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
@@ -99,9 +100,9 @@ func NewMutestRS() *MutestRS {
 
 func (m *MutestRS) Meta() *fwlib.Meta {
 	return &fwlib.Meta{
-		Name:      "mutest-rs",
-		Extension: "rs",
-		URL:       "https://github.com/zalanlevai/mutest-rs",
+		Name:     "mutest-rs",
+		Language: languages.Rust,
+		URL:      "https://github.com/zalanlevai/mutest-rs",
 	}
 }
 
