@@ -55,9 +55,10 @@ func writeError(w http.ResponseWriter, r *http.Request, err error, code int, mes
 	log.Error().Err(err).Str("path", r.URL.Path).Msg(message)
 	w.WriteHeader(http.StatusBadRequest)
 	var buff bytes.Buffer
-	buff.WriteString("<html><body>")
-	buff.WriteString(fmt.Sprintf("<h1>%d: %s</h1>", code, http.StatusText(code)))
-	buff.WriteString(fmt.Sprintf("<p>%s</p>", message))
-	buff.WriteString("</body></html>")
+	buff.WriteString("<html><head><style>*{padding:0;margin:0;box-sizing:border-box;}</style></head>" +
+		"<body style=\"height:100%;display:flex;justify-content:center;align-items:center;background:#2b2b2b;\"><div>")
+	buff.WriteString(fmt.Sprintf("<h1 style=\"color:#a1afb8;\">%d: %s</h1>", code, http.StatusText(code)))
+	buff.WriteString(fmt.Sprintf("<p style=\"color:#a1afb8;\">%s</p>", message))
+	buff.WriteString("</div></body></html>")
 	w.Write(buff.Bytes())
 }
