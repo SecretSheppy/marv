@@ -19,6 +19,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// NOTE: use port 8081 so that the main server can start on 8080 whilst this process shuts down.
+const port = 8081
+
 // VFServer is a decompiler that utilizes the Vineflower decompiler but calls it through http requests to the
 // vineflower-server process that I wrote for Marv. This process is slower than Garlic, but not by that much. Due to
 // its great compatibility, this is the default Java decompiler that Marv will use.
@@ -34,7 +37,7 @@ func (v *VFServer) Setup() error {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	v.cmd = exec.Command("java", "-jar", v.ExePath())
+	v.cmd = exec.Command("java", "-jar", v.ExePath(), fmt.Sprintf("--server.port=%d", port))
 	v.cmd.Env = os.Environ()
 	stdout, err := v.cmd.StdoutPipe()
 	if err != nil {
@@ -85,7 +88,7 @@ type VFServerResponse struct {
 }
 
 func (v *VFServer) Decompile(p string) ([]byte, error) {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:8080/vineflower?source=%s", p))
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/vineflower?source=%s", port, p))
 	if err != nil {
 		return nil, err
 	}
