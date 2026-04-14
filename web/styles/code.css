@@ -1,0 +1,207 @@
+.code {
+    /* NOTE: Transparent diff highlights style inserted/removed lines so the background will have to be set outside
+        of the table. */
+    background: none !important;
+    font-size: var(--code-font-size);
+    font-family: monospace;
+    white-space: break-spaces;
+    border-collapse: collapse;
+    width: 100%;
+
+    tbody {
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    /* Styles the main table contents. Lots of embedded classes like .remove and .insert which feature several times
+    to ensure that the class naming approach remains standard whilst still rendering the desired effect. */
+    tr {
+        height: var(--code-line-height);
+
+        &.remove {
+            .line-type, .line-content {
+                background: var(--diff-remove);
+            }
+
+            .line-number {
+                background: var(--diff-remove-dark);
+                border: none;
+            }
+        }
+
+        &.insert {
+            .line-type, .line-content {
+                background: var(--diff-insert);
+            }
+
+            .line-number {
+                background: var(--diff-insert-dark);
+                border: none;
+            }
+        }
+
+        .line-number, .line-type {
+            user-select: none;
+        };
+
+        .line-number {
+            width: 1%;
+            white-space: pre;
+            text-align: right;
+            padding: 0 8px 0 16px;
+            color: #b0b0b0;
+            border-right: var(--line-number-border);
+        }
+
+        .line-type {
+            width: 26px;
+            text-align: center;
+        }
+
+        .line-content {
+            width: auto;
+
+            .highlight {
+                border-radius: 2px;
+
+                &.remove {
+                    background: var(--diff-inline-remove)
+                }
+
+                &.insert {
+                    background: var(--diff-inline-insert)
+                }
+            }
+        }
+    }
+
+    td {
+        padding: 0;
+    }
+
+    /* Styling for the mutation <tbody> regions. */
+    tbody.mutation {
+        position: relative;
+
+        td .mutation-header {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            background: #3f3f3f;
+            height: 30px;
+
+            *:not(.spacer) {
+                flex-shrink: 0;
+            }
+
+            .mutation-options {
+                padding: 0 10px 0 0;
+                display: flex;
+                gap: 10px;
+            }
+        }
+
+        tr:first-child {
+            border-top: var(--mutation-border);
+            border-bottom: var(--mutation-border);
+        }
+
+        tr:last-child {
+            border-bottom: var(--mutation-border);
+        }
+    }
+}
+
+.mutation-description {
+    max-width: 400px; /* TODO: use media breakpoints to resize this value */
+    /* TODO: use js to show full html on hover */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* colours for the various status icons, set by class */
+.status-icon {
+    width: 14px;
+
+    &.killed {
+        fill: var(--status-killed-fg);
+    }
+
+    &.survived {
+        fill: var(--status-survived-fg);
+    }
+
+    &.crashed {
+        fill: var(--status-crashed-fg)
+    }
+
+    &.timeout {
+        fill: var(--status-timeout-fg)
+    }
+
+    &.no_coverage {
+        fill: var(--status-no-coverage-fg)
+    }
+}
+
+/* Provides the coloured status box and left side indicator. Also defines positions of status icon and text */
+.status-wrapper {
+    display: flex;
+    gap: 5px;
+    padding: 0 10px;
+    height: 100%;
+    align-items: center;
+
+    /* Status indicator that spans the entire left hand side of the mutation due to position: relative on the
+    mutation class. */
+    &::before {
+        position: absolute;
+        height: 100%;
+        width: 4px;
+        left: 0;
+        content: "";
+        top: 0;
+    }
+
+    &.killed {
+        background: var(--status-killed-bg);
+
+        &::before {
+            background: var(--status-killed-fg);
+        }
+    }
+
+    &.survived {
+        background: var(--status-survived-bg);
+
+        &::before {
+            background: var(--status-survived-fg);
+        }
+    }
+
+    &.crashed {
+        background: var(--status-crashed-bg);
+
+        &::before {
+            background: var(--status-crashed-fg);
+        }
+    }
+
+    &.timeout {
+        background: var(--status-timeout-bg);
+
+        &::before {
+            background: var(--status-timeout-fg);
+        }
+    }
+
+    &.no_coverage {
+        background: var(--status-no-coverage-bg);
+
+        &::before {
+            background: var(--status-no-coverage-fg);
+        }
+    }
+}

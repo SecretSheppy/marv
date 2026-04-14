@@ -1,0 +1,46 @@
+/* Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+*:not(dialog) {
+    margin: 0;
+}
+
+:root {
+    --code-line-height: 24px;
+    --code-font-size: 0.83rem;
+
+    --diff-remove: #492e2e;
+    --diff-remove-dark: #571e1e;
+    --diff-inline-remove: #9b1919;
+    --diff-insert: #354a35;
+    --diff-insert-dark: #1e561e;
+    --diff-inline-insert: #217321;
+
+    --status-killed-fg: #008000;
+    --status-killed-bg: #204020;
+    --status-survived-fg: #ff0000;
+    --status-survived-bg: #602020;
+    --status-crashed-fg: #ffa500;
+    --status-crashed-bg: #604920;
+    --status-timeout-fg: #ffff00;
+    --status-timeout-bg: #606020;
+    --status-no-coverage-fg: #808080;
+    --status-no-coverage-bg: #404040;
+
+    --mutation-border: solid 1px #565656;
+    --line-number-border: solid 1px #4c4c4c;
+}
+
+body {
+    background: #2b2b2b;
+}
+
+a {
+    color: #1395ff;
+}
+
+.spacer {
+    width: 100%;
+}

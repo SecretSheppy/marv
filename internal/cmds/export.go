@@ -7,7 +7,7 @@ import (
 	"path"
 
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -30,15 +30,17 @@ func exportCommand() {
 		}
 
 		if err := fw.TransformResults(); err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err).Msg("Failed to transform results")
 			os.Exit(1)
 		}
+
+		fw.Mutations().GenerateIDs()
 	}
 
 	if output != "" {
 		p, err := os.Stat(output)
 		if err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err).Msg("Failed to read directory metadata")
 			os.Exit(1)
 		}
 		if !p.IsDir() {
@@ -58,7 +60,7 @@ func individualExport(activeFws []fwlib.Framework) {
 		ms := fw.Mutations()
 		marshal, err := json.Marshal(ms)
 		if err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err).Msg("Failed to marshal marv mutations")
 			os.Exit(1)
 		}
 		if output == "" {
@@ -77,7 +79,7 @@ func mergeAndExport(activeFws []fwlib.Framework) {
 	}
 	marshal, err := json.Marshal(masterMs)
 	if err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err).Msg("Failed to marshal marv mutations")
 		os.Exit(1)
 	}
 	if output == "" {

@@ -1,13 +1,12 @@
 package fwlib
 
 import (
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
 type Meta struct {
 	Name      string
 	Extension string
-	TSLang    string // TODO: should be replaced with type of tree sitter language, haven't yet decided which tree sitter package to use
 	URL       string
 }
 
@@ -17,15 +16,20 @@ type Runnable interface {
 	Run()
 }
 
-// Decompiling interfaces describes Framework instances that have to decompile binaries in order to extract mutants.
+// Decompiling interface describes Framework instances that have to decompile binaries in order to extract mutants.
 type Decompiling interface {
 	// SetDecompiler sets the decompiler that is being used.
 	SetDecompiler()
 }
 
+// FWConfig interface describes objects that are used to read custom Framework configurations from the .marv.yml file.
 type FWConfig interface {
+	// Init returns the default configuration for use with the init command.
 	Init() interface{}
+	// Load unmarshals the yml data into the struct if it exists, and returns true if any configuration was loaded.
 	Load(yml []byte) (bool, error)
+	// SourceCodeDir returns the path to the source code directory.
+	SourceCodeDir() string
 }
 
 // Framework defines what methods an extension must have in order to interact with the marv system.

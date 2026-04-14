@@ -9,11 +9,14 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/SecretSheppy/marv/decompilers/dcomplib"
+	"github.com/rs/zerolog/log"
 )
 
 // VFServer is a decompiler that utilizes the Vineflower decompiler but calls it through http requests to the
@@ -53,6 +56,16 @@ func (v *VFServer) Setup() error {
 	}()
 
 	wg.Wait()
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		_ = <-sigs
+		if err := v.Teardown(); err != nil {
+			log.Error().Err(err).Msgf("Failed to kill subprocess %s", v.ExePath())
+		}
+	}()
+
 	return nil
 }
 
@@ -61,6 +74,10 @@ func (v *VFServer) Teardown() error {
 		return v.cmd.Process.Kill()
 	}
 	return nil
+}
+
+type VFServerErrorResponse struct {
+	Message string `json:"message"`
 }
 
 type VFServerResponse struct {
@@ -82,12 +99,25 @@ func (v *VFServer) Decompile(p string) ([]byte, error) {
 		return nil, err
 	}
 
+	errRes := &VFServerErrorResponse{}
+	if err := json.Unmarshal(body, errRes); err != nil {
+		return nil, err
+	}
+	if errRes.Message != "" {
+		return nil, errors.New(errRes.Message)
+	}
+
 	res := &VFServerResponse{}
 	if err := json.Unmarshal(body, res); err != nil {
 		return nil, err
 	}
 
-	return []byte(res.Output[p]), nil
+	var val string
+	for _, val = range res.Output {
+		break
+	}
+
+	return []byte(val), nil
 }
 
 func (v *VFServer) String() string {

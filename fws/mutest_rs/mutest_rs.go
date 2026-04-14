@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
@@ -34,7 +35,14 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 	if err := yaml.Unmarshal(yml, y); err != nil {
 		return false, err
 	}
+	if y.Cfg == nil {
+		return false, nil
+	}
 	return y.Cfg.Src != "" || y.Cfg.JsonDir != "", nil
+}
+
+func (y *YamlWrapper) SourceCodeDir() string {
+	return y.Cfg.Src
 }
 
 // Evaluation marshals to evaluation.json from the mutest output data
@@ -156,19 +164,7 @@ func (m *MutestRS) transformResults(bar *progressbar.ProgressBar) (mutations.Mut
 			return nil, err
 		}
 
-		added := false
-		for _, c := range ms[mu.Location.Path] {
-			if c.Conflicts(sl) {
-				c.Append(sl)
-				added = true
-				break
-			}
-		}
-
-		if !added {
-			ms[mu.Location.Path] = append(ms[mu.Location.Path], mutations.NewConflict(sl))
-		}
-
+		ms.Append(mu.Location.Path, sl)
 		bar.Add(1)
 	}
 	return ms, nil
@@ -185,20 +181,18 @@ func streamlineMutation(m *Mutation) (*mutations.Mutation, error) {
 		return nil, errors.New("plugin mutest_rs: Mutation.Location.Substitutions is empty")
 	}
 	return &mutations.Mutation{
-		ID:       m.MutationID - 1, // NOTE: mutest-rs mutation id start from 1, but they are used to index an array from 0
-		IDOffset: 1,
-		Name:     m.DisplayName,
-		OpDesc:   m.MutationOp,
-		Starts: &mutations.Range{
-			Line: m.Location.Begin[0],
-			Char: m.Location.Begin[1],
+		FrameworkMutantID: strconv.Itoa(m.MutationID),
+		Description:       m.DisplayName,
+		Operation:         m.MutationOp,
+		Start: &mutations.Range{
+			Line: m.Location.Begin[0] - 1, // NOTE: line numbers start from 1 in mutest-rs, but marv indexes from 0
+			Char: m.Location.Begin[1] - 1,
 		},
-		Ends: &mutations.Range{
-			Line: m.Location.End[0],
-			Char: m.Location.End[1],
+		End: &mutations.Range{
+			Line: m.Location.End[0] - 1,
+			Char: m.Location.End[1] - 1,
 		},
-		Type:   mutations.Replacement, // for now all mutest does is replacement
-		Source: m.Substitutions[0].Substitution.Replacement,
+		Replacement: m.Substitutions[0].Substitution.Replacement,
 	}, nil
 }
 
@@ -208,6 +202,8 @@ func getMutationStatus(id int, ev *Evaluation) (mutations.Status, error) {
 	}
 	status := mutations.Survived
 	switch ev.MutationRuns[0].DetectionMatrix.OverallDetections[id-1] {
+	case '.':
+		status = mutations.NoCoverage
 	case 'D':
 		status = mutations.Killed
 	case 'T':

@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/SecretSheppy/marv/pkg/mutations"
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog"
 )
 

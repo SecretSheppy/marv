@@ -1,11 +1,15 @@
 package cmds
 
 import (
+	"bytes"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
+	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -40,22 +44,62 @@ func rootCommand() {
 			decompiling.SetDecompiler()
 		}
 
-		_ = fw.TransformResults()
+		if err := fw.TransformResults(); err != nil {
+			log.Fatal().Err(err).Msg("Failed to transform results")
+			os.Exit(1)
+		}
+
+		fw.Mutations().GenerateIDs()
 	}
 
-	// TODO: start main application server here
+	// TODO: highlighter cannot currently deal with mutations that insert or replace more than one line...
+	//  might be best to deal with this in the actual html formatting.
+	fw0 := activeFws[0]
+	for k, cs := range fw0.Mutations() {
+		data, err := os.ReadFile(path.Join(fw0.Yaml().SourceCodeDir(), k))
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to find or read file")
+			os.Exit(1)
+		}
+
+		ls := strings.Lines(string(data))
+		lines := make([]string, 0)
+		for line := range ls {
+			lines = append(lines, strings.ReplaceAll(line, "\n", ""))
+		}
+
+		meta := &html.Meta{
+			StylePaths: []string{"web/styles/main.css", "web/styles/code.css"},
+		}
+		if err := meta.MinifyAndCache(); err != nil {
+			log.Fatal().Err(err).Msg("Failed to minify or cache styles and scripts")
+			os.Exit(1)
+		}
+		r, err := html.NewRenderer(meta, fw0.Meta(), k, lines, cs)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to initialize HTML renderer")
+			os.Exit(1)
+		}
+		var buff bytes.Buffer
+		if err := r.Render(&buff); err != nil {
+			log.Fatal().Err(err).Msg("Failed to render HTML")
+			os.Exit(1)
+		}
+		os.WriteFile("output.html", buff.Bytes(), 0644)
+		break
+	}
 }
 
 func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 	yml, err := os.ReadFile(configFile)
 	if err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err).Msg("Failed to find or read file")
 		os.Exit(1)
 	}
 
 	cfg, err := mergeYmlFlagConfigs(yml)
 	if err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err).Msg("Failed to merge config and flags")
 		os.Exit(1)
 	}
 
@@ -63,14 +107,14 @@ func getConfigAndFws() (*config.Config, []fwlib.Framework) {
 	for _, fw := range fws.Frameworks() {
 		loaded, err := fw.Yaml().Load(yml)
 		if err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err).Msg("Failed to load framework config")
 			os.Exit(1)
 		}
 		if !loaded {
 			continue
 		}
 		if err := fw.LoadResults(); err != nil {
-			log.Error().Err(err)
+			log.Fatal().Err(err).Msg("Failed to load framework results")
 			os.Exit(1)
 		}
 		activeFws = append(activeFws, fw)
@@ -109,7 +153,7 @@ func Execute() {
 	rootCmd.Flags().BoolVarP(&fileWatchers, "enable-watchers", "w", false, "enable file watchers")
 
 	if err := rootCmd.Execute(); err != nil {
-		log.Error().Err(err)
+		log.Fatal().Err(err).Msg("Failed to execute marv command")
 		os.Exit(1)
 	}
 }

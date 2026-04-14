@@ -1,65 +1,64 @@
 {
     "ThisFileDoesNotContainJava.java": [
         {
+            "ID": "00000000-0000-0000-0000-000000000000",
             "StartLine": 0,
             "EndLine": 0,
             "Mutations": [
                 {
-                    "ID": 0,
-                    "IDOffset": 0,
-                    "Name": "removed a smiley face from line 1",
-                    "OpDesc": "FakeMutator",
-                    "Starts": {
+                    "ID": "00000000-0000-0000-0000-000000000000",
+                    "FrameworkMutantID": "",
+                    "Description": "removed a smiley face from line 1",
+                    "Operation": "FakeMutator",
+                    "Start": {
                         "Line": 0,
                         "Char": 0
                     },
-                    "Ends": {
+                    "End": {
                         "Line": 0,
                         "Char": 26
                     },
                     "Status": "SURVIVED",
-                    "Type": "",
-                    "Source": "This is not a java file\n"
+                    "Replacement": "This is not a java file\n"
                 }
             ]
         },
         {
+            "ID": "00000000-0000-0000-0000-000000000000",
             "StartLine": 2,
             "EndLine": 2,
             "Mutations": [
                 {
-                    "ID": 0,
-                    "IDOffset": 0,
-                    "Name": "removed a winky face from line 3",
-                    "OpDesc": "FakeMutator",
-                    "Starts": {
+                    "ID": "00000000-0000-0000-0000-000000000000",
+                    "FrameworkMutantID": "",
+                    "Description": "removed a winky face from line 3",
+                    "Operation": "FakeMutator",
+                    "Start": {
                         "Line": 2,
                         "Char": 0
                     },
-                    "Ends": {
+                    "End": {
                         "Line": 2,
                         "Char": 1
                     },
                     "Status": "SURVIVED",
-                    "Type": "",
-                    "Source": ""
+                    "Replacement": ""
                 },
                 {
-                    "ID": 0,
-                    "IDOffset": 0,
-                    "Name": "removed a winky face from line 3",
-                    "OpDesc": "FakeMutator",
-                    "Starts": {
+                    "ID": "00000000-0000-0000-0000-000000000000",
+                    "FrameworkMutantID": "",
+                    "Description": "removed a winky face from line 3",
+                    "Operation": "FakeMutator",
+                    "Start": {
                         "Line": 2,
                         "Char": 0
                     },
-                    "Ends": {
+                    "End": {
                         "Line": 2,
                         "Char": 1
                     },
                     "Status": "NO_COVERAGE",
-                    "Type": "",
-                    "Source": ""
+                    "Replacement": ""
                 }
             ]
         }
