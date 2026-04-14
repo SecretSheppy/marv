@@ -16,7 +16,7 @@ type Renderer struct {
 }
 
 func NewRenderer(meta *Meta, fwMeta *fwlib.Meta, file string, lines []string, conflicts mutations.Conflicts) (*Renderer, error) {
-	code, err := NewCodeRenderer(fwMeta.Extension, fwMeta.Name, file, lines, conflicts)
+	code, err := NewCodeRenderer(fwMeta.Language.Ext(), fwMeta.Name, file, lines, conflicts)
 	if err != nil {
 		return nil, err
 	}

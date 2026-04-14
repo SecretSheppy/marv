@@ -9,6 +9,7 @@ import (
 
 	"github.com/SecretSheppy/marv/decompilers"
 	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
@@ -118,9 +119,9 @@ func (p *Pitest) SetDecompiler() {
 
 func (p *Pitest) Meta() *fwlib.Meta {
 	return &fwlib.Meta{
-		Name:      FWName,
-		Extension: "java",
-		URL:       "https://pitest.org/",
+		Name:     FWName,
+		Language: languages.Java,
+		URL:      "https://pitest.org/",
 	}
 }
 
