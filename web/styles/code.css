@@ -2,11 +2,11 @@
     /* NOTE: Transparent diff highlights style inserted/removed lines so the background will have to be set outside
         of the table. */
     background: none !important;
-    width: 100%;
     font-size: var(--code-font-size);
     font-family: monospace;
     white-space: break-spaces;
-    border-collapse: collapse; /* TODO: this might need to be changed */
+    border-collapse: collapse;
+    width: 100%;
 
     tbody {
         display: block;
@@ -24,7 +24,8 @@
             }
 
             .line-number {
-                background: var(--diff-remove-dark)
+                background: var(--diff-remove-dark);
+                border: none;
             }
         }
 
@@ -34,7 +35,8 @@
             }
 
             .line-number {
-                background: var(--diff-insert-dark)
+                background: var(--diff-insert-dark);
+                border: none;
             }
         }
 
@@ -44,10 +46,11 @@
 
         .line-number {
             width: 1%;
-            white-space: nowrap;
+            white-space: pre;
             text-align: right;
-            padding: 0 4px 0 16px;
+            padding: 0 8px 0 16px;
             color: #b0b0b0;
+            border-right: var(--line-number-border);
         }
 
         .line-type {
@@ -108,6 +111,14 @@
             border-bottom: var(--mutation-border);
         }
     }
+}
+
+.mutation-description {
+    max-width: 400px; /* TODO: use media breakpoints to resize this value */
+    /* TODO: use js to show full html on hover */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* colours for the various status icons, set by class */

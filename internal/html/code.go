@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html"
+	"strconv"
 	"strings"
 
 	"github.com/SecretSheppy/marv/internal/mutations"
@@ -51,6 +52,7 @@ type CodeRenderer struct {
 	lines                []string
 	conflicts            mutations.Conflicts
 	highlight            *highlighter.Highlighter
+	lnPadding            int
 }
 
 func NewCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts) (*CodeRenderer, error) {
@@ -113,16 +115,25 @@ func (r *CodeRenderer) render() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-func (r *CodeRenderer) renderLine(w *bytes.Buffer, ln int, lt LineDiffType, code string) {
+func (r *CodeRenderer) renderLine(w *bytes.Buffer, lineNumber int, lt LineDiffType, code string) {
 	w.WriteString(fmt.Sprintf("<tr class=\"%s\">", lt.CSSClass()))
 	w.WriteString("<td class=\"line-number\">")
-	if ln != 0 {
-		w.WriteString(fmt.Sprintf("%d", ln))
+	if lineNumber != 0 {
+		// NOTE: Padding is used to ensure the line number column is the same width through all the individual <tbody>
+		// elements.
+		w.WriteString(fmt.Sprintf("%*d", r.padding(), lineNumber))
 	}
 	w.WriteString("</td>")
 	w.WriteString(fmt.Sprintf("<td class=\"line-type\">%s</td>", lt))
 	w.WriteString(fmt.Sprintf("<td class=\"line-content\">%s</td>", code))
 	w.WriteString("</tr>")
+}
+
+func (r *CodeRenderer) padding() int {
+	if r.lnPadding == 0 {
+		r.lnPadding = len(strconv.Itoa(len(r.lines)))
+	}
+	return r.lnPadding
 }
 
 func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {

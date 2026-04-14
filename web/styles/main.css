@@ -30,6 +30,7 @@
     --status-no-coverage-bg: #404040;
 
     --mutation-border: solid 1px #565656;
+    --line-number-border: solid 1px #4c4c4c;
 }
 
 body {
