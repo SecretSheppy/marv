@@ -1,16 +1,13 @@
 package cmds
 
 import (
-	"bytes"
 	"os"
-	"path"
-	"strings"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
-	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
+	"github.com/SecretSheppy/marv/internal/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -52,41 +49,10 @@ func rootCommand() {
 		fw.Mutations().GenerateIDs()
 	}
 
-	// TODO: highlighter cannot currently deal with mutations that insert or replace more than one line...
-	//  might be best to deal with this in the actual html formatting.
-	fw0 := activeFws[0]
-	for k, cs := range fw0.Mutations() {
-		data, err := os.ReadFile(path.Join(fw0.Yaml().SourceCodeDir(), k))
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to find or read file")
-			os.Exit(1)
-		}
-
-		ls := strings.Lines(string(data))
-		lines := make([]string, 0)
-		for line := range ls {
-			lines = append(lines, strings.ReplaceAll(line, "\n", ""))
-		}
-
-		meta := &html.Meta{
-			StylePaths: []string{"web/styles/main.css", "web/styles/code.css"},
-		}
-		if err := meta.MinifyAndCache(); err != nil {
-			log.Fatal().Err(err).Msg("Failed to minify or cache styles and scripts")
-			os.Exit(1)
-		}
-		r, err := html.NewRenderer(meta, fw0.Meta(), k, lines, cs)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to initialize HTML renderer")
-			os.Exit(1)
-		}
-		var buff bytes.Buffer
-		if err := r.Render(&buff); err != nil {
-			log.Fatal().Err(err).Msg("Failed to render HTML")
-			os.Exit(1)
-		}
-		os.WriteFile("output.html", buff.Bytes(), 0644)
-		break
+	log.Info().Msg("Starting server")
+	if err := server.NewServer(port, activeFws).Serve(); err != nil {
+		log.Fatal().Err(err).Msg("Failed to serve")
+		os.Exit(1)
 	}
 }
 

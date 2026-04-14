@@ -111,6 +111,17 @@ func (c Conflicts) Sort() {
 	})
 }
 
+func (c Conflicts) GetMutant(ID uuid.UUID) (*Conflict, *Mutation) {
+	for _, conflict := range c {
+		for _, mutation := range conflict.Mutations {
+			if mutation.ID == ID {
+				return conflict, mutation
+			}
+		}
+	}
+	return nil, nil
+}
+
 // Mutations is a map of file names to groups of conflicting mutations.
 type Mutations map[string]Conflicts
 
