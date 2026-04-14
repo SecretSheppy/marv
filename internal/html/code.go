@@ -238,6 +238,6 @@ func (r *CodeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mut
 	buff.WriteString(m.Status.IconWithText())
 	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.Description)))
 	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
-	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID))
+	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID, m.ID))
 	buff.WriteString("</div></div></td></tr>")
 }
