@@ -7,7 +7,7 @@ import (
 
 type Meta struct {
 	Name     string
-	Language languages.Language
+	Language *languages.Language
 	URL      string
 }
 
