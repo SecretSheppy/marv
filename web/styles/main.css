@@ -25,12 +25,12 @@
     --code-line-height: 24px;
     --code-font-size: 0.83rem;
 
-    --diff-remove: #492e2e;
+    --diff-remove: #492e2eb8;
     --diff-remove-dark: #571e1e;
-    --diff-inline-remove: #9b1919;
-    --diff-insert: #354a35;
+    --diff-inline-remove: #a62d2d69;
+    --diff-insert: #354a35bd;
     --diff-insert-dark: #1e561e;
-    --diff-inline-insert: #217321;
+    --diff-inline-insert: #20a4204a;
 
     --status-killed-fg: #008000;
     --status-killed-bg: #204020;
