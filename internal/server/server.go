@@ -23,6 +23,8 @@ func NewServer(port int, fws []fwlib.Framework) *Server {
 func (s *Server) Serve() error {
 	r := mux.NewRouter()
 	r.Use(logger)
+	r.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", http.FileServer(http.Dir("web/static"))))
+	r.HandleFunc("/tree", s.treeHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutant/").HandlerFunc(s.mutantHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutants/").HandlerFunc(s.mutantsHandler).Methods("GET")
 

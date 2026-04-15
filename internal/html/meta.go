@@ -57,3 +57,11 @@ func (m *Meta) minifyAndCacheJs(mini *minify.M) error {
 	}
 	return nil
 }
+
+func (m *Meta) Style() []byte {
+	return m.style
+}
+
+func (m *Meta) Scripts() [][]byte {
+	return m.scripts
+}

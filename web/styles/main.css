@@ -8,6 +8,20 @@
 }
 
 :root {
+    --main-bg: #3c3f41;
+    --main-secondary-bg: #535457;
+    --main-hover-bg: #525557;
+    --main-text-fg: #a9b7c6;
+    --main-divider: solid 1px #323232;
+    --main-header-height: 41px;
+
+    --darker-text-fg: #9da0ab;
+
+    --stat-green-fg: rgb(58, 158, 58);
+    --stat-orange-fg: rgb(255 165 0 / 0.7);
+    --stat-red-fg: rgb(210, 83, 83);
+
+    --code-bg: #2b2b2b;
     --code-line-height: 24px;
     --code-font-size: 0.83rem;
 

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/SecretSheppy/marv/fws/mockfw"
-	"github.com/SecretSheppy/marv/internal/languages"
 )
 
 var paths = []string{
@@ -83,7 +82,7 @@ func TestTreeRendering(t *testing.T) {
 	}
 	root.SortChildren()
 	var buff bytes.Buffer
-	root.Render(&buff, &mockfw.MockFW{}, &languages.Language{})
+	root.Render(&buff, &mockfw.MockFW{})
 	// TODO: check this somehow
 	//fmt.Println(buff.String())
 }

@@ -49,7 +49,7 @@ func (r *Renderer) render() ([]byte, error) {
 }
 
 func (r *Renderer) scripts(w *bytes.Buffer) {
-	for _, script := range r.meta.scripts {
+	for _, script := range r.meta.Scripts() {
 		w.WriteString("<script type=\"text/javascript\">")
 		w.Write(script)
 		w.WriteString("</script>")
@@ -58,7 +58,7 @@ func (r *Renderer) scripts(w *bytes.Buffer) {
 
 func (r *Renderer) styles(w *bytes.Buffer) error {
 	w.WriteString("<style>")
-	w.Write(r.meta.style)
+	w.Write(r.meta.Style())
 
 	code, err := r.code.SyntaxHighlighter().CSS()
 	if err != nil {
