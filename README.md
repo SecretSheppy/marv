@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="web/static/branding/marv_logo.png" style="width: 100px;">
+  <img src="web/static/branding/marv_logo.png" style="width: 150px;">
 </p>
-
-# marv
 
 Mutations Analysis, Review and Visualisation
 
