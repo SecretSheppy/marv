@@ -1,10 +1,15 @@
 package html
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"path"
 	"sort"
 	"strings"
+
+	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/languages"
 )
 
 type NodeType int
@@ -14,6 +19,7 @@ const (
 	File
 )
 
+// PathNode represents a node in the file tree. A node can be either a Directory or a File.
 type PathNode struct {
 	Type     NodeType
 	Name     string
@@ -58,4 +64,23 @@ func (p *PathNode) ChildNode(name string) *PathNode {
 		}
 	}
 	return nil
+}
+
+func (p *PathNode) Render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language) {
+	p.render(buff, fw, lang, 0, fmt.Sprintf("/%s/mutants", fw.Meta().Name))
+}
+
+func (p *PathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string) {
+	currentPath := path.Join(accPath, p.Name)
+	switch p.Type {
+	case Directory:
+		buff.WriteString("<div class=\"directory-wrapper\">")
+		buff.WriteString(fmt.Sprintf("<div class=\"directory\" style=\"margin-left: %dpx\">%s</div>", level*5, p.Name))
+		for _, child := range p.children {
+			child.render(buff, fw, lang, level+1, currentPath)
+		}
+		buff.WriteString("</div>")
+	case File:
+		buff.WriteString(fmt.Sprintf("<a class=\"file\" style=\"margin-left: %dpx\" href=\"%s\">%s</a>", level*5, currentPath, p.Name))
+	}
 }
