@@ -133,11 +133,19 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	if err := r.renderHead(&buff, title, "<style>"+codeStyle+"</style>"); err != nil {
 		return nil, err
 	}
+
 	buff.WriteString("<div class=\"layout\">")
 	buff.WriteString(r.getTree())
+
+	meta := framework.Meta()
+	lang := meta.Language
+	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")
+	writeFrameworkName(&buff, framework)
+	buff.WriteString(fmt.Sprintf("<img class=\"content-icon\" src=\"%s\" alt=\"%s language icon\" />"+
+		"<h3 class=\"content-title\">%s</h3></div>", lang.Icon(), lang.Name(), path.Base(filePath)))
 	buff.WriteString("<div class=\"code-wrapper\">")
 	buff.Write(render)
-	buff.WriteString("</div></div></body></html>")
+	buff.WriteString("</div></div></div></body></html>")
 	return buff.Bytes(), nil
 }
 

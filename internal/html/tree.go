@@ -171,10 +171,17 @@ func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 }
 
 func (t *treeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framework) {
-	buff.WriteString(fmt.Sprintf("<div class=\"framework-header\">"+
-		"<div class=\"framework-name\">%s</div>", fw.Meta().Name))
+	buff.WriteString("<div class=\"framework-header\">")
+	writeFrameworkName(buff, fw)
 	writeStats(buff, "", fw)
 	buff.WriteString("</div>")
+}
+
+func writeFrameworkName(buff *bytes.Buffer, fw fwlib.Framework) {
+	meta := fw.Meta()
+	buff.WriteString(fmt.Sprintf("<div class=\"framework-name\" "+
+		"title=\"Mutants created by the %s mutation testing framework for %s\">%s</div>",
+		meta.Name, meta.Language.Name(), meta.Name))
 }
 
 func writeWrappedStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework) {

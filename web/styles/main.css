@@ -71,10 +71,48 @@ a {
     .tree {
         width: 450px;
         height: 100%;
+        flex-shrink: 0;
     }
 
-    .code-wrapper {
-        overflow: auto;
+    .content-wrapper {
+        display: flex;
+        flex-direction: column;
         width: 100%;
+        overflow: hidden;
+
+        .content-header {
+            height: var(--main-header-height);
+            border-bottom: var(--main-divider);
+            flex-shrink: 0;
+            background: var(--main-bg);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px;
+
+            .content-icon {
+                width: 16px;
+            }
+
+            .content-title {
+                color: var(--main-text-fg);
+                font-family: monospace;
+                font-weight: normal;
+                font-size: 13px;
+            }
+        }
+
+        .code-wrapper {
+            overflow: auto;
+            width: 100%;
+        }
     }
+}
+
+.framework-name {
+    background: var(--main-secondary-bg);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: monospace;
+    color: var(--main-text-fg);
 }
