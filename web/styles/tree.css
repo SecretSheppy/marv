@@ -146,7 +146,13 @@
     }
 
     &:hover {
-        background: #334565;
+        background: var(--theme-hover-bg);
+    }
+
+    &:focus,
+    &:active {
+        outline: solid 2px var(--theme-focus-bg);
+        outline-offset: -1px;
     }
 }
 

@@ -15,6 +15,9 @@
     --main-divider: solid 1px #323232;
     --main-header-height: 41px;
 
+    --theme-hover-bg: #334565;
+    --theme-focus-bg: #2f65ca;
+
     --darker-text-fg: #696c73;
 
     --stat-green-fg: rgb(58, 158, 58);
