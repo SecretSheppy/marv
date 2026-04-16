@@ -17,37 +17,37 @@ type renderedConflict struct {
 	render     string
 }
 
-type LineDiffType int
+type lineDiffType int
 
 const (
-	LineRemoved LineDiffType = iota
-	LineEqual
-	LineInserted
+	lineRemoved lineDiffType = iota
+	lineEqual
+	lineInserted
 )
 
-func (l LineDiffType) String() string {
+func (l lineDiffType) String() string {
 	switch l {
-	case LineRemoved:
+	case lineRemoved:
 		return "-"
-	case LineInserted:
+	case lineInserted:
 		return "+"
 	default:
 		return ""
 	}
 }
 
-func (l LineDiffType) CSSClass() string {
+func (l lineDiffType) CSSClass() string {
 	switch l {
-	case LineRemoved:
+	case lineRemoved:
 		return "remove"
-	case LineInserted:
+	case lineInserted:
 		return "insert"
 	default:
 		return ""
 	}
 }
 
-type CodeRenderer struct {
+type codeRenderer struct {
 	ext, framework, file string
 	lines                []string
 	conflicts            mutations.Conflicts
@@ -55,8 +55,8 @@ type CodeRenderer struct {
 	lnPadding            int
 }
 
-func NewCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts) (*CodeRenderer, error) {
-	r := &CodeRenderer{
+func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts) (*codeRenderer, error) {
+	r := &codeRenderer{
 		ext:       ext,
 		framework: framework,
 		file:      file,
@@ -68,11 +68,11 @@ func NewCodeRenderer(ext, framework, file string, lines []string, conflicts muta
 	return r, err
 }
 
-func (r *CodeRenderer) SyntaxHighlighter() *highlighter.Highlighter {
+func (r *codeRenderer) SyntaxHighlighter() *highlighter.Highlighter {
 	return r.highlight
 }
 
-func (r *CodeRenderer) Render(w *bytes.Buffer) error {
+func (r *codeRenderer) Render(w *bytes.Buffer) error {
 	render, err := r.render()
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (r *CodeRenderer) Render(w *bytes.Buffer) error {
 	return nil
 }
 
-func (r *CodeRenderer) render() ([]byte, error) {
+func (r *codeRenderer) render() ([]byte, error) {
 	r.conflicts.Sort()
 	rendered := make([]*renderedConflict, 0, len(r.conflicts))
 	for _, conflict := range r.conflicts {
@@ -109,13 +109,13 @@ func (r *CodeRenderer) render() ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.renderLine(&buff, i+1, LineEqual, line)
+		r.renderLine(&buff, i+1, lineEqual, line)
 	}
 	buff.WriteString("</table>")
 	return buff.Bytes(), nil
 }
 
-func (r *CodeRenderer) renderLine(w *bytes.Buffer, lineNumber int, lt LineDiffType, code string) {
+func (r *codeRenderer) renderLine(w *bytes.Buffer, lineNumber int, lt lineDiffType, code string) {
 	w.WriteString(fmt.Sprintf("<tr class=\"%s\">", lt.CSSClass()))
 	w.WriteString("<td class=\"line-number\">")
 	if lineNumber != 0 {
@@ -129,14 +129,14 @@ func (r *CodeRenderer) renderLine(w *bytes.Buffer, lineNumber int, lt LineDiffTy
 	w.WriteString("</tr>")
 }
 
-func (r *CodeRenderer) padding() int {
+func (r *codeRenderer) padding() int {
 	if r.lnPadding == 0 {
 		r.lnPadding = len(strconv.Itoa(len(r.lines)))
 	}
 	return r.lnPadding
 }
 
-func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
+func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
 	var builder strings.Builder
 	for _, mutation := range c.Mutations {
 		render, err := r.renderMutation(c, mutation)
@@ -152,7 +152,7 @@ func (r *CodeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 	}, nil
 }
 
-func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
+func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\" class=\"mutation\">", m.ID, c.ID, m.Status.Text()))
 	r.renderMutationHeader(&buff, m)
@@ -162,7 +162,7 @@ func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		if err != nil {
 			return "", err
 		}
-		r.renderLine(&buff, i+1, LineEqual, line)
+		r.renderLine(&buff, i+1, lineEqual, line)
 	}
 
 	for i := m.Start.Line; i <= m.End.Line; i++ {
@@ -181,7 +181,7 @@ func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 			return "", err
 		}
 		code := fmt.Sprintf("%s<span class=\"highlight remove\">%s</span>%s", lines[0], lines[1], lines[2])
-		r.renderLine(&buff, i+1, LineRemoved, code)
+		r.renderLine(&buff, i+1, lineRemoved, code)
 	}
 
 	mutLines := make([]string, 0)
@@ -201,7 +201,7 @@ func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 			return "", err
 		}
 		code := fmt.Sprintf("%s<span class=\"highlight insert\">%s</span>%s", lines[0], lines[1], lines[2])
-		r.renderLine(&buff, 0, LineInserted, code)
+		r.renderLine(&buff, 0, lineInserted, code)
 	}
 
 	for i := m.End.Line; i < c.EndLine; i++ {
@@ -209,14 +209,14 @@ func (r *CodeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		if err != nil {
 			return "", err
 		}
-		r.renderLine(&buff, i+1, LineEqual, line)
+		r.renderLine(&buff, i+1, lineEqual, line)
 	}
 
 	buff.WriteString("</tbody>")
 	return buff.String(), nil
 }
 
-func (r *CodeRenderer) highlightMutationParts(pre, diff, post string) ([]string, error) {
+func (r *codeRenderer) highlightMutationParts(pre, diff, post string) ([]string, error) {
 	hl, err := highlighter.NewHighlighter(r.highlight.Lang(), []string{pre, diff, post}, r.highlight.Style())
 	if err != nil {
 		return nil, err
@@ -233,7 +233,7 @@ func (r *CodeRenderer) highlightMutationParts(pre, diff, post string) ([]string,
 	return lines, nil
 }
 
-func (r *CodeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mutation) {
+func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mutation) {
 	buff.WriteString("<tr><td colspan=\"100%\"><div class=\"mutation-header\">")
 	buff.WriteString(m.Status.IconWithText())
 	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.Description)))

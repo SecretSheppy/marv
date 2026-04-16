@@ -8,15 +8,32 @@
 }
 
 :root {
+    --main-bg: #3c3f41;
+    --main-secondary-bg: #535457;
+    --main-hover-bg: #525557;
+    --main-text-fg: #a9b7c6;
+    --main-divider: solid 1px #323232;
+    --main-header-height: 41px;
+
+    --theme-hover-bg: #334565;
+    --theme-focus-bg: #2f65ca;
+
+    --darker-text-fg: #696c73;
+
+    --stat-green-fg: rgb(58, 158, 58);
+    --stat-orange-fg: rgb(255 165 0 / 0.7);
+    --stat-red-fg: rgb(210, 83, 83);
+
+    --code-bg: #2b2b2b;
     --code-line-height: 24px;
     --code-font-size: 0.83rem;
 
-    --diff-remove: #492e2e;
+    --diff-remove: #492e2eb8;
     --diff-remove-dark: #571e1e;
-    --diff-inline-remove: #9b1919;
-    --diff-insert: #354a35;
+    --diff-inline-remove: #a62d2d69;
+    --diff-insert: #354a35bd;
     --diff-insert-dark: #1e561e;
-    --diff-inline-insert: #217321;
+    --diff-inline-insert: #20a4204a;
 
     --status-killed-fg: #008000;
     --status-killed-bg: #204020;
@@ -43,4 +60,21 @@ a {
 
 .spacer {
     width: 100%;
+}
+
+.layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+
+    .tree {
+        width: 450px;
+        height: 100%;
+    }
+
+    .code-wrapper {
+        overflow: auto;
+        width: 100%;
+    }
 }

@@ -1,4 +1,6 @@
-# marv
+<p align="center">
+  <img src="web/static/branding/marv_logo.png" style="width: 150px;">
+</p>
 
 Mutations Analysis, Review and Visualisation
 

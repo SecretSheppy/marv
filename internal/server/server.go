@@ -7,22 +7,40 @@ import (
 	"time"
 
 	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
 
 type Server struct {
-	port int
-	fws  []fwlib.Framework
+	port       int
+	frameworks []fwlib.Framework
+	renderer   *html.Renderer
 }
 
-func NewServer(port int, fws []fwlib.Framework) *Server {
-	return &Server{port: port, fws: fws}
+func NewServer(port int, frameworks []fwlib.Framework) *Server {
+	return &Server{
+		port:       port,
+		frameworks: frameworks,
+		renderer: html.NewRenderer(&html.Config{
+			Favicon: "/resources/branding/marv_favicon.png",
+			Styles: []string{
+				"web/styles/main.css",
+				"web/styles/code.css",
+				"web/styles/tree.css",
+			},
+			Scripts: []string{
+				"web/scripts/tree.js",
+			},
+		}, frameworks),
+	}
 }
 
 func (s *Server) Serve() error {
 	r := mux.NewRouter()
 	r.Use(logger)
+	r.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", http.FileServer(http.Dir("web/static"))))
+	r.HandleFunc("/tree", s.treeHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutant/").HandlerFunc(s.mutantHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutants/").HandlerFunc(s.mutantsHandler).Methods("GET")
 
@@ -36,7 +54,7 @@ func (s *Server) Serve() error {
 }
 
 func (s *Server) getActiveFw(fwName string) fwlib.Framework {
-	for _, fw := range s.fws {
+	for _, fw := range s.frameworks {
 		if fw.Meta().Name == fwName {
 			return fw
 		}
