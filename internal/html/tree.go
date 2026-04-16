@@ -107,6 +107,11 @@ func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *language
 	}
 }
 
+var (
+	nodeStats     = &statsConfig{Coverage: true, Score: true, OfCovered: true}
+	fwHeaderStats = &statsConfig{Count: true, Coverage: true, Score: true, OfCovered: true}
+)
+
 func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPath string, fw fwlib.Framework) {
 	buff.WriteString(fmt.Sprintf("<div class=\"node directory\" style=\"--level: %d;\">"+
 		"<div class=\"spacer\">"+
@@ -119,7 +124,7 @@ func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPat
 		"<img class=\"icon\" src=\"/resources/icons/folder-solid.svg\" alt=\"folder icon\" />"+
 		"<p class=\"name\">%s</p>"+
 		"</div>", level, p.Name))
-	writeWrappedStats(buff, currentPath, fw)
+	writeWrappedStats(buff, currentPath, fw, nodeStats)
 	buff.WriteString("</div>")
 }
 
@@ -132,7 +137,7 @@ func (p *pathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw
 		"<img class=\"icon\" src=\"%s\" alt=\"%s language icon\" />"+
 		"<p class=\"name\">%s</p>"+
 		"</div>", level, prefix, href, lang.Icon(), lang.Name(), p.Name))
-	writeWrappedStats(buff, href, fw)
+	writeWrappedStats(buff, href, fw, nodeStats)
 	buff.WriteString("</a>")
 }
 
@@ -173,7 +178,7 @@ func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 func (t *treeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framework) {
 	buff.WriteString("<div class=\"framework-header\">")
 	writeFrameworkName(buff, fw)
-	writeStats(buff, "", fw)
+	writeStats(buff, "", fw, fwHeaderStats)
 	buff.WriteString("</div>")
 }
 
@@ -184,14 +189,18 @@ func writeFrameworkName(buff *bytes.Buffer, fw fwlib.Framework) {
 		meta.Name, meta.Language.Name(), meta.Name))
 }
 
-func writeWrappedStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework) {
+type statsConfig struct {
+	Count, Coverage, Score, OfCovered, Crashed, Timeout bool
+}
+
+func writeWrappedStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework, config *statsConfig) {
 	buff.WriteString("<div class=\"stats-wrapper\">")
-	writeStats(buff, startPath, fw)
+	writeStats(buff, startPath, fw, config)
 	buff.WriteString("</div>")
 }
 
-func writeStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework) {
-	var total, covered, killed float64
+func writeStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework, config *statsConfig) {
+	var total, covered, killed, crashed, timeout float64
 	for mutPath, conflicts := range fw.Mutations() {
 		if strings.HasPrefix(mutPath, startPath) {
 			for _, conflict := range conflicts {
@@ -200,8 +209,13 @@ func writeStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework) {
 					if mutation.Status != mutations.NoCoverage {
 						covered++
 					}
-					if mutation.Status == mutations.Killed {
+					switch mutation.Status {
+					case mutations.Killed:
 						killed++
+					case mutations.Crashed:
+						crashed++
+					case mutations.Timeout:
+						timeout++
 					}
 				}
 			}
@@ -210,12 +224,29 @@ func writeStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework) {
 	coverage := covered / total * 100
 	score := killed / total * 100
 	ofCovered := killed / covered * 100
-	buff.WriteString(fmt.Sprintf("<p class=\"stats\">coverage: <span class=\"%s\">%.2f%%</span>,</p>",
-		statGradeClass(coverage), coverage))
-	buff.WriteString(fmt.Sprintf("<p class=\"stats\">score: <span class=\"%s\">%.2f%%</span>,</p>",
-		statGradeClass(score), score))
-	buff.WriteString(fmt.Sprintf("<p class=\"stats\">of covered: <span class=\"%s\">%.2f%%</span></p>",
-		statGradeClass(ofCovered), ofCovered))
+	// NOTE: I have moved the titles out of the rendering at the moment as they add a lot of size to the HTML file. I
+	// shall reconsider how to handle these.
+	if config.Count { // Total number of mutants
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">count: %.0f,</p>", total))
+	}
+	if config.Coverage { // Percentage of mutants that are covered by the programs test suite
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">coverage: <span class=\"%s\">%.2f%%</span>,</p>",
+			statGradeClass(coverage), coverage))
+	}
+	if config.Score { // Percentage of mutants that were killed
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">score: <span class=\"%s\">%.2f%%</span>,</p>",
+			statGradeClass(score), score))
+	}
+	if config.OfCovered { // Percentage of covered mutants that were killed
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">of covered: <span class=\"%s\">%.2f%%</span>,</p>",
+			statGradeClass(ofCovered), ofCovered))
+	}
+	if config.Crashed { // Total number of mutants that crashed during execution
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">crashed: %.0f,</p>", crashed))
+	}
+	if config.Timeout { // Total number of mutants that timed out during execution
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">timeout: %.0f</p>", timeout))
+	}
 }
 
 func statGradeClass(stat float64) string {

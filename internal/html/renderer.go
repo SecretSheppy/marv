@@ -145,6 +145,15 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 		"<h3 class=\"content-title\">%s</h3></div>", lang.Icon(), lang.Name(), path.Base(filePath)))
 	buff.WriteString("<div class=\"code-wrapper\">")
 	buff.Write(render)
+	buff.WriteString("</div><div class=\"content-gutter\">")
+	writeStats(&buff, filePath, framework, &statsConfig{
+		Count:     true,
+		Coverage:  true,
+		Score:     true,
+		OfCovered: true,
+		Crashed:   true,
+		Timeout:   true,
+	})
 	buff.WriteString("</div></div></div></body></html>")
 	return buff.Bytes(), nil
 }

@@ -80,6 +80,7 @@ a {
         width: 100%;
         overflow: hidden;
 
+        .content-gutter,
         .content-header {
             height: var(--main-header-height);
             border-bottom: var(--main-divider);
@@ -105,6 +106,16 @@ a {
         .code-wrapper {
             overflow: auto;
             width: 100%;
+        }
+
+        .content-gutter {
+            height: 20px;
+            border-top: var(--main-divider);
+            border-bottom: none;
+
+            .stats {
+                color: var(--main-text-fg);
+            }
         }
     }
 }
