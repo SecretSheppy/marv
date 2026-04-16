@@ -88,7 +88,7 @@ func (p *PathNode) MergeOnlyChildren() {
 }
 
 func (p *PathNode) Render(buff *bytes.Buffer, fw fwlib.Framework) {
-	p.render(buff, fw, fw.Meta().Language, 1, fmt.Sprintf("/%s/mutants", fw.Meta().Name))
+	p.render(buff, fw, fw.Meta().Language, 1, "")
 }
 
 func (p *PathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string) {
@@ -96,18 +96,18 @@ func (p *PathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *language
 	switch p.Type {
 	case Directory:
 		buff.WriteString("<div class=\"directory-wrapper collapsed\">")
-		p.renderDirectoryNode(buff, level)
+		p.renderDirectoryNode(buff, level, currentPath, fw)
 		buff.WriteString("<div class=\"directory-contents\">")
 		for _, child := range p.children {
 			child.render(buff, fw, lang, level+1, currentPath)
 		}
 		buff.WriteString("</div></div>")
 	case File:
-		p.renderFileNode(buff, level, currentPath, fw.Meta().Language)
+		p.renderFileNode(buff, level, currentPath, fw)
 	}
 }
 
-func (p *PathNode) renderDirectoryNode(buff *bytes.Buffer, level int) {
+func (p *PathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPath string, fw fwlib.Framework) {
 	buff.WriteString(fmt.Sprintf("<div class=\"node directory\" style=\"--level: %d;\">"+
 		"<div class=\"spacer\">"+
 		"<div class=\"collapse-toggle\">"+
@@ -118,18 +118,22 @@ func (p *PathNode) renderDirectoryNode(buff *bytes.Buffer, level int) {
 		"<div class=\"icon-name-wrapper\">"+
 		"<img class=\"icon\" src=\"/resources/icons/folder-solid.svg\" alt=\"folder icon\" />"+
 		"<p class=\"name\">%s</p>"+
-		"</div>"+ // closes icon-name-wrapper
 		"</div>", level, p.Name))
+	writeWrappedStats(buff, currentPath, fw)
+	buff.WriteString("</div>")
 }
 
-func (p *PathNode) renderFileNode(buff *bytes.Buffer, level int, href string, lang *languages.Language) {
-	buff.WriteString(fmt.Sprintf("<a class=\"node file\" style=\"--level: %d;\" href=\"%s\">"+
+func (p *PathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw fwlib.Framework) {
+	lang := fw.Meta().Language
+	prefix := fmt.Sprintf("/%s/mutants/", fw.Meta().Name)
+	buff.WriteString(fmt.Sprintf("<a class=\"node file\" style=\"--level: %d;\" href=\"%s%s\">"+
 		"<div class=\"spacer\"></div>"+
 		"<div class=\"icon-name-wrapper\">"+
 		"<img class=\"icon\" src=\"%s\" alt=\"%s language icon\" />"+
 		"<p class=\"name\">%s</p>"+
-		"</div>"+ // closes icon-name-wrapper
-		"</a>", level, href, lang.Icon(), lang.Name(), p.Name))
+		"</div>", level, prefix, href, lang.Icon(), lang.Name(), p.Name))
+	writeWrappedStats(buff, href, fw)
+	buff.WriteString("</a>")
 }
 
 type TreeRenderer struct {
@@ -141,7 +145,7 @@ func NewTreeRenderer(fws []fwlib.Framework) *TreeRenderer {
 }
 
 func (t *TreeRenderer) Render(buff *bytes.Buffer) {
-	buff.WriteString("<div class=\"tree\">")
+	buff.WriteString("<div id=\"fw-tree\" class=\"tree\">")
 	t.renderHeader(buff)
 	buff.WriteString("<div class=\"tree-body\">")
 	for _, fw := range t.fws {
@@ -171,17 +175,31 @@ func (t *TreeRenderer) renderHeader(buff *bytes.Buffer) {
 }
 
 func (t *TreeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framework) {
-	// TODO: refactor this into the mutations package
+	buff.WriteString(fmt.Sprintf("<div class=\"framework-header\">"+
+		"<div class=\"framework-name\">%s</div>", fw.Meta().Name))
+	writeStats(buff, "", fw)
+	buff.WriteString("</div>")
+}
+
+func writeWrappedStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework) {
+	buff.WriteString("<div class=\"stats-wrapper\">")
+	writeStats(buff, startPath, fw)
+	buff.WriteString("</div>")
+}
+
+func writeStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework) {
 	var total, covered, killed float64
-	for _, conflicts := range fw.Mutations() {
-		for _, conflict := range conflicts {
-			for _, mutation := range conflict.Mutations {
-				total++
-				if mutation.Status != mutations.NoCoverage {
-					covered++
-				}
-				if mutation.Status == mutations.Killed {
-					killed++
+	for mutPath, conflicts := range fw.Mutations() {
+		if strings.HasPrefix(mutPath, startPath) {
+			for _, conflict := range conflicts {
+				for _, mutation := range conflict.Mutations {
+					total++
+					if mutation.Status != mutations.NoCoverage {
+						covered++
+					}
+					if mutation.Status == mutations.Killed {
+						killed++
+					}
 				}
 			}
 		}
@@ -189,13 +207,12 @@ func (t *TreeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framew
 	coverage := covered / total * 100
 	score := killed / total * 100
 	ofCovered := killed / covered * 100
-	buff.WriteString(fmt.Sprintf("<div class=\"framework-header\">"+
-		"<div class=\"framework-name\">%s</div>"+
-		"<p class=\"stats\">coverage: <span class=\"%s\">%.2f%%</span>,</p>"+
-		"<p class=\"stats\">score: <span class=\"%s\">%.2f%%</span>,</p>"+
-		"<p class=\"stats\">of covered: <span class=\"%s\">%.2f%%</span></p>"+
-		"</div>", fw.Meta().Name, statGradeClass(coverage), coverage,
-		statGradeClass(score), score, statGradeClass(ofCovered), ofCovered))
+	buff.WriteString(fmt.Sprintf("<p class=\"stats\">coverage: <span class=\"%s\">%.2f%%</span>,</p>",
+		statGradeClass(coverage), coverage))
+	buff.WriteString(fmt.Sprintf("<p class=\"stats\">score: <span class=\"%s\">%.2f%%</span>,</p>",
+		statGradeClass(score), score))
+	buff.WriteString(fmt.Sprintf("<p class=\"stats\">of covered: <span class=\"%s\">%.2f%%</span></p>",
+		statGradeClass(ofCovered), ofCovered))
 }
 
 func statGradeClass(stat float64) string {

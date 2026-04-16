@@ -6,6 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let classList = element.closest('.directory-wrapper').classList;
             classList.toggle('collapsed');
             classList.toggle('expanded');
-        })
-    })
-})
+        });
+    });
+});
