@@ -13,36 +13,36 @@ import (
 	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
-type NodeType int
+type nodeType int
 
 const (
-	Directory NodeType = iota
-	File
+	directory nodeType = iota
+	file
 )
 
-// PathNode represents a node in the file tree. A node can be either a Directory or a File.
-type PathNode struct {
-	Type     NodeType
+// pathNode represents a node in the file tree. A node can be either a directory or a file.
+type pathNode struct {
 	Name     string
-	children []*PathNode
+	Type     nodeType
+	children []*pathNode
 }
 
-func (p *PathNode) AddFile(filePath string) {
-	split := strings.Split(filePath, string(os.PathSeparator))
-	if len(split) > 1 {
-		node := p.ChildNode(split[0])
-		if node == nil {
-			node = &PathNode{Type: Directory, Name: split[0]}
-			p.children = append(p.children, node)
-		}
-		node.AddFile(path.Join(split[1:]...))
-	} else {
-		node := &PathNode{Type: File, Name: split[0]}
+func (p *pathNode) AddFile(filePath string) {
+	parts := strings.Split(filePath, string(os.PathSeparator))
+	if len(parts) == 1 {
+		p.children = append(p.children, &pathNode{Type: file, Name: parts[0]})
+		return
+	}
+
+	node := p.ChildNode(parts[0])
+	if node == nil {
+		node = &pathNode{Type: directory, Name: parts[0]}
 		p.children = append(p.children, node)
 	}
+	node.AddFile(path.Join(parts[1:]...))
 }
 
-func (p *PathNode) SortChildren() {
+func (p *pathNode) SortChildren() {
 	sort.Slice(p.children, func(i, j int) bool {
 		if p.children[i].Type != p.children[j].Type {
 			return p.children[i].Type < p.children[j].Type
@@ -54,11 +54,18 @@ func (p *PathNode) SortChildren() {
 	}
 }
 
-func (p *PathNode) Children() []*PathNode {
+func (p *pathNode) Children() []*pathNode {
 	return p.children
 }
 
-func (p *PathNode) ChildNode(name string) *PathNode {
+func (p *pathNode) FirstChild() *pathNode {
+	if len(p.children) == 0 {
+		return nil
+	}
+	return p.children[0]
+}
+
+func (p *pathNode) ChildNode(name string) *pathNode {
 	for _, child := range p.children {
 		if child.Name == name {
 			return child
@@ -67,14 +74,7 @@ func (p *PathNode) ChildNode(name string) *PathNode {
 	return nil
 }
 
-func (p *PathNode) FirstChild() *PathNode {
-	if len(p.children) == 0 {
-		return nil
-	}
-	return p.children[0]
-}
-
-func (p *PathNode) MergeOnlyChildren() {
+func (p *pathNode) MergeOnlyChildren() {
 	for _, child := range p.children {
 		child.MergeOnlyChildren()
 	}
@@ -87,14 +87,14 @@ func (p *PathNode) MergeOnlyChildren() {
 	}
 }
 
-func (p *PathNode) Render(buff *bytes.Buffer, fw fwlib.Framework) {
+func (p *pathNode) Render(buff *bytes.Buffer, fw fwlib.Framework) {
 	p.render(buff, fw, fw.Meta().Language, 1, "")
 }
 
-func (p *PathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string) {
+func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string) {
 	currentPath := path.Join(accPath, p.Name)
 	switch p.Type {
-	case Directory:
+	case directory:
 		buff.WriteString("<div class=\"directory-wrapper collapsed\">")
 		p.renderDirectoryNode(buff, level, currentPath, fw)
 		buff.WriteString("<div class=\"directory-contents\">")
@@ -102,12 +102,12 @@ func (p *PathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *language
 			child.render(buff, fw, lang, level+1, currentPath)
 		}
 		buff.WriteString("</div></div>")
-	case File:
+	case file:
 		p.renderFileNode(buff, level, currentPath, fw)
 	}
 }
 
-func (p *PathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPath string, fw fwlib.Framework) {
+func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPath string, fw fwlib.Framework) {
 	buff.WriteString(fmt.Sprintf("<div class=\"node directory\" style=\"--level: %d;\">"+
 		"<div class=\"spacer\">"+
 		"<div class=\"collapse-toggle\">"+
@@ -123,7 +123,7 @@ func (p *PathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPat
 	buff.WriteString("</div>")
 }
 
-func (p *PathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw fwlib.Framework) {
+func (p *pathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw fwlib.Framework) {
 	lang := fw.Meta().Language
 	prefix := fmt.Sprintf("/%s/mutants/", fw.Meta().Name)
 	buff.WriteString(fmt.Sprintf("<a class=\"node file\" style=\"--level: %d;\" href=\"%s%s\">"+
@@ -136,22 +136,18 @@ func (p *PathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw
 	buff.WriteString("</a>")
 }
 
-type TreeRenderer struct {
+type treeRenderer struct {
 	fws []fwlib.Framework
 }
 
-func NewTreeRenderer(fws []fwlib.Framework) *TreeRenderer {
-	return &TreeRenderer{fws: fws}
-}
-
-func (t *TreeRenderer) Render(buff *bytes.Buffer) {
+func (t *treeRenderer) Render(buff *bytes.Buffer) {
 	buff.WriteString("<div id=\"fw-tree\" class=\"tree\">")
 	t.renderHeader(buff)
 	buff.WriteString("<div class=\"tree-body\">")
 	for _, fw := range t.fws {
 		buff.WriteString("<div class=\"framework\">")
 		t.renderFrameworkHeader(buff, fw)
-		root := &PathNode{}
+		root := &pathNode{}
 		for k, _ := range fw.Mutations() {
 			root.AddFile(k)
 		}
@@ -163,7 +159,7 @@ func (t *TreeRenderer) Render(buff *bytes.Buffer) {
 	buff.WriteString("</div></div>")
 }
 
-func (t *TreeRenderer) renderHeader(buff *bytes.Buffer) {
+func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 	buff.WriteString("<div class=\"tree-header\">" +
 		"<a href=\"/start\"><img class=\"header-logo\" src=\"/resources/branding/marv_logo.png\" alt=\"marv logo\" /></a>" +
 		"<div class=\"buttons-wrapper\">" +
@@ -174,7 +170,7 @@ func (t *TreeRenderer) renderHeader(buff *bytes.Buffer) {
 		"</div>")
 }
 
-func (t *TreeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framework) {
+func (t *treeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framework) {
 	buff.WriteString(fmt.Sprintf("<div class=\"framework-header\">"+
 		"<div class=\"framework-name\">%s</div>", fw.Meta().Name))
 	writeStats(buff, "", fw)

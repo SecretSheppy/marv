@@ -16,7 +16,7 @@ var paths = []string{
 }
 
 func TestTreeStructure(t *testing.T) {
-	root := PathNode{}
+	root := pathNode{}
 	for _, path := range paths {
 		root.AddFile(path)
 	}
@@ -34,8 +34,8 @@ func TestTreeStructure(t *testing.T) {
 	if test1File == nil {
 		t.Fatal("test/files/location/test1.lang file not found")
 	}
-	if test1File.Type != File {
-		t.Errorf("expected test/files/location/test1.lang type to be %d but got %d", File, test1File.Type)
+	if test1File.Type != file {
+		t.Errorf("expected test/files/location/test1.lang type to be %d but got %d", file, test1File.Type)
 	}
 	files2files := root.
 		ChildNode("test").
@@ -51,7 +51,7 @@ func TestTreeStructure(t *testing.T) {
 }
 
 func TestTreeSorting(t *testing.T) {
-	root := PathNode{}
+	root := pathNode{}
 	for _, path := range paths {
 		root.AddFile(path)
 	}
@@ -76,7 +76,7 @@ func TestTreeSorting(t *testing.T) {
 }
 
 func TestTreeRendering(t *testing.T) {
-	root := PathNode{}
+	root := pathNode{}
 	for _, path := range paths {
 		root.AddFile(path)
 	}

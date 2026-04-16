@@ -11,6 +11,13 @@
         align-items: center;
         justify-content: space-between;
 
+        .header-logo,
+        .header-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .header-logo {
             width: 60px;
             height: auto;
