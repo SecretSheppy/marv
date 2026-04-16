@@ -58,3 +58,20 @@ a {
 .spacer {
     width: 100%;
 }
+
+.layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+
+    .tree {
+        width: 450px;
+        height: 100%;
+    }
+
+    .code-wrapper {
+        overflow: auto;
+        width: 100%;
+    }
+}
