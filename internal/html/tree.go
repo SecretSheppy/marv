@@ -143,7 +143,7 @@ type treeRenderer struct {
 func (t *treeRenderer) Render(buff *bytes.Buffer) {
 	buff.WriteString("<div id=\"fw-tree\" class=\"tree\">")
 	t.renderHeader(buff)
-	buff.WriteString("<div class=\"tree-body\">")
+	buff.WriteString("<div id=\"tree-body\" class=\"tree-body\">")
 	for _, fw := range t.fws {
 		buff.WriteString("<div class=\"framework\">")
 		t.renderFrameworkHeader(buff, fw)
