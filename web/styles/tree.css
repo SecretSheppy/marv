@@ -81,15 +81,8 @@
     display: flex;
 }
 
-.expanded {
-    .icon-expanded,
-    .directory-contents {
-        display: block;
-    }
-
-    .icon-collapsed {
-        display: none;
-    }
+.icon-collapsed {
+    display: none;
 }
 
 .collapsed {

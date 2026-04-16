@@ -142,7 +142,7 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 }
 
 func (r *Renderer) RenderMutant(framework fwlib.Framework, filePath string, mutantID uuid.UUID) ([]byte, error) {
-	title := fmt.Sprintf("[%s] %s -> mutant[%s]", framework, filePath, mutantID)
+	title := fmt.Sprintf("[%s] %s -> mutant[%s]", framework.Meta().Name, filePath, mutantID)
 
 	conflict, mutant := framework.Mutations()[filePath].GetMutant(mutantID)
 	if mutant == nil {
@@ -161,6 +161,6 @@ func (r *Renderer) RenderMutant(framework fwlib.Framework, filePath string, muta
 }
 
 func (r *Renderer) RenderMutants(framework fwlib.Framework, filePath string) ([]byte, error) {
-	title := fmt.Sprintf("[%s] %s", framework, filePath)
+	title := fmt.Sprintf("[%s] %s", framework.Meta().Name, filePath)
 	return r.renderMutants(framework, framework.Mutations()[filePath], filePath, title)
 }
