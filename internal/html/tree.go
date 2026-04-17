@@ -3,7 +3,6 @@ package html
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"path"
 	"sort"
 	"strings"
@@ -28,7 +27,7 @@ type pathNode struct {
 }
 
 func (p *pathNode) AddFile(filePath string) {
-	parts := strings.Split(filePath, string(os.PathSeparator))
+	parts := strings.Split(filePath, "/")
 	if len(parts) == 1 {
 		p.children = append(p.children, &pathNode{Type: file, Name: parts[0]})
 		return
