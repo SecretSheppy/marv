@@ -124,13 +124,16 @@ func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, confli
 	return temp.Bytes(), css, nil
 }
 
-func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.Conflicts, filePath, title string) ([]byte, error) {
+func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.Conflicts, filePath, title string, filteringEnabled bool) ([]byte, error) {
 	var buff bytes.Buffer
 	render, codeStyle, err := r.renderCode(framework, filePath, conflicts)
 	if err != nil {
 		return nil, err
 	}
-	if err := r.renderHead(&buff, title, "<style>"+codeStyle+"</style>"); err != nil {
+	err = r.renderHead(&buff, title,
+		"<style>"+codeStyle+"</style>",
+		fmt.Sprintf("<meta name=\"filtering-enabled\" content=\"%v\">", filteringEnabled))
+	if err != nil {
 		return nil, err
 	}
 
@@ -177,10 +180,10 @@ func (r *Renderer) RenderMutant(framework fwlib.Framework, filePath string, muta
 		},
 	}
 
-	return r.renderMutants(framework, conflicts, filePath, title)
+	return r.renderMutants(framework, conflicts, filePath, title, false)
 }
 
 func (r *Renderer) RenderMutants(framework fwlib.Framework, filePath string) ([]byte, error) {
 	title := fmt.Sprintf("[%s] %s", framework.Meta().Name, filePath)
-	return r.renderMutants(framework, framework.Mutations()[filePath], filePath, title)
+	return r.renderMutants(framework, framework.Mutations()[filePath], filePath, title, true)
 }

@@ -43,6 +43,47 @@ function getStatusFilteringState() {
     return JSON.parse(window.localStorage.getItem(STATUS_FILTERING_STORAGE_STATE_ID));
 }
 
+function changeMutationVisibility(filtersComponent) {
+    if (document.querySelector('meta[name="filtering-enabled"]').content !== 'true') {
+        return;
+    }
+    let codeTable = document.getElementById('code-table');
+    let filters = getFilterInputs(filtersComponent);
+    let showQuery = 'tbody[data-status]';
+    let hideQuery = 'tbody[data-status]';
+    for (let i = 0; i < filters.length; i++) {
+        let part = `:not([data-status="${filters[i].name}"])`;
+        if (filters[i].checked) {
+            hideQuery += part;
+        } else {
+            showQuery += part;
+        }
+    }
+    let conflictIds = new Set();
+    codeTable.querySelectorAll(showQuery).forEach(mutant => {
+        mutant.classList.remove('hidden');
+        conflictIds.add(mutant.getAttribute('data-conflict-id'));
+    });
+    codeTable.querySelectorAll(hideQuery).forEach(mutant => {
+        mutant.classList.add('hidden');
+        conflictIds.add(mutant.getAttribute('data-conflict-id'));
+    });
+    conflictIds.forEach(id => {
+        let mutants = codeTable.querySelectorAll(`tbody[data-conflict-id="${id}"]`);
+        let rawShouldBeShown = true;
+        for (let i = 0; i < mutants.length; i++) {
+            if (!mutants[i].classList.contains('hidden')) {
+                rawShouldBeShown = false;
+            }
+        }
+        if (rawShouldBeShown) {
+            mutants[0].classList.remove('hidden');
+        } else {
+            mutants[0].classList.add('hidden');
+        }
+    });
+}
+
 /**
  * @param {HTMLElement} filtersComponent
  */
@@ -53,7 +94,8 @@ function updateStatusFilteringState(filtersComponent) {
     } else {
         filtersComponent.classList.remove('collapsed');
     }
-    updateFilterStates(filtersComponent, newState.checked)
+    updateFilterStates(filtersComponent, newState.checked);
+    changeMutationVisibility(filtersComponent);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -75,12 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('label.filter').forEach(filter => {
         filter.addEventListener('click', () => {
             saveStatusFilteringState(filtersComponent);
-            // TODO:
-            //  - use querySelectorAll to select all mutants to show
-            //  - if any conflict regions in this stage have their raw source showing, hide it.
-            // TODO:
-            //  - use querySelectorAll to select all mutants to hide
-            //  - if any conflict regions in this stage have no mutants showing, show the raw source.
+            changeMutationVisibility(filtersComponent);
         });
     });
 
