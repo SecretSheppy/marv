@@ -8,7 +8,7 @@ import (
 )
 
 func writeFilters(buff *bytes.Buffer) {
-	buff.WriteString("<div class=\"filters-component collapsed\">" +
+	buff.WriteString("<div id=\"filters\" class=\"filters-component collapsed\">" +
 		"<div id=\"filters-toggle\" class=\"filters-bar\">" +
 		"<img class=\"icon\" src=\"/resources/icons/sliders-solid.svg\" alt=\"filters icon\" />" +
 		"<h4 class=\"bar-title\">Status Filters</h4>" +
@@ -25,8 +25,8 @@ func writeFilters(buff *bytes.Buffer) {
 		"<div class=\"filters-wrapper\">")
 	for _, status := range mutations.Statuses {
 		buff.WriteString(fmt.Sprintf("<label for=\"show-%s\" class=\"filter\">"+
-			"<input id=\"show-%s\" type=\"checkbox\" checked /> %s"+
-			"</label>", status.Text(), status.Text(), status.Text()))
+			"<input id=\"show-%s\" type=\"checkbox\" name=\"%s\" checked /> %s"+
+			"</label>", status.Text(), status.Text(), status.Text(), status.Text()))
 	}
 	buff.WriteString("</div>" + // closes filters-wrapper
 		"</div>" + // closes content-wrapper
