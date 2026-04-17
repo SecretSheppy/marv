@@ -11,6 +11,15 @@
     tbody {
         display: block;
         margin-bottom: 15px;
+
+        &.raw {
+            margin-top: -15px;
+            margin-bottom: 0;
+        }
+
+        &.hidden {
+            display: none;
+        }
     }
 
     /* Styles the main table contents. Lots of embedded classes like .remove and .insert which feature several times

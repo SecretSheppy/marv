@@ -137,18 +137,23 @@ func (r *codeRenderer) padding() int {
 }
 
 func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
-	var builder strings.Builder
+	var buff bytes.Buffer
+	buff.WriteString(fmt.Sprintf("<tbody class=\"raw hidden\" data-conflict-id=\"%s\">", c.ID))
+	for i := c.StartLine; i <= c.EndLine; i++ {
+		r.renderLine(&buff, i+1, lineEqual, r.lines[i])
+	}
+	buff.WriteString("</tbody>")
 	for _, mutation := range c.Mutations {
 		render, err := r.renderMutation(c, mutation)
 		if err != nil {
 			return nil, err
 		}
-		builder.WriteString(render)
+		buff.WriteString(render)
 	}
 	return &renderedConflict{
 		start:  c.StartLine,
 		end:    c.EndLine,
-		render: builder.String(),
+		render: buff.String(),
 	}, nil
 }
 
