@@ -84,6 +84,8 @@
         position: relative;
 
         td .mutation-header {
+            font-family: var(--ui-font-family), sans-serif;
+            font-size: var(--ui-font-size);
             display: flex;
             gap: 10px;
             align-items: center;
@@ -149,8 +151,8 @@
 /* Provides the coloured status box and left side indicator. Also defines positions of status icon and text */
 .status-wrapper {
     display: flex;
-    gap: 5px;
-    padding: 0 10px;
+    gap: 7px;
+    padding: 0 10px 0 12px;
     height: 100%;
     align-items: center;
 
@@ -203,5 +205,10 @@
         &::before {
             background: var(--status-no-coverage-fg);
         }
+    }
+
+    .status-text {
+        font-weight: 500;
+        font-size: var(--ui-font-size);
     }
 }

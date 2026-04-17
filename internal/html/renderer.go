@@ -135,7 +135,10 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	}
 
 	buff.WriteString("<div class=\"layout\">")
+	buff.WriteString("<div class=\"sidebar-wrapper\">")
 	buff.WriteString(r.getTree())
+	writeFilters(&buff)
+	buff.WriteString("</div>") // closes sidebar-wrapper
 
 	meta := framework.Meta()
 	lang := meta.Language
