@@ -138,7 +138,7 @@ func (r *codeRenderer) padding() int {
 
 func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
 	var buff bytes.Buffer
-	buff.WriteString(fmt.Sprintf("<tbody class=\"raw hidden\" data-conflict-id=\"%s\">", c.ID))
+	buff.WriteString(fmt.Sprintf("<tbody class=\"hidden\" data-conflict-id=\"%s\">", c.ID))
 	for i := c.StartLine; i <= c.EndLine; i++ {
 		line, err := r.highlight.HighlightLine(i)
 		if err != nil {

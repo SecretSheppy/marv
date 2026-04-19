@@ -10,17 +10,6 @@
 
     tbody {
         display: block;
-        margin-bottom: 15px;
-
-        &.raw {
-            /*&:first-of-type {*/
-            /*    margin-top: -15px;*/
-            /*}*/
-
-            /*&:not(:last-of-type) {*/
-            /*    margin-bottom: 0;*/
-            /*}*/
-        }
 
         &.hidden {
             display: none;
@@ -96,6 +85,11 @@
     /* Styling for the mutation <tbody> regions. */
     tbody.mutation {
         position: relative;
+        margin-top: 15px;
+
+        &.last {
+            margin-bottom: 15px;
+        }
 
         td .mutation-header {
             font-family: var(--ui-font-family), sans-serif;

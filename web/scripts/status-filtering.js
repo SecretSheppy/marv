@@ -2,6 +2,22 @@
 
 const STATUS_FILTERING_STORAGE_STATE_ID = 'status-filtering';
 
+function styleLastMutants() {
+    console.log('styling');
+    let bodies = document.getElementById('code-table').querySelectorAll('tbody');
+    console.log(bodies);
+    let lastShowingMutant = 0;
+    for (let i = 0; i < bodies.length; i++) {
+        bodies[i].classList.remove('last');
+        if (bodies[i].classList.contains('mutation') && !bodies[i].classList.contains('hidden')) {
+            lastShowingMutant = i;
+        }
+        if (!bodies[i].classList.contains('mutation') && !bodies[i].classList.contains('hidden')) {
+            bodies[lastShowingMutant].classList.add('last');
+        }
+    }
+}
+
 /**
  * @param {HTMLElement} filtersComponent
  * @returns {*}
@@ -45,6 +61,7 @@ function getStatusFilteringState() {
 
 function changeMutationVisibility(filtersComponent) {
     if (document.querySelector('meta[name="filtering-enabled"]').content !== 'true') {
+        styleLastMutants();
         return;
     }
     let codeTable = document.getElementById('code-table');
@@ -82,6 +99,7 @@ function changeMutationVisibility(filtersComponent) {
             mutants[0].classList.add('hidden');
         }
     });
+    styleLastMutants();
 }
 
 /**
@@ -105,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatusFilteringState(filtersComponent);
     } catch (e) {
         // NOTE: this should only happen when there is no existing status filtering data in local storage.
+        styleLastMutants();
         saveStatusFilteringState(filtersComponent);
     }
 
