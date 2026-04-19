@@ -8,6 +8,7 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/html"
+	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -15,13 +16,15 @@ import (
 type Server struct {
 	port       int
 	frameworks []fwlib.Framework
+	db         *review.Repository
 	renderer   *html.Renderer
 }
 
-func NewServer(port int, frameworks []fwlib.Framework) *Server {
+func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *Server {
 	return &Server{
 		port:       port,
 		frameworks: frameworks,
+		db:         db,
 		renderer: html.NewRenderer(&html.Config{
 			Favicon: "/resources/branding/marv_favicon.png",
 			Styles: []string{
@@ -36,7 +39,7 @@ func NewServer(port int, frameworks []fwlib.Framework) *Server {
 				"web/scripts/tree.js",
 				"web/scripts/status-filtering.js",
 			},
-		}, frameworks),
+		}, frameworks, db),
 	}
 }
 

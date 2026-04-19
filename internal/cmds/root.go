@@ -3,14 +3,17 @@ package cmds
 import (
 	"encoding/json"
 	"os"
+	"os/signal"
 	"path"
 	"strconv"
+	"syscall"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
 	"github.com/SecretSheppy/marv/internal/config"
 	"github.com/SecretSheppy/marv/internal/marvinfo"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/internal/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -136,6 +139,41 @@ func exportTransformedMutations(conf *config.Config, activeFws []fwlib.Framework
 	return export(conf, activeFws)
 }
 
+func exportReviews(conf *config.Config, reviews []review.Review, out string) error {
+	marshal, err := json.Marshal(reviews)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(out, marshal, 0644); err != nil {
+		return err
+	}
+	return nil
+}
+
+func exportMutationReviews(conf *config.Config, activeFws []fwlib.Framework, db *review.Repository) error {
+	rs := make([]review.Review, 0)
+	for _, framework := range activeFws {
+		meta := framework.Meta()
+		reviews, err := db.GetReviewsForFramework(meta.Name)
+		if err != nil {
+			return err
+		}
+		if conf.Marv.Output.Merge {
+			rs = append(rs, reviews...)
+			continue
+		}
+		out := path.Join(conf.Marv.Output.Path, meta.Name+"-review.json")
+		if err := exportReviews(conf, reviews, out); err != nil {
+			return err
+		}
+	}
+	if conf.Marv.Output.Merge {
+		out := path.Join(conf.Marv.Output.Path, "mutations-review.json")
+		return exportReviews(conf, rs, out)
+	}
+	return nil
+}
+
 func exportCommand() (*config.Config, []fwlib.Framework) {
 	yml := getMarvYml()
 	conf := getConfig(yml)
@@ -161,8 +199,24 @@ func exportCommand() (*config.Config, []fwlib.Framework) {
 func rootCommand() {
 	conf, activeFws := exportCommand()
 
+	db, err := review.NewRepository()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize review database")
+		os.Exit(1)
+	}
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		_ = <-sigs
+		if err := exportMutationReviews(conf, activeFws, db); err != nil {
+			panic(err)
+		}
+		os.Exit(0)
+	}()
+
 	log.Info().Msgf("Starting server at http://localhost:%d/", conf.Marv.Port)
-	if err := server.NewServer(conf.Marv.Port, activeFws).Serve(); err != nil {
+	if err := server.NewServer(conf.Marv.Port, activeFws, db).Serve(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to serve")
 		os.Exit(1)
 	}

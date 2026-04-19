@@ -8,6 +8,7 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/google/uuid"
 )
@@ -39,13 +40,15 @@ type Renderer struct {
 	cache      cache
 	config     *Config
 	frameworks []fwlib.Framework
+	db         *review.Repository
 }
 
-func NewRenderer(config *Config, frameworks []fwlib.Framework) *Renderer {
+func NewRenderer(config *Config, frameworks []fwlib.Framework, db *review.Repository) *Renderer {
 	return &Renderer{
 		cache:      make(cache),
 		config:     config,
 		frameworks: frameworks,
+		db:         db,
 	}
 }
 
