@@ -158,3 +158,41 @@ func (m Mutations) GenerateIDs() {
 		}
 	}
 }
+
+func (m Mutations) StatisticsFrom(prefix string) Statistics {
+	s := Statistics{
+		StatusCounts: make(map[Status]float64),
+	}
+	for path, conflicts := range m {
+		if strings.HasPrefix(path, prefix) {
+			for _, conflict := range conflicts {
+				for _, mutation := range conflict.Mutations {
+					s.Count++
+					s.StatusCounts[mutation.Status]++
+				}
+			}
+		}
+	}
+	return s
+}
+
+type Statistics struct {
+	Count        float64
+	StatusCounts map[Status]float64
+}
+
+func (s Statistics) covered() float64 {
+	return s.Count - s.StatusCounts[NoCoverage]
+}
+
+func (s Statistics) Coverage() float64 {
+	return s.covered() / s.Count * 100
+}
+
+func (s Statistics) Score() float64 {
+	return s.StatusCounts[Killed] / s.Count * 100
+}
+
+func (s Statistics) ScoreOfCovered() float64 {
+	return s.StatusCounts[Killed] / s.covered() * 100
+}

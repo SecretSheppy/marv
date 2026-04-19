@@ -30,6 +30,7 @@ func NewServer(port int, frameworks []fwlib.Framework) *Server {
 				"web/styles/tree.css",
 				"web/styles/layout.css",
 				"web/styles/filters.css",
+				"web/styles/generic-table.css",
 			},
 			Scripts: []string{
 				"web/scripts/tree.js",
@@ -43,6 +44,7 @@ func (s *Server) Serve() error {
 	r := mux.NewRouter()
 	r.Use(logger)
 	r.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", http.FileServer(http.Dir("web/static"))))
+	r.HandleFunc("/", s.startHandler).Methods("GET")
 	r.HandleFunc("/tree", s.treeHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutant/").HandlerFunc(s.mutantHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutants/").HandlerFunc(s.mutantsHandler).Methods("GET")

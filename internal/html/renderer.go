@@ -91,6 +91,57 @@ func (r *Renderer) renderHead(buff *bytes.Buffer, title string, elements ...stri
 	return nil
 }
 
+func (r *Renderer) RenderStart() ([]byte, error) {
+	title := "Results Overview"
+	var buff bytes.Buffer
+	if err := r.renderHead(&buff, title); err != nil {
+		return nil, err
+	}
+
+	buff.WriteString("<div class=\"layout\">")
+	buff.WriteString("<div class=\"sidebar-wrapper\">")
+	buff.WriteString(r.getTree())
+	writeFilters(&buff)
+	buff.WriteString("</div>")
+
+	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")
+	buff.WriteString("<img class=\"content-icon\" src=\"/resources/icons/chart-simple-solid.svg\" alt=\"chart icon\" />" +
+		fmt.Sprintf("<h3 class=\"content-title\">%s</h3></div>", title))
+
+	buff.WriteString("<div class=\"overflow-wrapper\"><table class=\"generic-table\">")
+	buff.WriteString("<tr>" +
+		"<th>File</th>" +
+		"<th>Coverage</th>" +
+		"<th>Score</th>" +
+		"<th>Score of Covered</th>")
+	for _, status := range mutations.Statuses {
+		buff.WriteString(fmt.Sprintf("<th>%s</th>", status.Text()))
+	}
+	buff.WriteString("</tr>")
+
+	for _, framework := range r.frameworks {
+		meta := framework.Meta()
+		for f, _ := range framework.Mutations() {
+			stats := framework.Mutations().StatisticsFrom(f)
+			buff.WriteString("<tr>")
+			buff.WriteString(fmt.Sprintf("<td><a href=\"/%s/mutants/%s\">"+
+				"<img class=\"icon\" src=\"%s\" alt=\"%s language icon\"/>%s</a></td>",
+				meta.Name, f, meta.Language.Icon(), meta.Language.Name(), f))
+			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Coverage(), 2)))
+			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Score(), 2)))
+			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.ScoreOfCovered(), 2)))
+			for _, status := range mutations.Statuses {
+				buff.WriteString(fmt.Sprintf("<td>%.0f</td>", stats.StatusCounts[status]))
+			}
+			buff.WriteString("</tr>")
+		}
+	}
+
+	buff.WriteString("</table></div></div></body></html>")
+
+	return buff.Bytes(), nil
+}
+
 func (r *Renderer) RenderTree() ([]byte, error) {
 	title := "Frameworks Tree"
 	var buff bytes.Buffer
