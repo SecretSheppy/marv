@@ -2,6 +2,7 @@ package vineflower_server
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +27,9 @@ const port = 8081
 // vineflower-server process that I wrote for Marv. This process is slower than Garlic, but not by that much. Due to
 // its great compatibility, this is the default Java decompiler that Marv will use.
 type VFServer struct {
-	cmd *exec.Cmd
+	cmd    *exec.Cmd
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func (v *VFServer) ExePath() string {
@@ -60,14 +63,20 @@ func (v *VFServer) Setup() error {
 
 	wg.Wait()
 
+	v.ctx, v.cancel = context.WithCancel(context.Background())
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		_ = <-sigs
-		if err := v.Teardown(); err != nil {
-			log.Error().Err(err).Msgf("Failed to kill subprocess %s", v.ExePath())
+	go func(ctx context.Context) {
+		select {
+		case <-ctx.Done():
+			return
+		case <-sigs:
+			if err := v.Teardown(); err != nil {
+				log.Error().Err(err).Msgf("Failed to kill subprocess %s", v.ExePath())
+			}
+			return
 		}
-	}()
+	}(v.ctx)
 
 	return nil
 }
@@ -76,6 +85,7 @@ func (v *VFServer) Teardown() error {
 	if v.cmd != nil {
 		return v.cmd.Process.Kill()
 	}
+	v.cancel()
 	return nil
 }
 
