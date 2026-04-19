@@ -91,14 +91,18 @@
             margin-bottom: 15px;
         }
 
-        td .mutation-header {
+        td .mutation-header,
+        td .all-data-wrapper {
+            display: flex;
             font-family: var(--ui-font-family), sans-serif;
             font-size: var(--ui-font-size);
-            display: flex;
+            background: var(--main-bg);
+            width: 100%;
+        }
+
+        td .mutation-header {
             gap: 10px;
             align-items: center;
-            width: 100%;
-            background: var(--main-bg);
             height: 30px;
 
             *:not(.spacer) {
@@ -109,6 +113,18 @@
                 padding: 0 10px 0 0;
                 display: flex;
                 gap: 10px;
+            }
+        }
+
+        td .all-data-wrapper {
+            flex-direction: column;
+            gap: 4px;
+            height: fit-content;
+            padding: 6px 14px;
+            border-bottom: var(--mutation-border);
+
+            .data-type {
+                font-weight: 600;
             }
         }
 

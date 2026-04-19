@@ -153,14 +153,14 @@ func (r *Renderer) RenderTree() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, conflicts mutations.Conflicts) ([]byte, string, error) {
+func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, conflicts mutations.Conflicts, config *codeRendererConfig) ([]byte, string, error) {
 	absolutePath := path.Join(framework.Yaml().SourceCodeDir(), filePath)
 	lines, err := fio.ReadLines(absolutePath)
 	if err != nil {
 		return nil, "", err
 	}
 	meta := framework.Meta()
-	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts)
+	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config)
 	if err != nil {
 		return nil, "", err
 	}
@@ -175,9 +175,10 @@ func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, confli
 	return temp.Bytes(), css, nil
 }
 
-func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.Conflicts, filePath, title string, filteringEnabled bool) ([]byte, error) {
+func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.Conflicts, filePath, title string, filteringEnabled, extraData bool) ([]byte, error) {
 	var buff bytes.Buffer
-	render, codeStyle, err := r.renderCode(framework, filePath, conflicts)
+	crConfig := &codeRendererConfig{RenderAllMutantData: extraData}
+	render, codeStyle, err := r.renderCode(framework, filePath, conflicts, crConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -231,10 +232,10 @@ func (r *Renderer) RenderMutant(framework fwlib.Framework, filePath string, muta
 		},
 	}
 
-	return r.renderMutants(framework, conflicts, filePath, title, false)
+	return r.renderMutants(framework, conflicts, filePath, title, false, true)
 }
 
 func (r *Renderer) RenderMutants(framework fwlib.Framework, filePath string) ([]byte, error) {
 	title := fmt.Sprintf("[%s] %s", framework.Meta().Name, filePath)
-	return r.renderMutants(framework, framework.Mutations()[filePath], filePath, title, true)
+	return r.renderMutants(framework, framework.Mutations()[filePath], filePath, title, true, false)
 }

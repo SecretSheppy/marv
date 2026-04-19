@@ -47,21 +47,27 @@ func (l lineDiffType) CSSClass() string {
 	}
 }
 
+type codeRendererConfig struct {
+	RenderAllMutantData bool
+}
+
 type codeRenderer struct {
 	ext, framework, file string
 	lines                []string
 	conflicts            mutations.Conflicts
 	highlight            *highlighter.Highlighter
 	lnPadding            int
+	config               *codeRendererConfig
 }
 
-func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts) (*codeRenderer, error) {
+func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts, config *codeRendererConfig) (*codeRenderer, error) {
 	r := &codeRenderer{
 		ext:       ext,
 		framework: framework,
 		file:      file,
 		lines:     lines,
 		conflicts: conflicts,
+		config:    config,
 	}
 	var err error
 	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get("darcula"))
@@ -165,6 +171,9 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\" class=\"mutation\">", m.ID, c.ID, m.Status.Text()))
 	r.renderMutationHeader(&buff, m)
+	if r.config.RenderAllMutantData {
+		r.renderAllMutationData(&buff, m)
+	}
 
 	for i := c.StartLine; i < m.Start.Line; i++ {
 		line, err := r.highlight.HighlightLine(i)
@@ -249,4 +258,25 @@ func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mut
 	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
 	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID, m.ID))
 	buff.WriteString("</div></div></td></tr>")
+}
+
+func (r *codeRenderer) renderAllMutationData(buff *bytes.Buffer, m *mutations.Mutation) {
+	buff.WriteString("<tr><td colspan=\"100%\"><div class=\"all-data-wrapper\">")
+
+	// Marv Mutant ID
+	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutant ID (Marv):</span> %s</p>", m.ID))
+
+	// Framework Mutant ID
+	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutant ID (%s):</span> ", r.framework))
+	if m.FrameworkMutantID == "" {
+		buff.WriteString(fmt.Sprintf("<span class=\"orange\">Framework <strong>%s</strong> does not create mutant ids</span>", r.framework))
+	} else {
+		buff.WriteString(m.FrameworkMutantID)
+	}
+	buff.WriteString("</p>")
+
+	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Description:</span> %s</p>", html.EscapeString(m.Description)))
+
+	// Mutation Operator
+	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutation Operator:</span> %s</p>", html.EscapeString(m.Operation)))
 }
