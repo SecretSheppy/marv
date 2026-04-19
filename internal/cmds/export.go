@@ -1,14 +1,6 @@
 package cmds
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"path"
-
-	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/mutations"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -21,77 +13,6 @@ var exportCmd = &cobra.Command{
 	},
 }
 
-func exportCommand() {
-	_, activeFws := getConfigAndFws()
-
-	for _, fw := range activeFws {
-		if decompiling, ok := fw.(fwlib.Decompiling); ok {
-			decompiling.SetDecompiler()
-		}
-
-		if err := fw.TransformResults(); err != nil {
-			log.Fatal().Err(err).Msg("Failed to transform results")
-			os.Exit(1)
-		}
-
-		fw.Mutations().GenerateIDs()
-	}
-
-	if output != "" {
-		p, err := os.Stat(output)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to read directory metadata")
-			os.Exit(1)
-		}
-		if !p.IsDir() {
-			output = path.Base(output)
-		}
-	}
-
-	if mergeOutput {
-		mergeAndExport(activeFws)
-		return
-	}
-	individualExport(activeFws)
-}
-
-func individualExport(activeFws []fwlib.Framework) {
-	for _, fw := range activeFws {
-		ms := fw.Mutations()
-		marshal, err := json.Marshal(ms)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to marshal marv mutations")
-			os.Exit(1)
-		}
-		if output == "" {
-			fmt.Println(string(marshal))
-			continue
-		}
-		out := path.Join(output, fw.Meta().Name+".json")
-		os.WriteFile(out, marshal, 0644)
-	}
-}
-
-func mergeAndExport(activeFws []fwlib.Framework) {
-	masterMs := mutations.Mutations{}
-	for _, fw := range activeFws {
-		masterMs.Merge(fw.Mutations())
-	}
-	marshal, err := json.Marshal(masterMs)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to marshal marv mutations")
-		os.Exit(1)
-	}
-	if output == "" {
-		fmt.Println(string(marshal))
-		return
-	}
-	out := path.Join(output, "merged-fws-ouput.json")
-	os.WriteFile(out, marshal, 0644)
-}
-
 func init() {
-	exportCmd.Flags().BoolVarP(&mergeOutput, "merge-output", "m", false, "merges all frameworks output into one large json")
-	exportCmd.Flags().StringVarP(&output, "output-path", "o", "", "specifies the output path")
 	rootCmd.AddCommand(exportCmd)
 }

@@ -20,3 +20,21 @@ func FrameworksMap() map[string]fwlib.Framework {
 	}
 	return fws
 }
+
+func ActiveFrameworks(yml []byte) ([]fwlib.Framework, error) {
+	active := make([]fwlib.Framework, 0)
+	for _, fw := range Frameworks() {
+		loaded, err := fw.Yaml().Load(yml)
+		if err != nil {
+			return nil, err
+		}
+		if !loaded {
+			continue
+		}
+		if err := fw.LoadResults(); err != nil {
+			return nil, err
+		}
+		active = append(active, fw)
+	}
+	return active, nil
+}
