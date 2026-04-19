@@ -7,9 +7,10 @@ import (
 )
 
 type Review struct {
-	MutationID uuid.UUID `gorm:"primaryKey"`
-	Framework  string
-	Review     string
+	MutationID          uuid.UUID `gorm:"primaryKey"`
+	FrameworkMutationID string    // improve compatibility where frameworks issue mutant ids
+	Framework           string
+	Review              string
 }
 
 type Repository struct {
