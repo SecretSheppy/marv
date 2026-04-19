@@ -6,43 +6,43 @@ import (
 	"gorm.io/gorm"
 )
 
-// only one db object because Marv should only ever require one review database.
-var db *gorm.DB
-
-func init() {
-	initDB()
-}
-
-func initDB() {
-	var err error
-	db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	db.AutoMigrate(&Review{})
-	if err != nil {
-		panic("failed to create in memory database")
-	}
-}
-
 type Review struct {
 	MutationID uuid.UUID `gorm:"primaryKey"`
 	Framework  string
 	Review     string
 }
 
-func GetReviewByMutationID(id uuid.UUID) (*Review, error) {
+type Repository struct {
+	db *gorm.DB
+}
+
+func NewRepository() (*Repository, error) {
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+	if err := db.AutoMigrate(&Review{}); err != nil {
+		return nil, err
+	}
+	return &Repository{db: db}, err
+}
+
+func (r *Repository) GetReviewByMutationID(id uuid.UUID) (*Review, error) {
 	var review Review
-	if err := db.First(&review, "mutation_id = ?", id).Error; err != nil {
+	if err := r.db.First(&review, "mutation_id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &review, nil
 }
 
-func SaveReview(review *Review) error {
-	return db.FirstOrCreate(review).Error
+func (r *Repository) SaveReview(review *Review) error {
+	return r.db.FirstOrCreate(review).Error
 }
 
-func GetReviewsForFramework(framework string) ([]Review, error) {
+func (r *Repository) GetReviewsForFramework(framework string) ([]Review, error) {
 	var reviews []Review
-	if err := db.Where("framework = ? AND review IS NOT NULL AND review != ''", framework).Find(&reviews).Error; err != nil {
+	err := r.db.Where("framework = ? AND review IS NOT NULL AND review != ''", framework).Find(&reviews).Error
+	if err != nil {
 		return nil, err
 	}
 	return reviews, nil

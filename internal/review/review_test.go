@@ -41,11 +41,11 @@ var (
 	reviewsValidForRetrievalByMockFW = 3
 )
 
-func saveReview(t *testing.T) *Review {
-	if err := SaveReview(review); err != nil {
+func saveReview(t *testing.T, db *Repository) *Review {
+	if err := db.SaveReview(review); err != nil {
 		t.Fatal(err)
 	}
-	fetched, err := GetReviewByMutationID(review.MutationID)
+	fetched, err := db.GetReviewByMutationID(review.MutationID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,18 +56,24 @@ func saveReview(t *testing.T) *Review {
 }
 
 func TestSaveReview(t *testing.T) {
-	initDB()
-	saveReview(t)
+	db, err := NewRepository()
+	if err != nil {
+		t.Fatal(err)
+	}
+	saveReview(t, db)
 }
 
 func TestEditReview(t *testing.T) {
-	initDB()
-	fetched := saveReview(t)
-	fetched.Review = "new review content"
-	if err := SaveReview(fetched); err != nil {
+	db, err := NewRepository()
+	if err != nil {
 		t.Fatal(err)
 	}
-	saved, err := GetReviewByMutationID(review.MutationID)
+	fetched := saveReview(t, db)
+	fetched.Review = "new review content"
+	if err := db.SaveReview(fetched); err != nil {
+		t.Fatal(err)
+	}
+	saved, err := db.GetReviewByMutationID(review.MutationID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,14 +83,17 @@ func TestEditReview(t *testing.T) {
 }
 
 func TestCreateMultipleReviews(t *testing.T) {
-	initDB()
+	db, err := NewRepository()
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, rev := range reviews {
-		if err := SaveReview(rev); err != nil {
+		if err := db.SaveReview(rev); err != nil {
 			t.Fatal(err)
 		}
 	}
 	var count int64
-	if err := db.Model(&Review{}).Count(&count).Error; err != nil {
+	if err := db.db.Model(&Review{}).Count(&count).Error; err != nil {
 		t.Fatal(err)
 	}
 	if int(count) != len(reviews) {
@@ -93,13 +102,16 @@ func TestCreateMultipleReviews(t *testing.T) {
 }
 
 func TestGetReviewsForFramework(t *testing.T) {
-	initDB()
+	db, err := NewRepository()
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, rev := range reviews {
-		if err := SaveReview(rev); err != nil {
+		if err := db.SaveReview(rev); err != nil {
 			t.Fatal(err)
 		}
 	}
-	revs, err := GetReviewsForFramework(fw.Meta().Name)
+	revs, err := db.GetReviewsForFramework(fw.Meta().Name)
 	if err != nil {
 		t.Fatal(err)
 	}
