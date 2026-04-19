@@ -176,6 +176,9 @@ func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, confli
 }
 
 func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.Conflicts, filePath, title string, filteringEnabled, extraData bool) ([]byte, error) {
+	meta := framework.Meta()
+	lang := meta.Language
+
 	var buff bytes.Buffer
 	crConfig := &codeRendererConfig{RenderAllMutantData: extraData}
 	render, codeStyle, err := r.renderCode(framework, filePath, conflicts, crConfig)
@@ -184,7 +187,8 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	}
 	err = r.renderHead(&buff, title,
 		"<style>"+codeStyle+"</style>",
-		fmt.Sprintf("<meta name=\"filtering-enabled\" content=\"%v\">", filteringEnabled))
+		fmt.Sprintf("<meta name=\"filtering-enabled\" content=\"%v\">", filteringEnabled),
+		fmt.Sprintf("<meta name=\"current-file\" content=\"/%s/mutants/%s\">", meta.Name, filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +199,6 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	writeFilters(&buff)
 	buff.WriteString("</div>") // closes sidebar-wrapper
 
-	meta := framework.Meta()
-	lang := meta.Language
 	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")
 	writeFrameworkName(&buff, framework)
 	buff.WriteString(fmt.Sprintf("<img class=\"content-icon\" src=\"%s\" alt=\"%s language icon\" />"+
