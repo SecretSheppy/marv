@@ -165,7 +165,7 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 
 func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 	buff.WriteString("<div class=\"tree-header\">" +
-		"<a href=\"/start\"><img class=\"header-logo\" src=\"/resources/branding/marv_logo.png\" alt=\"marv logo\" /></a>" +
+		"<a href=\"/\"><img class=\"header-logo\" src=\"/resources/branding/marv_logo.png\" alt=\"marv logo\" /></a>" +
 		"<div class=\"buttons-wrapper\">" +
 		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"/resources/icons/crosshair.png\" alt=\"crosshair icon\" /></button>" +
 		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"/resources/icons/up_down.png\" alt=\"up arrow above down arrow icon\" /></button>" +
@@ -199,61 +199,41 @@ func writeWrappedStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework,
 }
 
 func writeStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework, config *statsConfig) {
-	var total, covered, killed, crashed, timeout float64
-	for mutPath, conflicts := range fw.Mutations() {
-		if strings.HasPrefix(mutPath, startPath) {
-			for _, conflict := range conflicts {
-				for _, mutation := range conflict.Mutations {
-					total++
-					if mutation.Status != mutations.NoCoverage {
-						covered++
-					}
-					switch mutation.Status {
-					case mutations.Killed:
-						killed++
-					case mutations.Crashed:
-						crashed++
-					case mutations.Timeout:
-						timeout++
-					}
-				}
-			}
-		}
-	}
-	coverage := covered / total * 100
-	score := killed / total * 100
-	ofCovered := killed / covered * 100
-	// NOTE: I have moved the titles out of the rendering at the moment as they add a lot of size to the HTML file. I
-	// shall reconsider how to handle these.
+	stats := fw.Mutations().StatisticsFrom(startPath)
 	if config.Count { // Total number of mutants
-		buff.WriteString(fmt.Sprintf("<p class=\"stats\">count: %.0f,</p>", total))
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">count: %.0f,</p>", stats.Count))
 	}
 	if config.Coverage { // Percentage of mutants that are covered by the programs test suite
-		buff.WriteString(fmt.Sprintf("<p class=\"stats\">coverage: <span class=\"%s\">%.2f%%</span>,</p>",
-			statGradeClass(coverage), coverage))
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">coverage: %s,</p>",
+			formatColouredStat(stats.Coverage(), 2)))
 	}
 	if config.Score { // Percentage of mutants that were killed
-		buff.WriteString(fmt.Sprintf("<p class=\"stats\">score: <span class=\"%s\">%.2f%%</span>,</p>",
-			statGradeClass(score), score))
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">score: %s,</p>",
+			formatColouredStat(stats.Score(), 2)))
 	}
 	if config.OfCovered { // Percentage of covered mutants that were killed
-		buff.WriteString(fmt.Sprintf("<p class=\"stats\">of covered: <span class=\"%s\">%.2f%%</span>,</p>",
-			statGradeClass(ofCovered), ofCovered))
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">of covered: %s,</p>",
+			formatColouredStat(stats.ScoreOfCovered(), 2)))
 	}
 	if config.Crashed { // Total number of mutants that crashed during execution
-		buff.WriteString(fmt.Sprintf("<p class=\"stats\">crashed: %.0f,</p>", crashed))
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">crashed: %.0f,</p>",
+			stats.StatusCounts[mutations.Crashed]))
 	}
 	if config.Timeout { // Total number of mutants that timed out during execution
-		buff.WriteString(fmt.Sprintf("<p class=\"stats\">timeout: %.0f</p>", timeout))
+		buff.WriteString(fmt.Sprintf("<p class=\"stats\">timeout: %.0f</p>",
+			stats.StatusCounts[mutations.Timeout]))
 	}
 }
 
-func statGradeClass(stat float64) string {
-	if stat >= 80 {
-		return "green"
+func formatColouredStat(stat float64, decimalPlaces int) string {
+	var class string
+	switch true {
+	case stat >= 80:
+		class = "green"
+	case stat >= 60:
+		class = "orange"
+	default:
+		class = "red"
 	}
-	if stat >= 60 {
-		return "orange"
-	}
-	return "red"
+	return fmt.Sprintf("<span class=\"%s\">%.*f%%</span>", class, decimalPlaces, stat)
 }

@@ -49,7 +49,7 @@ func rootCommand() {
 		fw.Mutations().GenerateIDs()
 	}
 
-	log.Info().Msg("Starting server")
+	log.Info().Msgf("Starting server at http://localhost:%d/", port)
 	if err := server.NewServer(port, activeFws).Serve(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to serve")
 		os.Exit(1)
