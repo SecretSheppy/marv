@@ -3,7 +3,8 @@
 const TREE_STORAGE_STATE_ID = 'tree-state';
 
 function showCurrentlyOpenFile() {
-    let fileNode = document.querySelector(`a[href="${window.location.pathname}"]`);
+    let currentFileNode = document.querySelector('meta[name="current-file"]')
+    let fileNode = document.querySelector(`a[href="${currentFileNode.content}"]`);
     expandUpwardsToRoot(fileNode);
     fileNode.scrollIntoView({ block: 'start', inline: 'nearest' });
     fileNode.focus();
