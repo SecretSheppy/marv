@@ -1,6 +1,6 @@
 'use strict';
 
-const STORAGE_STATE_ID = 'tree-state'
+const TREE_STORAGE_STATE_ID = 'tree-state';
 
 function showCurrentlyOpenFile() {
     let fileNode = document.querySelector(`a[href="${window.location.pathname}"]`);
@@ -61,7 +61,7 @@ function getCurrentTreeDirectoryStates() {
 
 function saveTreeState() {
     let treeBody = document.getElementById('tree-body');
-    window.localStorage.setItem(STORAGE_STATE_ID, JSON.stringify({
+    window.localStorage.setItem(TREE_STORAGE_STATE_ID, JSON.stringify({
         directoryStates: getCurrentTreeDirectoryStates(),
         scroll: {
             top: treeBody.scrollTop,
@@ -71,7 +71,7 @@ function saveTreeState() {
 }
 
 function getTreeState() {
-    return JSON.parse(localStorage.getItem(STORAGE_STATE_ID));
+    return JSON.parse(localStorage.getItem(TREE_STORAGE_STATE_ID));
 }
 
 /**
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tree-body').addEventListener('scroll', () => saveTreeState());
 
     window.addEventListener('storage', event => {
-        if (event.key === STORAGE_STATE_ID) {
+        if (event.key === TREE_STORAGE_STATE_ID) {
             updateTreeState();
         }
     })

@@ -95,7 +95,7 @@ func (r *codeRenderer) render() ([]byte, error) {
 	}
 
 	var buff bytes.Buffer
-	buff.WriteString("<table class=\"bg code\">")
+	buff.WriteString("<table id=\"code-table\" class=\"bg code\">")
 	for i := 0; i < len(r.lines); i++ {
 		if len(rendered) > 0 {
 			if conflict := rendered[0]; conflict.start == i {
@@ -137,18 +137,27 @@ func (r *codeRenderer) padding() int {
 }
 
 func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
-	var builder strings.Builder
+	var buff bytes.Buffer
+	buff.WriteString(fmt.Sprintf("<tbody class=\"hidden\" data-conflict-id=\"%s\">", c.ID))
+	for i := c.StartLine; i <= c.EndLine; i++ {
+		line, err := r.highlight.HighlightLine(i)
+		if err != nil {
+			return nil, err
+		}
+		r.renderLine(&buff, i+1, lineEqual, line)
+	}
+	buff.WriteString("</tbody>")
 	for _, mutation := range c.Mutations {
 		render, err := r.renderMutation(c, mutation)
 		if err != nil {
 			return nil, err
 		}
-		builder.WriteString(render)
+		buff.WriteString(render)
 	}
 	return &renderedConflict{
 		start:  c.StartLine,
 		end:    c.EndLine,
-		render: builder.String(),
+		render: buff.String(),
 	}, nil
 }
 

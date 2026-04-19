@@ -28,9 +28,12 @@ func NewServer(port int, frameworks []fwlib.Framework) *Server {
 				"web/styles/main.css",
 				"web/styles/code.css",
 				"web/styles/tree.css",
+				"web/styles/layout.css",
+				"web/styles/filters.css",
 			},
 			Scripts: []string{
 				"web/scripts/tree.js",
+				"web/scripts/status-filtering.js",
 			},
 		}, frameworks),
 	}
