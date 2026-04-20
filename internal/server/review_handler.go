@@ -34,9 +34,13 @@ func (s *Server) reviewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, mutation := framework.Mutations()[reviewReq.File].GetMutant(mutantID)
+	fwid := ""
+	if mutation != nil {
+		fwid = mutation.FrameworkMutantID
+	}
 	rev := &review.Review{
 		MutationID:          mutantID,
-		FrameworkMutationID: mutation.FrameworkMutantID,
+		FrameworkMutationID: fwid,
 		Framework:           fwName,
 		Review:              reviewReq.Review,
 	}
