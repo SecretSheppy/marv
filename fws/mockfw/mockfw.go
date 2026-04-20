@@ -16,10 +16,6 @@ func (y *YamlWrapper) Load(_ []byte) (bool, error) {
 	return false, nil
 }
 
-func (y *YamlWrapper) SourceCodeDir() string {
-	return ""
-}
-
 // MockFW is a framework that is only for use when testing methods that require a fwlib.Framework as a parameter. It
 // allows you to set the mutations that are returned and has a Meta value, but otherwise returns nil or false in all
 // cases.
