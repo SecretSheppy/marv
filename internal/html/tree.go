@@ -80,7 +80,11 @@ func (p *pathNode) MergeOnlyChildren() {
 
 	if len(p.children) == 1 {
 		firstChild := p.children[0]
-		p.Name = fmt.Sprintf("%s/%s", p.Name, firstChild.Name)
+		if p.Name == "" {
+			p.Name = firstChild.Name
+		} else {
+			p.Name = fmt.Sprintf("%s/%s", p.Name, firstChild.Name)
+		}
 		p.Type = firstChild.Type
 		p.children = firstChild.children
 	}
@@ -155,9 +159,9 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 		for k, _ := range fw.Mutations() {
 			root.AddFile(k)
 		}
-		root.FirstChild().MergeOnlyChildren()
+		root.MergeOnlyChildren()
 		root.SortChildren()
-		root.FirstChild().Render(buff, fw)
+		root.Render(buff, fw)
 		buff.WriteString("</div>")
 	}
 	buff.WriteString("</div></div>")
