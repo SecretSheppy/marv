@@ -8,6 +8,7 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/html"
+	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -15,13 +16,15 @@ import (
 type Server struct {
 	port       int
 	frameworks []fwlib.Framework
+	db         *review.Repository
 	renderer   *html.Renderer
 }
 
-func NewServer(port int, frameworks []fwlib.Framework) *Server {
+func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *Server {
 	return &Server{
 		port:       port,
 		frameworks: frameworks,
+		db:         db,
 		renderer: html.NewRenderer(&html.Config{
 			Favicon: "/resources/branding/marv_favicon.png",
 			Styles: []string{
@@ -30,13 +33,14 @@ func NewServer(port int, frameworks []fwlib.Framework) *Server {
 				"web/styles/tree.css",
 				"web/styles/layout.css",
 				"web/styles/filters.css",
-				"web/styles/generic-table.css",
+				"web/styles/generic.css",
 			},
 			Scripts: []string{
 				"web/scripts/tree.js",
 				"web/scripts/status-filtering.js",
+				"web/scripts/review.js",
 			},
-		}, frameworks),
+		}, frameworks, db),
 	}
 }
 
@@ -48,6 +52,7 @@ func (s *Server) Serve() error {
 	r.HandleFunc("/tree", s.treeHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutant/").HandlerFunc(s.mutantHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutants/").HandlerFunc(s.mutantsHandler).Methods("GET")
+	r.HandleFunc("/api/review/{framework}/{mutant-id}", s.reviewHandler).Methods("PUT")
 
 	srv := &http.Server{
 		Handler:      r,
@@ -84,4 +89,10 @@ func writeError(w http.ResponseWriter, r *http.Request, err error, code int, mes
 	buff.WriteString(fmt.Sprintf("<p style=\"color:#a1afb8;\">%s</p>", message))
 	buff.WriteString("</div></body></html>")
 	w.Write(buff.Bytes())
+}
+
+func writeAPIError(w http.ResponseWriter, r *http.Request, err error, code int, message string) {
+	log.Error().Err(err).Str("path", r.URL.Path).Msg(message)
+	w.WriteHeader(http.StatusBadRequest)
+	w.Write([]byte(message))
 }

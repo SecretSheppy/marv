@@ -8,6 +8,7 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/google/uuid"
 )
@@ -39,13 +40,15 @@ type Renderer struct {
 	cache      cache
 	config     *Config
 	frameworks []fwlib.Framework
+	db         *review.Repository
 }
 
-func NewRenderer(config *Config, frameworks []fwlib.Framework) *Renderer {
+func NewRenderer(config *Config, frameworks []fwlib.Framework, db *review.Repository) *Renderer {
 	return &Renderer{
 		cache:      make(cache),
 		config:     config,
 		frameworks: frameworks,
+		db:         db,
 	}
 }
 
@@ -160,7 +163,7 @@ func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, confli
 		return nil, "", err
 	}
 	meta := framework.Meta()
-	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config)
+	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config, r.db)
 	if err != nil {
 		return nil, "", err
 	}
@@ -188,7 +191,8 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	err = r.renderHead(&buff, title,
 		"<style>"+codeStyle+"</style>",
 		fmt.Sprintf("<meta name=\"filtering-enabled\" content=\"%v\">", filteringEnabled),
-		fmt.Sprintf("<meta name=\"current-file\" content=\"/%s/mutants/%s\">", meta.Name, filePath))
+		fmt.Sprintf("<meta name=\"current-file\" content=\"/%s/mutants/%s\">", meta.Name, filePath),
+		fmt.Sprintf("<meta name=\"current-framework\" content=\"%s\">", meta.Name))
 	if err != nil {
 		return nil, err
 	}

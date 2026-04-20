@@ -3,9 +3,7 @@
 const STATUS_FILTERING_STORAGE_STATE_ID = 'status-filtering';
 
 function styleLastMutants() {
-    console.log('styling');
     let bodies = document.getElementById('code-table').querySelectorAll('tbody');
-    console.log(bodies);
     let lastShowingMutant = 0;
     for (let i = 0; i < bodies.length; i++) {
         bodies[i].classList.remove('last');

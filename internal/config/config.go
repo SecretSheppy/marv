@@ -1,14 +1,19 @@
 package config
 
-type Features struct {
-	ToolRunner   bool `yaml:"tool-runner"`
-	FileWatchers bool `yaml:"file-watchers"`
+const (
+	DefaultPort  = 8080
+	DefaultPath  = ".marv"
+	DefaultMerge = false
+)
+
+type Output struct {
+	Path  string
+	Merge bool
 }
 
 type Marv struct {
-	Port      int      `yaml:"port"`
-	ReviewDir string   `yaml:"review-dir"`
-	Features  Features `yaml:"features"`
+	Port   int    `yaml:"port"`
+	Output Output `yaml:"output"`
 }
 
 type Config struct {
@@ -19,8 +24,11 @@ type Config struct {
 func Init() *Config {
 	return &Config{
 		Marv{
-			Port:      8080,
-			ReviewDir: ".marv/reviews",
+			Port: DefaultPort,
+			Output: Output{
+				Path:  DefaultPath,
+				Merge: DefaultMerge,
+			},
 		},
 	}
 }

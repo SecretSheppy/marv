@@ -34,5 +34,8 @@ go.work.sum
 # External Libraries
 lib
 
+# Default Export Dir
+.marv
+
 # Test Datasets
 .test_datasets
