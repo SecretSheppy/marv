@@ -227,7 +227,7 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		r.renderLine(&buff, 0, lineInserted, code)
 	}
 
-	for i := m.End.Line; i < c.EndLine; i++ {
+	for i := m.End.Line + 1; i <= c.EndLine; i++ {
 		line, err := r.highlight.HighlightLine(i)
 		if err != nil {
 			return "", err
