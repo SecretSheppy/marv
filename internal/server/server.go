@@ -38,6 +38,7 @@ func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *S
 			Scripts: []string{
 				"web/scripts/tree.js",
 				"web/scripts/status-filtering.js",
+				"web/scripts/review.js",
 			},
 		}, frameworks, db),
 	}

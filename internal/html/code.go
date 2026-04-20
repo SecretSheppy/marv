@@ -265,7 +265,7 @@ func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mut
 	buff.WriteString(m.Status.IconWithText())
 	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.Description)))
 	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
-	buff.WriteString("<button class=\"option-btn\"><img class=\"icon\" src=\"/resources/icons/pen-solid.svg\" alt=\"pen icon\" />Review</button>")
+	buff.WriteString("<button class=\"review-btn option-btn\"><img class=\"icon\" src=\"/resources/icons/pen-solid.svg\" alt=\"pen icon\" />Review</button>")
 	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID, m.ID))
 	buff.WriteString("</div></div></td></tr>")
 }
@@ -296,11 +296,17 @@ func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutati
 	switch true {
 	case errors.Is(err, gorm.ErrRecordNotFound):
 		rev = &review.Review{}
-	default:
+	case err != nil:
 		return err
 	}
 
-	buff.WriteString(fmt.Sprintf("<tr class=\"hidden\"><td colspan=\"100%%\">"+
+	buff.WriteString("<tr class=\"review")
+	if rev.Review == "" {
+		buff.WriteString(" hidden")
+	}
+	buff.WriteString("\">")
+
+	buff.WriteString(fmt.Sprintf("<td colspan=\"100%%\">"+
 		"<div class=\"review-wrapper\">"+
 		"<div class=\"review-header\">"+
 		"<label for=\"review-%s\" class=\"generic-label\">Add Review</label>"+
@@ -310,7 +316,7 @@ func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutati
 		"<p class=\"loader-status\">Saved</p>"+
 		"</div>"+ // closes loader-wrapper
 		"</div>"+ // closes review-header
-		"<textarea id=\"review-%s\" class=\"generic-textarea\" type=\"text\" value=\"%s\" placeholder=\"Enter review...\"></textarea>"+
+		"<textarea id=\"review-%s\" class=\"generic-textarea\" type=\"text\" placeholder=\"Enter review...\">%s</textarea>"+
 		"</div>"+
 		"</td></tr>", m.ID, m.ID, rev.Review))
 	return nil

@@ -191,7 +191,8 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	err = r.renderHead(&buff, title,
 		"<style>"+codeStyle+"</style>",
 		fmt.Sprintf("<meta name=\"filtering-enabled\" content=\"%v\">", filteringEnabled),
-		fmt.Sprintf("<meta name=\"current-file\" content=\"/%s/mutants/%s\">", meta.Name, filePath))
+		fmt.Sprintf("<meta name=\"current-file\" content=\"/%s/mutants/%s\">", meta.Name, filePath),
+		fmt.Sprintf("<meta name=\"current-framework\" content=\"%s\">", meta.Name))
 	if err != nil {
 		return nil, err
 	}

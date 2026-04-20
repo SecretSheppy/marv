@@ -10,8 +10,8 @@ import (
 )
 
 type reviewRequest struct {
-	File   string
-	Review string
+	File   string `json:"file"`
+	Review string `json:"review"`
 }
 
 func (s *Server) reviewHandler(w http.ResponseWriter, r *http.Request) {
