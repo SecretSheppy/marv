@@ -11,6 +11,7 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
@@ -40,10 +41,6 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 		return false, nil
 	}
 	return y.Cfg.Src != "" || y.Cfg.JsonDir != "", nil
-}
-
-func (y *YamlWrapper) SourceCodeDir() string {
-	return y.Cfg.Src
 }
 
 // Evaluation marshals to evaluation.json from the mutest output data
@@ -217,4 +214,8 @@ func getMutationStatus(id int, ev *Evaluation) (mutations.Status, error) {
 
 func (m *MutestRS) Mutations() mutations.Mutations {
 	return m.ms
+}
+
+func (m *MutestRS) ReadLines(file string) ([]string, error) {
+	return fio.ReadLines(path.Join(m.yml.Cfg.Src, file))
 }

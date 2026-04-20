@@ -29,8 +29,6 @@ type FWConfig interface {
 	Init() interface{}
 	// Load unmarshals the yml data into the struct if it exists, and returns true if any configuration was loaded.
 	Load(yml []byte) (bool, error)
-	// SourceCodeDir returns the path to the source code directory.
-	SourceCodeDir() string
 }
 
 // Framework defines what methods an extension must have in order to interact with the marv system.
@@ -45,4 +43,6 @@ type Framework interface {
 	TransformResults() error
 	// Mutations returns the mutations in the marv format. Returns nil if TransformResults has not been called.
 	Mutations() mutations.Mutations
+	// ReadLines returns the lines of the specified file
+	ReadLines(file string) ([]string, error)
 }

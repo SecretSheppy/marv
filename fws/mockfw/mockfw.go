@@ -50,3 +50,7 @@ func (m *MockFW) TransformResults() error {
 func (m *MockFW) Mutations() mutations.Mutations {
 	return m.Muts
 }
+
+func (m *MockFW) ReadLines(_ string) ([]string, error) {
+	return nil, nil
+}

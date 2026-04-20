@@ -9,7 +9,6 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
-	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/google/uuid"
 )
 
@@ -157,8 +156,7 @@ func (r *Renderer) RenderTree() ([]byte, error) {
 }
 
 func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, conflicts mutations.Conflicts, config *codeRendererConfig) ([]byte, string, error) {
-	absolutePath := path.Join(framework.Yaml().SourceCodeDir(), filePath)
-	lines, err := fio.ReadLines(absolutePath)
+	lines, err := framework.ReadLines(filePath)
 	if err != nil {
 		return nil, "", err
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/rs/zerolog/log"
 	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
@@ -44,10 +45,6 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 		return false, nil
 	}
 	return y.Cfg.XmlPath != "" || y.Cfg.SrcCodePath != "" || y.Cfg.SrcClassPath != "" || y.Cfg.MutClassPath != "", nil
-}
-
-func (y *YamlWrapper) SourceCodeDir() string {
-	return y.Cfg.SrcCodePath
 }
 
 // FileMutations stores all mutants of the same file against the string of the full file path.
@@ -199,6 +196,10 @@ func (p *Pitest) TransformResults() error {
 
 func (p *Pitest) Mutations() mutations.Mutations {
 	return p.ms
+}
+
+func (p *Pitest) ReadLines(file string) ([]string, error) {
+	return fio.ReadLines(path.Join(p.yml.Cfg.SrcCodePath, file))
 }
 
 func streamlineMutation(m *Mutation, starts, ends *mutations.Range) *mutations.Mutation {
