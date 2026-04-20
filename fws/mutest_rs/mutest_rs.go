@@ -17,6 +17,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var meta = fwlib.Meta{
+	Name:     "mutest-rs",
+	Language: languages.Rust,
+	URL:      "https://github.com/zalanlevai/mutest-rs",
+}
+
 // YamlConfig represents Mutest-RS yml config data.
 type YamlConfig struct {
 	Run     string `yaml:"run"`
@@ -96,11 +102,7 @@ func NewMutestRS() *MutestRS {
 }
 
 func (m *MutestRS) Meta() *fwlib.Meta {
-	return &fwlib.Meta{
-		Name:     "mutest-rs",
-		Language: languages.Rust,
-		URL:      "https://github.com/zalanlevai/mutest-rs",
-	}
+	return &meta
 }
 
 func (m *MutestRS) Yaml() fwlib.FWConfig {

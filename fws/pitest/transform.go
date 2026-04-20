@@ -77,7 +77,7 @@ func (e *transformError) Error() string {
 }
 
 func (e *transformError) log() {
-	log.Error().Err(e.Err).Str("file", e.File).Str("decompiler", e.Decompiler).Msgf("%s - %s", FWName, e.Message)
+	log.Error().Err(e.Err).Str("file", e.File).Str("decompiler", e.Decompiler).Msgf("%s - %s", meta.Name, e.Message)
 }
 
 func newTransformError(err error, message, file, decompiler string) transformError {

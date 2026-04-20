@@ -17,7 +17,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const FWName = "Pitest"
+var meta = fwlib.Meta{
+	Name:     "Pitest",
+	Language: languages.Java,
+	URL:      "https://pitest.org/",
+}
 
 // YamlConfig represents Pitest's yml config data.
 type YamlConfig struct {
@@ -115,11 +119,7 @@ func (p *Pitest) SetDecompiler() {
 }
 
 func (p *Pitest) Meta() *fwlib.Meta {
-	return &fwlib.Meta{
-		Name:     FWName,
-		Language: languages.Java,
-		URL:      "https://pitest.org/",
-	}
+	return &meta
 }
 
 func (p *Pitest) Yaml() fwlib.FWConfig {
