@@ -2,14 +2,17 @@ package html
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html"
 	"strconv"
 	"strings"
 
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/pkg/highlighter"
 	"github.com/alecthomas/chroma/v2/styles"
+	"gorm.io/gorm"
 )
 
 type renderedConflict struct {
@@ -58,9 +61,10 @@ type codeRenderer struct {
 	highlight            *highlighter.Highlighter
 	lnPadding            int
 	config               *codeRendererConfig
+	db                   *review.Repository
 }
 
-func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts, config *codeRendererConfig) (*codeRenderer, error) {
+func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts, config *codeRendererConfig, db *review.Repository) (*codeRenderer, error) {
 	r := &codeRenderer{
 		ext:       ext,
 		framework: framework,
@@ -68,6 +72,7 @@ func newCodeRenderer(ext, framework, file string, lines []string, conflicts muta
 		lines:     lines,
 		conflicts: conflicts,
 		config:    config,
+		db:        db,
 	}
 	var err error
 	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get("darcula"))
@@ -230,6 +235,10 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		r.renderLine(&buff, i+1, lineEqual, line)
 	}
 
+	if err := r.renderReviewField(&buff, m); err != nil {
+		return "", err
+	}
+
 	buff.WriteString("</tbody>")
 	return buff.String(), nil
 }
@@ -256,6 +265,7 @@ func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mut
 	buff.WriteString(m.Status.IconWithText())
 	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.Description)))
 	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
+	buff.WriteString("<button class=\"option-btn\"><img class=\"icon\" src=\"/resources/icons/pen-solid.svg\" alt=\"pen icon\" />Review</button>")
 	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID, m.ID))
 	buff.WriteString("</div></div></td></tr>")
 }
@@ -279,4 +289,29 @@ func (r *codeRenderer) renderAllMutationData(buff *bytes.Buffer, m *mutations.Mu
 
 	// Mutation Operator
 	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutation Operator:</span> %s</p>", html.EscapeString(m.Operation)))
+}
+
+func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutation) error {
+	rev, err := r.db.GetReviewByMutationID(m.ID)
+	switch true {
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		rev = &review.Review{}
+	default:
+		return err
+	}
+
+	buff.WriteString(fmt.Sprintf("<tr class=\"hidden\"><td colspan=\"100%%\">"+
+		"<div class=\"review-wrapper\">"+
+		"<div class=\"review-header\">"+
+		"<label for=\"review-%s\" class=\"generic-label\">Add Review</label>"+
+		"<div class=\"loader-wrapper saved\">"+
+		"<img class=\"saved-icon\" src=\"/resources/icons/circle-check-solid.svg\" alt=\"saved icon\" />"+
+		"<div class=\"loader\"></div>"+
+		"<p class=\"loader-status\">Saved</p>"+
+		"</div>"+ // closes loader-wrapper
+		"</div>"+ // closes review-header
+		"<textarea id=\"review-%s\" class=\"generic-textarea\" type=\"text\" value=\"%s\" placeholder=\"Enter review...\"></textarea>"+
+		"</div>"+
+		"</td></tr>", m.ID, m.ID, rev.Review))
+	return nil
 }

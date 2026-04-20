@@ -33,7 +33,7 @@ func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *S
 				"web/styles/tree.css",
 				"web/styles/layout.css",
 				"web/styles/filters.css",
-				"web/styles/generic-table.css",
+				"web/styles/generic.css",
 			},
 			Scripts: []string{
 				"web/scripts/tree.js",

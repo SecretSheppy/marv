@@ -1,0 +1,88 @@
+.generic-table {
+    border-collapse: collapse;
+    font-family: var(--ui-font-family), sans-serif;
+    font-size: var(--ui-font-size);
+    color: var(--main-text-fg);
+    white-space: nowrap;
+    width: 100%;
+
+    th, td {
+        padding: 6px 10px;
+    }
+
+    th {
+        font-size: var(--ui-title-size);
+        background: var(--main-bg);
+        text-align: left;
+        border-bottom: var(--mutation-border);
+
+        &:not(:last-child) {
+            border-right: var(--main-divider);
+        }
+    }
+
+    td {
+        border-bottom: var(--mutation-border);
+        text-align: right;
+
+        &:not(:last-child) {
+            border-right: var(--mutation-border);
+        }
+
+        a {
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon {
+            width: 16px;
+        }
+    }
+}
+
+.generic-label {
+    font-weight: 600;
+}
+
+.generic-textarea,
+.generic-input {
+    border-radius: 4px;
+    border: var(--mutation-border);
+    background: var(--code-bg);
+    width: 100%;
+    color: var(--main-text-fg);
+    font-family: var(--ui-font-family), sans-serif;
+    font-size: var(--ui-font-size);
+    padding: 4px 8px;
+
+    &:focus,
+    &:active {
+        outline: solid 2px var(--theme-focus-bg);
+        outline-offset: -1px;
+    }
+}
+
+.generic-textarea {
+    resize: vertical;
+    height: 100px;
+}
+
+/* https://css-loaders.com/dots/ */
+/* HTML: <div class="loader"></div> */
+/* HTML: <div class="loader"></div> */
+/* HTML: <div class="loader"></div> */
+.loader {
+    width: 16px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+            radial-gradient(farthest-side,var(--theme-focus-bg) 94%,#0000) top/4px 4px no-repeat,
+            conic-gradient(#0000 30%,var(--theme-focus-bg));
+    -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 4px),#000 0);
+    animation: l13 1s infinite linear;
+}
+@keyframes l13{
+    100%{transform: rotate(1turn)}
+}

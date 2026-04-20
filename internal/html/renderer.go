@@ -163,7 +163,7 @@ func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, confli
 		return nil, "", err
 	}
 	meta := framework.Meta()
-	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config)
+	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config, r.db)
 	if err != nil {
 		return nil, "", err
 	}

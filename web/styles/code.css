@@ -8,12 +8,12 @@
     border-collapse: collapse;
     width: 100%;
 
+    .hidden {
+        display: none;
+    }
+
     tbody {
         display: block;
-
-        &.hidden {
-            display: none;
-        }
     }
 
     /* Styles the main table contents. Lots of embedded classes like .remove and .insert which feature several times
@@ -92,7 +92,8 @@
         }
 
         td .mutation-header,
-        td .all-data-wrapper {
+        td .all-data-wrapper,
+        td .review-wrapper {
             display: flex;
             font-family: var(--ui-font-family), sans-serif;
             font-size: var(--ui-font-size);
@@ -110,21 +111,85 @@
             }
 
             .mutation-options {
-                padding: 0 10px 0 0;
+                padding: 0 8px 0 0;
                 display: flex;
-                gap: 10px;
+                align-items: center;
+                gap: 6px;
+
+                a {
+                    border-radius: 4px;
+                    padding: 0 4px;
+
+                    &:hover {
+                        background: var(--main-hover-bg);
+                    }
+                }
+            }
+
+            .option-btn {
+                display: flex;
+                gap: 6px;
+                align-items: center;
+                background: none;
+                border-radius: 4px;
+                color: var(--main-text-fg);
+                border: none;
+
+                .icon {
+                    height: 12px;
+                }
+
+                &:hover {
+                    background: var(--main-hover-bg);
+                }
             }
         }
 
-        td .all-data-wrapper {
+        td .all-data-wrapper,
+        td .review-wrapper {
             flex-direction: column;
             gap: 4px;
             height: fit-content;
-            padding: 6px 14px;
+            padding: 10px 10px 10px 14px;
+        }
+
+        td .all-data-wrapper {
             border-bottom: var(--mutation-border);
 
             .data-type {
                 font-weight: 600;
+            }
+        }
+
+        td .review-wrapper {
+            padding-top: 8px;
+            gap: 6px;
+
+            .review-header,
+            .loader-wrapper {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .loader-wrapper {
+                justify-content: center;
+                gap: 8px;
+
+                .saved-icon {
+                    display: none;
+                    width: 16px;
+                }
+
+                &.saved {
+                    .saved-icon {
+                        display: block;
+                    }
+
+                    .loader {
+                        display: none;
+                    }
+                }
             }
         }
 
@@ -133,7 +198,8 @@
             border-bottom: var(--mutation-border);
         }
 
-        tr:last-child {
+        tr:last-child,
+        tr:nth-last-child(2) {
             border-bottom: var(--mutation-border);
         }
     }
