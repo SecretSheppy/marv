@@ -66,6 +66,10 @@ async function reviewInputBlurEvent(event) {
  * @param {KeyboardEvent} event
  */
 function keydownEvent(event) {
+    if (!['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(event.key)) {
+        return
+    }
+
     hideAllEmptyReviews();
 
     if (lastActiveMutationID === "") {
