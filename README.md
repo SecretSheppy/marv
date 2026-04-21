@@ -4,10 +4,11 @@
 
 <h2 align="center">Mutations Analysis, Review and Visualisation</h2>
 
-Marv is a visualization and review tool for mutation testing.
+Marv is a visualization and review tool for mutation testing. It provides a standardized results format and 
+visualization across all [supported frameworks](#supported-frameworks).
 
-Marv allows for the results of multiple frameworks to be displayed simultaneously, creating the opportunity to review
-results across many frameworks or even languages in one go.
+Marv displays the results of multiple frameworks simultaneously, allowing for review of results across many frameworks
+or even languages in one go.
 
 ## Table of Contents
 
