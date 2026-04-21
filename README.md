@@ -53,14 +53,52 @@ are listed below.
 * [vineflower](https://github.com/Vineflower/vineflower)
 * [garlic](https://github.com/neocanable/garlic)
 
+For installation location see [Installation - Libraries](#libraries)
+
 > [!CAUTION]
-> The `garlic` decompiler is currently unstable and using it could cause some mutants to be skipped due to a segmentation fault that occurs when running `garlic` on some class files.
+> The `garlic` decompiler is currently unstable and using it could cause some mutants to be skipped due to a 
+> segmentation fault that occurs when running `garlic` on some class files.
 
-## Installation
+## Install & Build
 
+Clone the repository and run the command below that relates to the host operating system. To run the `marv` executable
+from anywhere on the system, add the compiled executable to the system `PATH` variable.
 
+* **Linux/MacOS:** `go build cmd/marv/marv.go -o marv`
+* **Windows:** `go build cmd/marv/marv.go -o marv.exe`
+
+### Libraries
+
+Libraries can either be stored directly in the Marv install directory in the `lib` folder (this will need to be created,
+as it does not exist by default) or in an external folder provided to Marv via the `LIB_PATH` environment variable.
 
 ## Usage
+
+The output from `marv --help` is featured below and details how marv can be used. Marv defaults to the port `:8080`.
+
+```terminaloutput
+Mutations Analysis, Review and Visualisation (Marv) is a tool that allows for efficient analysis and 
+review of mutations through visualisations - it can be used 'as is' or can be integrated into a
+third party application to streamline review processes
+
+Usage:
+  marv [flags]
+  marv [command]
+
+Available Commands:
+  export      exports framework output into standardised JSON
+  frameworks  lists all installed frameworks
+  help        Help about any command
+  init        initialises a new default marv.yml file
+
+Flags:
+  -c, --config string   .marv.yml file path
+  -h, --help            help for marv
+  -m, --merge           merges all frameworks output into one large json
+  -o, --output string   specifies the output path
+  -p, --port string     port to listen on
+  -v, --version         version for marv
+```
 
 ## Gallery
 
