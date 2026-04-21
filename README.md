@@ -134,6 +134,9 @@ The mutations format follows the internal structures defined in [`internal/mutat
 structure is `file path` > `conflict region` > `mutation`. Marv uses `conflict regions` or internally called 
 `mutations.Conflict` to wrap all mutations that would conflict with each other if just rendered inline due to overlaps.
 
+Any `ID` field is a UUID created by Marv. Where frameworks create mutant identifiers, they are stored against the mutant
+as `FrameworkMutantID`.
+
 ```json
 {
     "path/file.lang": [
