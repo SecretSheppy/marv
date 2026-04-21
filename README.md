@@ -19,6 +19,8 @@ results across many frameworks or even languages in one go.
 * [Usage](#usage)
 * [Gallery](#gallery)
 * [Export Format](#export-format)
+  * [Mutations Format](#mutations-format)
+  * [Reviews Format](#reviews-format)
 
 ## Supported Frameworks
 
