@@ -9,6 +9,17 @@ Marv is a visualization and review tool for mutation testing.
 Marv allows for the results of multiple frameworks to be displayed simultaneously, creating the opportunity to review
 results across many frameworks or even languages in one go.
 
+## Table of Contents
+
+* [Supported Frameworks](#supported-frameworks)
+  * [Pitest Configuration](#pitest-configuration)
+    * [Decompilers](#decompilers)
+* [Install & Build](#install--build)
+  * [Libraries](#libraries)
+* [Usage](#usage)
+* [Gallery](#gallery)
+* [Export Format](#export-format)
+
 ## Supported Frameworks
 
 A list of mutation testing frameworks that either are currently supported or will be supported in the future.
@@ -111,3 +122,57 @@ Screenshots of the Marv user interface showing results from:
 |---------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | **Marv Results Overview:** Showing results from `mutest-rs` and `Pitest`<br/> ![](docs/marv_results_overview.png)                     | **Marv Pitest Results:** Showing `Pitest` mutants inline with a file from guava<br/>![](docs/marv_pitest_guava.png)                  |
 | **Marv mutest-rs Results:** Showing `mutest-rs` mutants inline with a file from alacritty<br/> ![](docs/marv_mutest_rs_alacritty.png) | **Marv Pitest Mutant:** Showing an isolated `Pitest` mutant inline with a file from guava<br/>![](docs/marv_pitest_guava_mutant.png) |
+
+## Export Format
+
+Marv exports both the mutations and reviews as a `.json` marshal of its internal mutations format for all frameworks. 
+By using the `-m` or `--merge` flags, the results from all frameworks are merged into one large `.json` file.
+
+### Mutations Format
+
+The mutations format follows the internal structures defined in [`internal/mutations`](internal/mutations). The basic
+structure is `file path` > `conflict region` > `mutation`. Marv uses `conflict regions` or internally called 
+`mutations.Conflict` to wrap all mutations that would conflict with each other if just rendered inline due to overlaps.
+
+```json
+{
+    "path/file.lang": [
+        {
+            "ID": "00000000-0000-0000-0000-000000000000",
+            "StartLine": 94,
+            "EndLine": 94,
+            "Mutations": [
+                {
+                    "ID": "00000000-0000-0000-0000-000000000000",
+                    "FrameworkMutantID": "",
+                    "Description": "some description here",
+                    "Operation": "some operator here",
+                    "Start": {
+                        "Line": 94,
+                        "Char": 11
+                    },
+                    "End": {
+                        "Line": 94,
+                        "Char": 32
+                    },
+                    "Status": "SURVIVED",
+                    "Replacement": "some.Replacement.String.Here()"
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Reviews Format
+
+```json
+[
+    {
+        "MutationID": "00000000-0000-0000-0000-000000000000",
+        "FrameworkMutationID": "",
+        "Framework": "mock-fw",
+        "Review": "An example review"
+    }
+]
+```
