@@ -96,7 +96,7 @@ func (r *Renderer) renderHead(buff *bytes.Buffer, title string, elements ...stri
 func (r *Renderer) RenderStart() ([]byte, error) {
 	title := "Results Overview"
 	var buff bytes.Buffer
-	if err := r.renderHead(&buff, title); err != nil {
+	if err := r.renderHead(&buff, title, "<meta name=\"filtering-enabled\" content=\"%v\">"); err != nil {
 		return nil, err
 	}
 
