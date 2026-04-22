@@ -3,6 +3,7 @@ package html
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"path"
 	"sort"
 	"strings"
@@ -230,6 +231,9 @@ func writeStats(buff *bytes.Buffer, startPath string, fw fwlib.Framework, config
 }
 
 func formatColouredStat(stat float64, decimalPlaces int) string {
+	if math.IsNaN(stat) {
+		return "<span class=\"gray\">—</span>"
+	}
 	var class string
 	switch true {
 	case stat >= 80:

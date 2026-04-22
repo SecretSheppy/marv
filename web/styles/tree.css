@@ -166,3 +166,7 @@
 .red {
     color: var(--stat-red-fg);
 }
+
+.gray {
+    color: var(--darker-text-fg);
+}
