@@ -75,6 +75,14 @@ For installation location see [Installation - Libraries](#libraries)
 
 ## Install & Build
 
+Marv can be quickly and easily installed with the `go` tool:
+
+```
+go install github.com/SecretSheppy/marv/cmd/marv
+```
+
+### Manual
+
 Clone the repository and run the command below that relates to the host operating system. To run the `marv` executable
 from anywhere on the system, add the compiled executable to the system `PATH` variable.
 
@@ -84,7 +92,7 @@ from anywhere on the system, add the compiled executable to the system `PATH` va
 ### Libraries
 
 Libraries can either be stored directly in the Marv install directory in the `lib` folder (this will need to be created,
-as it does not exist by default) or in an external folder provided to Marv via the `LIB_PATH` environment variable.
+as it does not exist by default) or in an external folder provided to Marv via the `MARV_LIB_PATH` environment variable.
 
 ## Usage
 
