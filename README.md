@@ -78,7 +78,7 @@ For installation location see [Installation - Libraries](#libraries)
 Marv can be quickly and easily installed with the `go` tool:
 
 ```
-go install github.com/SecretSheppy/marv/cmd/marv
+go install github.com/SecretSheppy/marv/cmd/marv@latest
 ```
 
 ### Manual
