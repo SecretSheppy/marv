@@ -10,8 +10,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const marvYml = ".marv.yml"
-
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "initialises a new default marv.yml file",

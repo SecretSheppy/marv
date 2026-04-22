@@ -2,15 +2,17 @@ package dcomplib
 
 import (
 	"os"
-	"path"
 )
 
-// ExeBasePath returns either the LIB_PATH environment variable or the cwd joined with "lib".
+// ExeBasePath returns either the MARV_LIB_PATH environment variable or the cwd joined with "lib".
 func ExeBasePath() string {
-	dir := os.Getenv("LIB_PATH")
+	dir := os.Getenv("MARV_LIB_PATH")
 	if dir == "" {
-		wd, _ := os.Getwd()
-		dir = path.Join(wd, "lib")
+		var err error
+		dir, err = os.Getwd()
+		if err != nil {
+			panic(err)
+		}
 	}
 	return dir
 }

@@ -20,6 +20,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const marvYml = ".marv.yml"
+
 var (
 	port, configFile, outputPath string
 	mergeOutput                  bool
@@ -226,7 +228,7 @@ func Execute() {
 	rootCmd.Version = marvinfo.Get().Version
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 
-	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", ".marv.yml file path")
+	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", marvYml, ".marv.yml file path")
 	rootCmd.PersistentFlags().StringVarP(&outputPath, "output", "o", "", "specifies the output path")
 	rootCmd.PersistentFlags().BoolVarP(&mergeOutput, "merge", "m", false, "merges all frameworks output into one large json")
 
