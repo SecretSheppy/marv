@@ -2,8 +2,8 @@ package html
 
 import (
 	"bytes"
-	"os"
 
+	"github.com/SecretSheppy/marv/web"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/css"
 	"github.com/tdewolff/minify/js"
@@ -30,7 +30,7 @@ func (r *resourcesRenderer) minify(buff *bytes.Buffer) error {
 func (r *resourcesRenderer) minifyStyles(buff *bytes.Buffer, mini *minify.M) error {
 	buff.WriteString("<style>")
 	for _, style := range r.styles {
-		content, err := os.ReadFile(style)
+		content, err := web.StylesFS.ReadFile(style)
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ func (r *resourcesRenderer) minifyStyles(buff *bytes.Buffer, mini *minify.M) err
 
 func (r *resourcesRenderer) minifyScripts(buff *bytes.Buffer, mini *minify.M) error {
 	for _, script := range r.scripts {
-		content, err := os.ReadFile(script)
+		content, err := web.ScriptsFS.ReadFile(script)
 		if err != nil {
 			return err
 		}

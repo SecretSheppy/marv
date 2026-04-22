@@ -3,12 +3,14 @@ package server
 import (
 	"bytes"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"time"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/SecretSheppy/marv/internal/review"
+	"github.com/SecretSheppy/marv/web"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
 )
@@ -28,26 +30,31 @@ func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *S
 		renderer: html.NewRenderer(&html.Config{
 			Favicon: "/resources/branding/marv_favicon.png",
 			Styles: []string{
-				"web/styles/main.css",
-				"web/styles/code.css",
-				"web/styles/tree.css",
-				"web/styles/layout.css",
-				"web/styles/filters.css",
-				"web/styles/generic.css",
+				"styles/main.css",
+				"styles/code.css",
+				"styles/tree.css",
+				"styles/layout.css",
+				"styles/filters.css",
+				"styles/generic.css",
 			},
 			Scripts: []string{
-				"web/scripts/tree.js",
-				"web/scripts/status-filtering.js",
-				"web/scripts/review.js",
+				"scripts/tree.js",
+				"scripts/status-filtering.js",
+				"scripts/review.js",
 			},
 		}, frameworks, db),
 	}
 }
 
 func (s *Server) Serve() error {
+	staticFS, err := fs.Sub(web.StaticFS, "static")
+	if err != nil {
+		return err
+	}
+
 	r := mux.NewRouter()
 	r.Use(logger)
-	r.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", http.FileServer(http.Dir("web/static"))))
+	r.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", http.FileServer(http.FS(staticFS))))
 	r.HandleFunc("/", s.startHandler).Methods("GET")
 	r.HandleFunc("/tree", s.treeHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutant/").HandlerFunc(s.mutantHandler).Methods("GET")
