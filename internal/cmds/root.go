@@ -225,7 +225,7 @@ func rootCommand() {
 }
 
 func Execute() {
-	rootCmd.Version = marvinfo.Get().Version
+	rootCmd.Version = marvinfo.Version()
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", marvYml, ".marv.yml file path")
