@@ -190,3 +190,7 @@ as `FrameworkMutantID`.
     }
 ]
 ```
+
+## Other
+
+[Icon Licenses (icons.md)](icons.md)
