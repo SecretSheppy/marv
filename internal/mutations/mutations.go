@@ -120,6 +120,10 @@ func (c *Conflict) ConflictsWithMutation(m *Mutation) bool {
 	return m.Start.Line <= c.EndLine && m.End.Line >= c.StartLine
 }
 
+func (c *Conflict) ConflictsWithConflict(cb *Conflict) bool {
+	return cb.StartLine <= c.EndLine && cb.EndLine >= c.StartLine
+}
+
 func (c *Conflict) Append(m *Mutation) {
 	if m.Start.Line < c.StartLine {
 		c.StartLine = m.Start.Line
@@ -128,6 +132,16 @@ func (c *Conflict) Append(m *Mutation) {
 		c.EndLine = m.End.Line
 	}
 	c.Mutations = append(c.Mutations, m)
+}
+
+func (c *Conflict) Merge(cb *Conflict) {
+	if cb.StartLine < c.StartLine {
+		c.StartLine = cb.StartLine
+	}
+	if cb.EndLine > c.EndLine {
+		c.EndLine = cb.EndLine
+	}
+	c.Mutations = append(c.Mutations, cb.Mutations...)
 }
 
 // Conflicts is a slice of Conflict instances.
@@ -160,18 +174,13 @@ func (m Mutations) Merge(b Mutations) {
 }
 
 func (m Mutations) Append(file string, mutation *Mutation) {
-	added := false
 	for _, c := range m[file] {
 		if c.ConflictsWithMutation(mutation) {
 			c.Append(mutation)
-			added = true
-			break
+			return
 		}
 	}
-
-	if !added {
-		m[file] = append(m[file], NewConflict(mutation))
-	}
+	m[file] = append(m[file], NewConflict(mutation))
 }
 
 func (m Mutations) ExtractBrokenMutations() []*Mutation {
