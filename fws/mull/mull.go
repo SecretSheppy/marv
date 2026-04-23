@@ -7,8 +7,8 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/languages"
+	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
-	"github.com/SecretSheppy/marv/pkg/mtelib"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
