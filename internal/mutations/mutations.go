@@ -63,7 +63,7 @@ type Range struct {
 	Char int
 }
 
-func (r *Range) LessThan(rge *Range) bool {
+func (r Range) LessThan(rge *Range) bool {
 	if r.Line < rge.Line {
 		return true
 	}
@@ -71,6 +71,10 @@ func (r *Range) LessThan(rge *Range) bool {
 		return true
 	}
 	return false
+}
+
+func (r Range) String() string {
+	return fmt.Sprintf("L%dC%d", r.Line, r.Char)
 }
 
 // Mutation represents a single mutation.
@@ -85,14 +89,14 @@ type Mutation struct {
 	Replacement       string
 }
 
-func (m *Mutation) GetDescription() string {
+func (m Mutation) GetDescription() string {
 	if m.Description == "" {
 		return m.Operation
 	}
 	return m.Description
 }
 
-func (m *Mutation) IsBroken() bool {
+func (m Mutation) IsBroken() bool {
 	return m.End.LessThan(m.Start)
 }
 
@@ -117,6 +121,9 @@ func (c *Conflict) ConflictsWithMutation(m *Mutation) bool {
 }
 
 func (c *Conflict) Append(m *Mutation) {
+	if m.Start.Line < c.StartLine {
+		c.StartLine = m.Start.Line
+	}
 	if m.End.Line > c.EndLine {
 		c.EndLine = m.End.Line
 	}
@@ -219,18 +226,34 @@ type Statistics struct {
 	StatusCounts map[Status]float64
 }
 
-func (s Statistics) covered() float64 {
-	return s.Count - s.StatusCounts[NoCoverage]
+func (s Statistics) Detected() float64 {
+	return s.StatusCounts[Killed] + s.StatusCounts[Timeout]
 }
 
-func (s Statistics) Coverage() float64 {
-	return s.covered() / s.Count * 100
+func (s Statistics) Undetected() float64 {
+	return s.StatusCounts[Survived] + s.StatusCounts[NoCoverage]
+}
+
+func (s Statistics) Covered() float64 {
+	return s.Detected() + s.StatusCounts[Survived]
+}
+
+func (s Statistics) Valid() float64 {
+	return s.Detected() + s.Undetected()
+}
+
+func (s Statistics) Invalid() float64 {
+	return s.StatusCounts[Crashed]
 }
 
 func (s Statistics) Score() float64 {
-	return s.StatusCounts[Killed] / s.Count * 100
+	return s.Detected() / s.Valid() * 100
 }
 
 func (s Statistics) ScoreOfCovered() float64 {
-	return s.StatusCounts[Killed] / s.covered() * 100
+	return s.Detected() / s.Covered() * 100
+}
+
+func (s Statistics) Coverage() float64 {
+	return s.Covered() / s.Count * 100
 }
