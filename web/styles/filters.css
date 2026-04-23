@@ -45,7 +45,7 @@
 
         .filters-wrapper {
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 2px;
         }
     }
@@ -76,6 +76,7 @@
     align-items: center;
     gap: 8px;
     user-select: none;
+    width: 49%;
 
     &:hover {
         background: var(--main-hover-bg);
