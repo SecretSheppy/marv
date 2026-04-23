@@ -99,6 +99,8 @@ func transformMutations(conf *config.Config, activeFws []fwlib.Framework) error 
 		if err := extractBrokenMutations(conf, fw); err != nil {
 			return err
 		}
+
+		fw.Mutations().MergeConflicting()
 		fw.Mutations().GenerateIDs()
 	}
 	return nil

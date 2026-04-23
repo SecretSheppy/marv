@@ -194,6 +194,27 @@ func (m Mutations) Append(file string, mutation *Mutation) {
 	m[file] = append(m[file], NewConflict(mutation))
 }
 
+func (m Mutations) MergeConflicting() {
+	for file, conflicts := range m {
+		if len(conflicts) <= 1 {
+			continue
+		}
+
+		merged := make(Conflicts, 0, len(conflicts))
+		current := conflicts[0]
+		for _, conflict := range conflicts[1:] {
+			if current.ConflictsWithConflict(conflict) {
+				current.Merge(conflict)
+				continue
+			}
+			merged = append(merged, current)
+			current = conflict
+		}
+
+		m[file] = append(merged, current)
+	}
+}
+
 func (m Mutations) ExtractBrokenMutations() []*Mutation {
 	broken := make([]*Mutation, 0)
 	for _, conflicts := range m {

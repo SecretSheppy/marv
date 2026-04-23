@@ -247,8 +247,7 @@ func TestMergingMutationMaps(t *testing.T) {
 	}
 }
 
-func TestMutationsAppendWorstCaseScenario(t *testing.T) {
-	t.Skip("this is a test case that should pass, but merging the conflicts is hugely inefficient, so currently this remains broken")
+func TestMutationsAppendAndMergeInWorstCaseScenario(t *testing.T) {
 	file := "FILE_NAME"
 	mut1 := &Mutation{Start: &Range{10, 0}, End: &Range{10, 20}}
 	mut2 := &Mutation{Start: &Range{11, 0}, End: &Range{11, 20}}
@@ -256,7 +255,8 @@ func TestMutationsAppendWorstCaseScenario(t *testing.T) {
 	m := make(Mutations)
 	m.Append(file, mut1)
 	m.Append(file, mut2)
-	m.Append(file, mut3) // This should merge the previous two conflicts
+	m.Append(file, mut3)
+	m.MergeConflicting()
 	if len(m[file]) != 1 {
 		t.Errorf("was expecting 1 conflict but got %d", len(m[file]))
 	}
