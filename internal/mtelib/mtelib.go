@@ -52,6 +52,14 @@ func (m *MutantResult) toMarvMutation() *mutations.Mutation {
 	}
 }
 
+func (m *MutantResult) lineSpan() int {
+	return m.Location.End.Line - m.Location.Start.Line
+}
+
+func (m *MutantResult) columnSpan() int {
+	return m.Location.End.Column - m.Location.Start.Column
+}
+
 type MTEStatus string
 
 func (m MTEStatus) toMarvStatus() mutations.Status {
@@ -120,7 +128,7 @@ func (m *MTE) Transform() {
 			file = file[1:]
 		}
 		m.files[file] = fileResult.Source
-		SortMutantsByRange(fileResult.Mutants)
+		sortMutantsByRange(fileResult.Mutants)
 		for _, mutant := range fileResult.Mutants {
 			m.mutations.Append(file, mutant.toMarvMutation())
 		}
@@ -129,31 +137,22 @@ func (m *MTE) Transform() {
 	m.result = MutationTestResult{}
 }
 
-// SortMutantsByRange sorts in-place: largest ranges first.
-func SortMutantsByRange(ms []MutantResult) {
+// sorting the mutants by range ensures that the best possible initial grouping of mutations into conflicts. this
+// minimizes the amount of conflict merges that will have to be made when processing is finished.
+func sortMutantsByRange(ms []MutantResult) {
 	sort.Slice(ms, func(i, j int) bool {
-		ri := rangeSize(ms[i])
-		rj := rangeSize(ms[j])
-		if ri != rj {
-			return ri > rj // larger range first
+		lsi := ms[i].lineSpan()
+		lsj := ms[j].lineSpan()
+		if lsi != lsj {
+			return lsi > lsj
 		}
-		// tie-breaker: compare column span
-		ci := columnSpan(ms[i])
-		cj := columnSpan(ms[j])
-		if ci != cj {
-			return ci > cj
+		csi := ms[i].columnSpan()
+		csj := ms[j].columnSpan()
+		if csi != csj {
+			return csi > csj
 		}
-		// final tie-breaker: stable deterministic ordering by ID
 		return ms[i].ID < ms[j].ID
 	})
-}
-
-func rangeSize(m MutantResult) int {
-	return m.Location.End.Line - m.Location.Start.Line
-}
-
-func columnSpan(m MutantResult) int {
-	return m.Location.End.Column - m.Location.Start.Column
 }
 
 func (m *MTE) Mutations() mutations.Mutations {
