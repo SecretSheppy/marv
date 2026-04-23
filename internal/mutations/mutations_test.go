@@ -95,7 +95,7 @@ var conflictsTestCases = []conflictsTestCase{
 }
 
 func assertConflicts(t *testing.T, c conflictsTestCase) {
-	conf := c.conflict.Conflicts(c.mutation)
+	conf := c.conflict.ConflictsWithMutation(c.mutation)
 	if conf != c.expConflict && c.expConflict {
 		t.Errorf("conflict between Conflict{%s} and Mutation{%s} was not detected",
 			c.conflict.Mutations[0].FrameworkMutantID, c.mutation.FrameworkMutantID)

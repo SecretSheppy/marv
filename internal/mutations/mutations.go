@@ -91,9 +91,8 @@ func NewConflict(m *Mutation) *Conflict {
 	}
 }
 
-func (c *Conflict) Conflicts(m *Mutation) bool {
-	return m.Start.Line >= c.StartLine && m.Start.Line <= c.EndLine ||
-		m.End.Line >= c.StartLine && m.End.Line <= c.EndLine
+func (c *Conflict) ConflictsWithMutation(m *Mutation) bool {
+	return m.Start.Line <= c.EndLine && m.End.Line >= c.StartLine
 }
 
 func (c *Conflict) Append(m *Mutation) {
