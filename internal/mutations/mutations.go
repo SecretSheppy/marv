@@ -85,6 +85,13 @@ type Mutation struct {
 	Replacement       string
 }
 
+func (m *Mutation) GetDescription() string {
+	if m.Description == "" {
+		return m.Operation
+	}
+	return m.Description
+}
+
 // Conflict represents all mutations that would conflict with each other if they were displayed simultaneously.
 type Conflict struct {
 	ID        uuid.UUID
