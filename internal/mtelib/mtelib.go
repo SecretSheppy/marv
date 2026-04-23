@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/schollz/progressbar/v3"
 )
 
 // Mutation Testing Elements Library
@@ -18,6 +19,14 @@ import (
 type MutationTestResult struct {
 	SchemaVersion string               `json:"schemaVersion"`
 	Files         FileResultDictionary `json:"files"`
+}
+
+func (m *MutationTestResult) CountMutations() int {
+	count := 0
+	for _, file := range m.Files {
+		count += len(file.Mutants)
+	}
+	return count
 }
 
 // FileResultDictionary is a dictionary that stores FileResults against their string file paths.
@@ -118,8 +127,11 @@ func NewMTE(file string) (*MTE, error) {
 	return mte, nil
 }
 
-func (m *MTE) Transform() {
-	// TODO: progress bar
+func (m *MTE) RawMutationsCount() int {
+	return m.result.CountMutations()
+}
+
+func (m *MTE) Transform(bar *progressbar.ProgressBar) {
 	m.mutations = make(mutations.Mutations)
 	m.files = make(map[string]string)
 
@@ -131,6 +143,7 @@ func (m *MTE) Transform() {
 		sortMutantsByRange(fileResult.Mutants)
 		for _, mutant := range fileResult.Mutants {
 			m.mutations.Append(file, mutant.toMarvMutation())
+			bar.Add(1)
 		}
 	}
 

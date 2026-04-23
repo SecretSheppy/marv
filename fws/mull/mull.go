@@ -2,6 +2,7 @@ package mull
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"slices"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
+	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
 )
 
@@ -84,7 +86,17 @@ func (m *Mull) LoadResults() error {
 
 func (m *Mull) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
-	m.mte.Transform()
+
+	bar := progressbar.NewOptions(
+		m.mte.RawMutationsCount(),
+		progressbar.OptionSetWriter(os.Stdout),
+		progressbar.OptionSetDescription("transforming"),
+		progressbar.OptionSetRenderBlankState(true))
+
+	m.mte.Transform(bar)
+
+	bar.Finish()
+	fmt.Println()
 
 	for file, conflicts := range m.mte.Mutations() {
 		lines := m.mte.ReadLines(file)
