@@ -1,6 +1,7 @@
 package languages
 
 var (
+	Cpp  = &Language{name: "C++", ext: "cpp", icon: "/resources/languages/cpp.svg"}
 	Go   = &Language{name: "Go", ext: "go", icon: "/resources/languages/golang-brands-solid.svg"}
 	Java = &Language{name: "Java", ext: "java", icon: "/resources/languages/java-brands-solid.svg"}
 	Rust = &Language{name: "Rust", ext: "rs", icon: "/resources/languages/rust-brands-solid.svg"}
