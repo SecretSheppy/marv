@@ -114,7 +114,12 @@ func (m *Mull) generateDescription(lines []string, mutation *mutations.Mutation)
 		if mutation.Start.Line == mutation.End.Line {
 			endChar = mutation.End.Char
 		}
-		mutation.Description = fmt.Sprintf("Replaced `%s` with `%s`", line[mutation.Start.Char:endChar], mutation.Replacement)
+		original := line[mutation.Start.Char:endChar]
+		if mutation.Replacement != "" {
+			mutation.Description = fmt.Sprintf("Replaced `%s` with `%s`", original, mutation.Replacement)
+		} else {
+			mutation.Description = fmt.Sprintf("Removed `%s`", original)
+		}
 	}
 }
 
