@@ -63,6 +63,16 @@ type Range struct {
 	Char int
 }
 
+func (r *Range) LessThan(rge *Range) bool {
+	if r.Line < rge.Line {
+		return true
+	}
+	if r.Line == rge.Line && r.Char < rge.Char {
+		return true
+	}
+	return false
+}
+
 // Mutation represents a single mutation.
 type Mutation struct {
 	ID                uuid.UUID
@@ -134,7 +144,7 @@ func (m Mutations) Merge(b Mutations) {
 func (m Mutations) Append(file string, mutation *Mutation) {
 	added := false
 	for _, c := range m[file] {
-		if c.Conflicts(mutation) {
+		if c.ConflictsWithMutation(mutation) {
 			c.Append(mutation)
 			added = true
 			break
