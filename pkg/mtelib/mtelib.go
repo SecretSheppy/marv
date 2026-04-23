@@ -60,11 +60,15 @@ func (m MTEStatus) toMarvStatus() mutations.Status {
 		return mutations.Survived
 	case "Killed":
 		return mutations.Killed
-	case "RuntimeError":
+	case "RuntimeError", "CompileError":
 		return mutations.Crashed
 	case "Timeout":
 		return mutations.Timeout
-	default: // TODO: handle Pending, CompileError and Ignored statuses
+	case "Pending":
+		return mutations.Pending
+	case "Ignored":
+		return mutations.Ignored
+	default:
 		return mutations.NoCoverage
 	}
 }
@@ -112,11 +116,13 @@ func (m *MTE) Transform() {
 	m.files = make(map[string]string)
 
 	for file, fileResult := range m.result.Files {
-		// TODO: fix problems with leading /
-		m.files[file[1:]] = fileResult.Source
+		if strings.HasPrefix(file, "/") {
+			file = file[1:]
+		}
+		m.files[file] = fileResult.Source
 		SortMutantsByRange(fileResult.Mutants)
 		for _, mutant := range fileResult.Mutants {
-			m.mutations.Append(file[1:], mutant.toMarvMutation())
+			m.mutations.Append(file, mutant.toMarvMutation())
 		}
 	}
 
