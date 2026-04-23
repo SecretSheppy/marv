@@ -92,6 +92,10 @@ func (m *Mutation) GetDescription() string {
 	return m.Description
 }
 
+func (m *Mutation) IsBroken() bool {
+	return m.End.LessThan(m.Start)
+}
+
 // Conflict represents all mutations that would conflict with each other if they were displayed simultaneously.
 type Conflict struct {
 	ID        uuid.UUID
@@ -161,6 +165,24 @@ func (m Mutations) Append(file string, mutation *Mutation) {
 	if !added {
 		m[file] = append(m[file], NewConflict(mutation))
 	}
+}
+
+func (m Mutations) ExtractBrokenMutations() []*Mutation {
+	broken := make([]*Mutation, 0)
+	for _, conflicts := range m {
+		for _, conflict := range conflicts {
+			mutations := make([]*Mutation, 0, len(conflict.Mutations))
+			for _, mutation := range conflict.Mutations {
+				if mutation.IsBroken() {
+					broken = append(broken, mutation)
+					continue
+				}
+				mutations = append(mutations, mutation)
+			}
+			conflict.Mutations = mutations
+		}
+	}
+	return broken
 }
 
 // GenerateIDs generates UUIDs for all conflicts and mutations

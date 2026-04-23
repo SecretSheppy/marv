@@ -86,7 +86,7 @@ func mergeFlagsWithConfig(cfg *config.Config) error {
 	return nil
 }
 
-func transformMutations(activeFws []fwlib.Framework) error {
+func transformMutations(conf *config.Config, activeFws []fwlib.Framework) error {
 	for _, fw := range activeFws {
 		if decompiling, ok := fw.(fwlib.Decompiling); ok {
 			decompiling.SetDecompiler()
@@ -96,7 +96,24 @@ func transformMutations(activeFws []fwlib.Framework) error {
 			return err
 		}
 
+		if err := extractBrokenMutations(conf, fw); err != nil {
+			return err
+		}
 		fw.Mutations().GenerateIDs()
+	}
+	return nil
+}
+
+func extractBrokenMutations(conf *config.Config, fw fwlib.Framework) error {
+	broken := fw.Mutations().ExtractBrokenMutations()
+	if len(broken) > 0 {
+		out := path.Join(conf.Marv.Output.Path, fw.Meta().Name+"-broken.json")
+		marshal, err := json.Marshal(broken)
+		if err != nil {
+			return err
+		}
+		os.WriteFile(out, marshal, 0644)
+		log.Warn().Msgf("%s - extracted %d broken mutations and dumped them in %s", fw.Meta().Name, len(broken), out)
 	}
 	return nil
 }
@@ -186,7 +203,7 @@ func exportCommand() (*config.Config, []fwlib.Framework) {
 		os.Exit(1)
 	}
 
-	if err := transformMutations(activeFws); err != nil {
+	if err := transformMutations(conf, activeFws); err != nil {
 		log.Fatal().Err(err).Msg("Failed to transform results")
 		os.Exit(1)
 	}

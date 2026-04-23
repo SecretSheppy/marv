@@ -41,27 +41,12 @@ type MutantResult struct {
 }
 
 func (m *MutantResult) toMarvMutation() *mutations.Mutation {
-	start := m.Location.Start.toMarvRange()
-	end := m.Location.End.toMarvRange()
-
-	// TODO: do we just skip these invalid mutants?
-	if end.LessThan(start) {
-		// The end position is incorrect, recalculate
-		lines := getLinesFromString(m.Replacement)
-		count := len(lines) - 1
-		end.Line = start.Line + count
-		end.Char = 0
-		if count == 0 {
-			end.Char = start.Char + len(lines[count])
-		}
-	}
-
 	return &mutations.Mutation{
 		FrameworkMutantID: m.ID,
 		Description:       m.Description,
 		Operation:         m.MutatorName,
-		Start:             start,
-		End:               end,
+		Start:             m.Location.Start.toMarvRange(),
+		End:               m.Location.End.toMarvRange(),
 		Status:            m.Status.toMarvStatus(),
 		Replacement:       m.Replacement,
 	}
@@ -127,7 +112,6 @@ func (m *MTE) Transform() {
 	m.files = make(map[string]string)
 
 	for file, fileResult := range m.result.Files {
-		// TODO: we need to do something with the language here, maybe we can attach it to the files map?
 		// TODO: fix problems with leading /
 		m.files[file[1:]] = fileResult.Source
 		SortMutantsByRange(fileResult.Mutants)
