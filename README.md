@@ -33,19 +33,20 @@ A list of mutation testing frameworks that either are currently supported or wil
 * 🚧 In development
 * 🚫 Not currently supported
 
-| Framework                                                                    | language   | Support | Marv Version | Required Libraries                                                                                                              | Notes                               |
-|------------------------------------------------------------------------------|------------|:-------:|:------------:|---------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
-| [Mull](https://mull-project.com/)                                            | C/C++      |   🚧    |              |                                                                                                                                 |                                     |
-| [Dextool Mutate](https://joakim-brannstrom.github.io/dextool/plugin/mutate/) | C/C++      |   🚫    |              |                                                                                                                                 |                                     |
-| [stryker-net](https://github.com/stryker-mutator/stryker-net)                | C#         |   🚫    |              |                                                                                                                                 |                                     |
-| [hcoles/pitest](https://github.com/hcoles/pitest)                            | Java       |   ✅️    |    1.0.0     | [vineflower-server](https://github.com/SecretSheppy/vineflower-server) (recommended)<br/>or one of [alternatives](#decompilers) | See [Pitest configuration](#pitest) |
-| [Major](https://mutation-testing.org/)                                       | Java       |   🚫    |              |                                                                                                                                 |                                     |
-| [stryker-js](https://github.com/stryker-mutator/stryker-js)                  | JavaScript |   🚫    |              |                                                                                                                                 |                                     |
-| [infection](https://github.com/infection/infection)                          | PHP        |   🚫    |              |                                                                                                                                 |                                     |
-| [Cosmic Ray](https://github.com/sixty-north/cosmic-ray)                      | Python     |   🚫    |              |                                                                                                                                 |                                     |
-| [MutPy](https://github.com/mutpy/mutpy)                                      | Python     |   🚫    |              |                                                                                                                                 |                                     |
-| [mutant](https://github.com/mbj/mutant)                                      | Ruby       |   🚫    |              |                                                                                                                                 |                                     |
-| [mutest-rs](https://github.com/zalanlevai/mutest-rs)                         | Rust       |   🏆    |    1.0.0     | Native                                                                                                                          |                                     |
+| Framework                                                                    | language   | Support | Marv Version | Notes                                                                                                                                                      |
+|------------------------------------------------------------------------------|------------|:-------:|:------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Mull](https://mull-project.com/)                                            | C/C++      |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
+| [Dextool Mutate](https://joakim-brannstrom.github.io/dextool/plugin/mutate/) | C/C++      |   🚫    |              |                                                                                                                                                            |
+| [stryker-net](https://github.com/stryker-mutator/stryker-net)                | C#         |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
+| [hcoles/pitest](https://github.com/hcoles/pitest)                            | Java       |   ✅️    |    1.0.0     | See [Pitest configuration](#pitest-configuration)                                                                                                          |
+| [Major](https://mutation-testing.org/)                                       | Java       |   🚫    |              |                                                                                                                                                            |
+| [stryker-js](https://github.com/stryker-mutator/stryker-js)                  | JavaScript |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
+| [infection](https://github.com/infection/infection)                          | PHP        |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema, additionally see [infection readme](fws/infection/README.md) |
+| [Cosmic Ray](https://github.com/sixty-north/cosmic-ray)                      | Python     |   🚫    |              |                                                                                                                                                            |
+| [MutPy](https://github.com/mutpy/mutpy)                                      | Python     |   🚫    |              |                                                                                                                                                            |
+| [mutant](https://github.com/mbj/mutant)                                      | Ruby       |   🚫    |              |                                                                                                                                                            |
+| [mutest-rs](https://github.com/zalanlevai/mutest-rs)                         | Rust       |   🏆    |    1.0.0     |                                                                                                                                                            |
+| [strkyer4s](https://github.com/stryker-mutator/stryker4s)                    | Scala      |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
 
 ### Pitest Configuration
 
@@ -124,15 +125,12 @@ Flags:
 
 ## Gallery
 
-Screenshots of the Marv user interface showing results from:
+Screenshots of the Marv user interface showing results from various frameworks.
 
-* [mutest-rs](https://github.com/zalanlevai/mutest-rs) run on [alacritty](https://github.com/alacritty/alacritty)
-* [hcoles/pitest](https://github.com/hcoles/pitest) run on [guava](https://github.com/google/guava)
-
-|                                                                                                                                       |                                                                                                                                      |
-|---------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| **Marv Results Overview:** Showing results from `mutest-rs` and `Pitest`<br/> ![](docs/marv_results_overview.png)                     | **Marv Pitest Results:** Showing `Pitest` mutants inline with a file from guava<br/>![](docs/marv_pitest_guava.png)                  |
-| **Marv mutest-rs Results:** Showing `mutest-rs` mutants inline with a file from alacritty<br/> ![](docs/marv_mutest_rs_alacritty.png) | **Marv Pitest Mutant:** Showing an isolated `Pitest` mutant inline with a file from guava<br/>![](docs/marv_pitest_guava_mutant.png) |
+|                                                                                                                                                                                                                          |                                                                                                                                                                                                   |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Marv Results Overview:** Showing results from [stryker-net](https://github.com/stryker-mutator/stryker-net) run on itself<br/> ![](docs/marv_results_overview.png)                                                     | **Marv Pitest Results:** Showing [hcoles/pitest](https://github.com/hcoles/pitest) mutants inline with a file from [guava](https://github.com/google/guava)<br/> ![](docs/marv_pitest_guava.png)  |
+| **Marv mutest-rs Results:** Showing [mutest-rs](https://github.com/zalanlevai/mutest-rs) mutants inline with a file from [alacritty](https://github.com/alacritty/alacritty)<br/> ![](docs/marv_mutest_rs_alacritty.png) | **Marv Infection PHP Mutant:** Showing an isolated [Infection](https://github.com/infection/infection) mutant inline with a file from its own source<br/> ![](docs/marv_infection_php_mutant.png) |
 
 ## Export Format
 
