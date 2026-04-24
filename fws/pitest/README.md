@@ -3,6 +3,10 @@
 Pitest must be run with the `-Dfeatures="+EXPORT"` flag which exports the mutated class files. This is required because
 Marv will decompile these class files to construct each mutants replacement string.
 
+```cli
+mvn org.pitest:pitest-maven:mutationCoverage -Dfeatures="+EXPORT
+```
+
 > [!NOTE]
 > The replacement strings (inserted lines) that Marv produces are correct, however they are occasionally flanked by
 > incorrectly formatted deleted lines due to formatting differences between the source code and decompiled class code.
@@ -22,4 +26,4 @@ are listed below.
 * [vineflower](https://github.com/Vineflower/vineflower)
 * [garlic](https://github.com/neocanable/garlic)
 
-For installation location see [Installation - Libraries](#libraries)
+For installation location see [Installation - Libraries](../../README.md#libraries)
