@@ -89,14 +89,20 @@ func (m *Mull) TransformResults() error {
 	m.mte.Transform(bar)
 	fwlib.FinishProgressbar(bar)
 
+	fixed := 0
 	for file, conflicts := range m.mte.Mutations() {
 		lines := m.mte.ReadLines(file)
 		for _, conflict := range conflicts {
 			for _, mutation := range conflict.Mutations {
+				if mutation.IsBroken() {
+					fixed += attemptBrokenMutationFix(mutation)
+					conflict.ResizeToInclude(mutation)
+				}
 				m.generateDescription(lines, mutation)
 			}
 		}
 	}
+	log.Info().Msgf("%s - fixed %d broken mutations", m.Meta().Name, fixed)
 
 	return nil
 }
@@ -124,6 +130,39 @@ func (m *Mull) generateDescription(lines []string, mutation *mutations.Mutation)
 			mutation.Description = fmt.Sprintf("Removed `%s`", original)
 		}
 	}
+}
+
+func attemptBrokenMutationFix(mutation *mutations.Mutation) int {
+	switch mutation.Operation {
+	case "cxx_assign_const":
+		// Would need a regex operation here
+		return 0
+	case "cxx_bitwise_not_to_noop", "cxx_ge_to_gt", "cxx_ge_to_lt", "cxx_le_to_gt", "cxx_le_to_lt", "cxx_minus_to_noop", "cxx_remove_negation", "cxx_post_dec_to_post_inc", "cxx_pre_dec_to_pre_inc":
+		mutation.End.Line = mutation.Start.Line
+		mutation.End.Char = mutation.Start.Char + 2
+	case "cxx_gt_to_ge", "cxx_gt_to_le", "cxx_lt_to_ge", "cxx_lt_to_le":
+		mutation.End.Line = mutation.Start.Line
+		mutation.End.Char = mutation.Start.Char + 1
+	case "cxx_init_const":
+		// Would need a regex operation here
+		return 0
+	case "cxx_post_inc_to_post_dec", "cxx_pre_inc_to_pre_dec":
+		mutation.End.Line = mutation.Start.Line
+		mutation.End.Char = mutation.Start.Char + 3
+	case "cxx_remove_void_call":
+		// Would need a regex operation here
+		return 0
+	case "cxx_replace_scalar_void":
+		// Would need a regex operation here
+		return 0
+	case "negate_mutator":
+		// Would need a regex operation here
+		return 0
+	default:
+		mutation.End.Line = mutation.Start.Line
+		mutation.End.Char = mutation.Start.Char + len(mutation.Replacement)
+	}
+	return 1
 }
 
 func getFuncName(lines []string, mutation *mutations.Mutation) string {
