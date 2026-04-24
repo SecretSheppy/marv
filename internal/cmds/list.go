@@ -11,8 +11,8 @@ import (
 )
 
 var listCmd = &cobra.Command{
-	Use:     "frameworks",
-	Aliases: []string{"list"},
+	Use:     "list",
+	Aliases: []string{"frameworks"},
 	Short:   "lists all installed frameworks",
 	Long:    "lists all installed frameworks by name",
 	Run: func(cmd *cobra.Command, args []string) {
