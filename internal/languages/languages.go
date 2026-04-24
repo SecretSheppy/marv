@@ -6,6 +6,7 @@ var (
 	Go         = &Language{name: "Go", ext: "go", icon: "/resources/languages/go_logo_blue.svg"}
 	Java       = &Language{name: "Java", ext: "java", icon: "/resources/languages/java_duke_icon.svg"}
 	JavaScript = &Language{name: "JavaScript", ext: "js", icon: "/resources/languages/js_logo.png"}
+	Php        = &Language{name: "PHP", ext: "php", icon: "/resources/languages/php_logo.svg"}
 	Rust       = &Language{name: "Rust", ext: "rs", icon: "/resources/languages/rust_logo.svg"}
 	Scala      = &Language{name: "Scala", ext: "scala", icon: "/resources/languages/marv_scala_icon.png"}
 	TypeScript = &Language{name: "TypeScript", ext: "ts", icon: "/resources/languages/ts_log_128.svg"}
