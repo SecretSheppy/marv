@@ -5,13 +5,19 @@ import (
 	"github.com/SecretSheppy/marv/fws/mull"
 	"github.com/SecretSheppy/marv/fws/mutest_rs"
 	"github.com/SecretSheppy/marv/fws/pitest"
+	"github.com/SecretSheppy/marv/fws/stryker4s"
+	"github.com/SecretSheppy/marv/fws/stryker_js"
+	"github.com/SecretSheppy/marv/fws/stryker_net"
 )
 
 func Frameworks() []fwlib.Framework {
 	return []fwlib.Framework{
+		mull.NewMull(),
 		mutest_rs.NewMutestRS(),
 		pitest.NewPitest(),
-		mull.NewMull(),
+		stryker4s.NewStryker4s(),
+		stryker_js.NewStrykerJS(),
+		stryker_net.NewStrykerNet(),
 	}
 }
 
