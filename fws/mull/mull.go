@@ -134,31 +134,19 @@ func (m *Mull) generateDescription(lines []string, mutation *mutations.Mutation)
 
 func attemptBrokenMutationFix(mutation *mutations.Mutation) int {
 	switch mutation.Operation {
-	case "cxx_assign_const":
-		// Would need a regex operation here
+	case "cxx_assign_const", "cxx_init_const", "cxx_remove_void_call", "cxx_replace_scalar_void", "negate_mutator":
+		// Operators marv does not currently fix.
 		return 0
-	case "cxx_bitwise_not_to_noop", "cxx_ge_to_gt", "cxx_ge_to_lt", "cxx_le_to_gt", "cxx_le_to_lt", "cxx_minus_to_noop", "cxx_remove_negation", "cxx_post_dec_to_post_inc", "cxx_pre_dec_to_pre_inc":
-		mutation.End.Line = mutation.Start.Line
-		mutation.End.Char = mutation.Start.Char + 2
-	case "cxx_gt_to_ge", "cxx_gt_to_le", "cxx_lt_to_ge", "cxx_lt_to_le":
+	case "cxx_bitwise_not_to_noop", "cxx_minus_to_noop", "cxx_post_dec_to_post_inc", "cxx_pre_dec_to_pre_inc", "cxx_remove_negation", "cxx_gt_to_ge", "cxx_gt_to_le", "cxx_lt_to_ge", "cxx_lt_to_le":
+		// Operators that replace a source string length of 1 (~, !, -)
 		mutation.End.Line = mutation.Start.Line
 		mutation.End.Char = mutation.Start.Char + 1
-	case "cxx_init_const":
-		// Would need a regex operation here
-		return 0
-	case "cxx_post_inc_to_post_dec", "cxx_pre_inc_to_pre_dec":
+	case "cxx_ge_to_gt", "cxx_ge_to_lt", "cxx_le_to_gt", "cxx_le_to_lt", "cxx_post_inc_to_post_dec", "cxx_pre_inc_to_pre_dec":
+		// Operators that replace a source string length of 2 (==, <=, /=, ...)
 		mutation.End.Line = mutation.Start.Line
-		mutation.End.Char = mutation.Start.Char + 3
-	case "cxx_remove_void_call":
-		// Would need a regex operation here
-		return 0
-	case "cxx_replace_scalar_void":
-		// Would need a regex operation here
-		return 0
-	case "negate_mutator":
-		// Would need a regex operation here
-		return 0
+		mutation.End.Char = mutation.Start.Char + 2
 	default:
+		// Operators that replace a source string of length equal to its replacement string
 		mutation.End.Line = mutation.Start.Line
 		mutation.End.Char = mutation.Start.Char + len(mutation.Replacement)
 	}
