@@ -158,7 +158,7 @@ func getFuncName(lines []string, mutation *mutations.Mutation) string {
 	funcStr := "??"
 	for _, str := range match {
 		// NOTE: takes first non keyword in the replacements string that matches the regex as the function name.
-		if !slices.Contains(cppKeyWords, str[1]) {
+		if !slices.Contains(cppKeyWords, str[1]) && str[1] != "" {
 			funcStr = str[1]
 			break
 		}
