@@ -107,6 +107,8 @@ func (m Mutation) GetDescription() string {
 	return m.Description
 }
 
+// IsBroken returns whether a mutation is broken or not. Marv treats any mutation where the End Range is lower than
+// the Start Range.
 func (m Mutation) IsBroken() bool {
 	return m.End.LessThan(m.Start)
 }

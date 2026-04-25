@@ -106,6 +106,7 @@ func transformMutations(conf *config.Config, activeFws []fwlib.Framework) error 
 	return nil
 }
 
+// extracts and removes broken mutations (se IsBroken method on mutations.Mutation)
 func extractBrokenMutations(conf *config.Config, fw fwlib.Framework) error {
 	broken := fw.Mutations().ExtractBrokenMutations()
 	if len(broken) > 0 {
