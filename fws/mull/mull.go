@@ -107,6 +107,8 @@ func (m *Mull) TransformResults() error {
 	return nil
 }
 
+// generates a description based off of the descriptions give on the supported mutation operators page of the mull
+// documentation: https://mull.readthedocs.io/en/latest/SupportedMutations.html.
 func (m *Mull) generateDescription(lines []string, mutation *mutations.Mutation) {
 	switch mutation.Operation {
 	case "cxx_remove_void_call":
