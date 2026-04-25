@@ -227,15 +227,17 @@
     }
 
     &.crashed {
-        fill: var(--status-crashed-fg)
+        fill: var(--status-crashed-fg);
     }
 
     &.timeout {
-        fill: var(--status-timeout-fg)
+        fill: var(--status-timeout-fg);
     }
 
-    &.no_coverage {
-        fill: var(--status-no-coverage-fg)
+    &.no_coverage,
+    &.ignored,
+    &.pending {
+        fill: var(--status-no-coverage-fg);
     }
 }
 
@@ -290,7 +292,9 @@
         }
     }
 
-    &.no_coverage {
+    &.no_coverage,
+    &.ignored,
+    &.pending {
         background: var(--status-no-coverage-bg);
 
         &::before {

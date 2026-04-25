@@ -49,7 +49,7 @@
     --status-timeout-fg: #ffff00;
     --status-timeout-bg: #606020;
     --status-no-coverage-fg: #808080;
-    --status-no-coverage-bg: #404040;
+    --status-no-coverage-bg: #474747;
 
     --mutation-border-fg: #565656;
     --mutation-border: solid 1px var(--mutation-border-fg);

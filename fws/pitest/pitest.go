@@ -13,7 +13,6 @@ import (
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/rs/zerolog/log"
-	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
 )
 
@@ -147,45 +146,26 @@ func (p *Pitest) LoadResults() error {
 func (p *Pitest) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", p.Meta().Name)
 
-	groupBar := progressbar.NewOptions(
-		len(p.muts),
-		progressbar.OptionSetWriter(os.Stdout),
-		progressbar.OptionSetDescription("[1/3]     grouping"),
-		progressbar.OptionSetRenderBlankState(true),
-		progressbar.OptionShowCount())
+	groupBar := fwlib.NewProgressbar(len(p.muts), "[1/3]     grouping")
 	fileMutations := p.groupMutants(groupBar)
-	groupBar.Finish()
-	fmt.Println()
+	fwlib.FinishProgressbar(groupBar)
 
-	indexBar := progressbar.NewOptions(
-		len(p.muts),
-		progressbar.OptionSetWriter(os.Stdout),
-		progressbar.OptionSetDescription("[2/3]     indexing"),
-		progressbar.OptionSetRenderBlankState(true),
-		progressbar.OptionShowCount())
-	err := p.indexMutants(fileMutations, indexBar)
-	if err != nil {
+	indexBar := fwlib.NewProgressbar(len(p.muts), "[2/3]     indexing")
+	if err := p.indexMutants(fileMutations, indexBar); err != nil {
 		return err
 	}
-	indexBar.Finish()
-	fmt.Println()
+	fwlib.FinishProgressbar(indexBar)
 
 	log.Info().Msgf("%s - using %s", p.Meta().Name, p.dcomp)
 
 	if err := p.dcomp.Setup(); err != nil {
 		return err
 	}
-	transformBar := progressbar.NewOptions(
-		len(fileMutations),
-		progressbar.OptionSetWriter(os.Stdout),
-		progressbar.OptionSetDescription("[3/3] transforming"),
-		progressbar.OptionSetRenderBlankState(true),
-		progressbar.OptionShowCount())
+	transformBar := fwlib.NewProgressbar(len(fileMutations), "[3/3] transforming")
 	var errs []error
 	p.ms, errs = transform(p, fileMutations, transformBar)
 	// NOTE: perform stdout cleanup before printing errors.
-	transformBar.Finish()
-	fmt.Println()
+	fwlib.FinishProgressbar(transformBar)
 	if len(errs) > 0 {
 		for _, err := range errs {
 			err.(*transformError).log()

@@ -1,0 +1,185 @@
+package mtelib
+
+import (
+	"encoding/json"
+	"os"
+	"sort"
+	"strings"
+
+	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/schollz/progressbar/v3"
+)
+
+// Mutation Testing Elements Library
+//
+// A library that provides structs and methods to unmarshal and marshal mutations from the Mutation Testing Elements
+// JSON format. Built off of mutation testing report schema version 2.0.1
+
+// MutationTestResult represents the main Mutation Testing Elements JSON file.
+type MutationTestResult struct {
+	SchemaVersion string               `json:"schemaVersion"`
+	Files         FileResultDictionary `json:"files"`
+}
+
+func (m *MutationTestResult) CountMutations() int {
+	count := 0
+	for _, file := range m.Files {
+		count += len(file.Mutants)
+	}
+	return count
+}
+
+// FileResultDictionary is a dictionary that stores FileResults against their string file paths.
+type FileResultDictionary map[string]FileResult
+
+// FileResult contains the files language, mutants and unedited source code.
+type FileResult struct {
+	Language string         `json:"language"`
+	Mutants  []MutantResult `json:"mutants"`
+	Source   string         `json:"source"`
+}
+
+// MutantResult contains the data about a specific mutant.
+type MutantResult struct {
+	ID          string    `json:"id"`
+	MutatorName string    `json:"mutatorName"`
+	Replacement string    `json:"replacement"`
+	Location    Location  `json:"location"`
+	Status      MTEStatus `json:"status"`
+	Description string    `json:"description"`
+}
+
+func (m *MutantResult) toMarvMutation() *mutations.Mutation {
+	return &mutations.Mutation{
+		FrameworkMutantID: m.ID,
+		Description:       m.Description,
+		Operation:         m.MutatorName,
+		Start:             m.Location.Start.toMarvRange(),
+		End:               m.Location.End.toMarvRange(),
+		Status:            m.Status.toMarvStatus(),
+		Replacement:       m.Replacement,
+	}
+}
+
+func (m *MutantResult) lineSpan() int {
+	return m.Location.End.Line - m.Location.Start.Line
+}
+
+func (m *MutantResult) columnSpan() int {
+	return m.Location.End.Column - m.Location.Start.Column
+}
+
+type MTEStatus string
+
+func (m MTEStatus) toMarvStatus() mutations.Status {
+	switch string(m) {
+	case "Survived":
+		return mutations.Survived
+	case "Killed":
+		return mutations.Killed
+	case "RuntimeError", "CompileError":
+		return mutations.Crashed
+	case "Timeout":
+		return mutations.Timeout
+	case "Pending":
+		return mutations.Pending
+	case "Ignored":
+		return mutations.Ignored
+	default:
+		return mutations.NoCoverage
+	}
+}
+
+// Location describes a range within the source code. Start is inclusive, end is exclusive.
+type Location struct {
+	Start Position `json:"start"`
+	End   Position `json:"end"`
+}
+
+// Position describes a single position within the source code. Both line and column start at one.
+type Position struct {
+	Line   int `json:"line"`
+	Column int `json:"column"`
+}
+
+func (p *Position) toMarvRange() *mutations.Range {
+	return &mutations.Range{
+		Line: p.Line - 1,
+		Char: p.Column - 1,
+	}
+}
+
+type MTE struct {
+	result    MutationTestResult
+	mutations mutations.Mutations
+	files     map[string]string
+}
+
+func NewMTE(file string) (*MTE, error) {
+	raw, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+	mte := &MTE{}
+	if err := json.Unmarshal(raw, &mte.result); err != nil {
+		return nil, err
+	}
+	return mte, nil
+}
+
+func (m *MTE) RawMutationsCount() int {
+	return m.result.CountMutations()
+}
+
+func (m *MTE) Transform(bar *progressbar.ProgressBar) {
+	m.mutations = make(mutations.Mutations)
+	m.files = make(map[string]string)
+
+	for file, fileResult := range m.result.Files {
+		if strings.HasPrefix(file, "/") {
+			file = file[1:]
+		}
+		m.files[file] = fileResult.Source
+		sortMutantsByRange(fileResult.Mutants)
+		for _, mutant := range fileResult.Mutants {
+			m.mutations.Append(file, mutant.toMarvMutation())
+			bar.Add(1)
+		}
+	}
+
+	m.result = MutationTestResult{}
+}
+
+// sorting the mutants by range ensures that the best possible initial grouping of mutations into conflicts. this
+// minimizes the amount of conflict merges that will have to be made when processing is finished.
+func sortMutantsByRange(ms []MutantResult) {
+	sort.Slice(ms, func(i, j int) bool {
+		lsi := ms[i].lineSpan()
+		lsj := ms[j].lineSpan()
+		if lsi != lsj {
+			return lsi > lsj
+		}
+		csi := ms[i].columnSpan()
+		csj := ms[j].columnSpan()
+		if csi != csj {
+			return csi > csj
+		}
+		return ms[i].ID < ms[j].ID
+	})
+}
+
+func (m *MTE) Mutations() mutations.Mutations {
+	return m.mutations
+}
+
+func (m *MTE) ReadLines(file string) []string {
+	return getLinesFromString(m.files[file])
+}
+
+func getLinesFromString(str string) []string {
+	lines := make([]string, 0)
+	for line := range strings.Lines(str) {
+		lines = append(lines, strings.ReplaceAll(line, "\n", ""))
+	}
+	return lines
+}

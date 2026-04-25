@@ -1,8 +1,12 @@
 package fwlib
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/schollz/progressbar/v3"
 )
 
 type Meta struct {
@@ -45,4 +49,17 @@ type Framework interface {
 	Mutations() mutations.Mutations
 	// ReadLines returns the lines of the specified file
 	ReadLines(file string) ([]string, error)
+}
+
+func NewProgressbar(length int, desc string) *progressbar.ProgressBar {
+	return progressbar.NewOptions(
+		length,
+		progressbar.OptionSetWriter(os.Stdout),
+		progressbar.OptionSetDescription(desc),
+		progressbar.OptionSetRenderBlankState(true))
+}
+
+func FinishProgressbar(bar *progressbar.ProgressBar) {
+	bar.Finish()
+	fmt.Println()
 }

@@ -3,7 +3,6 @@ package mutest_rs
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -134,18 +133,12 @@ func (m *MutestRS) LoadResults() error {
 func (m *MutestRS) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
 
-	bar := progressbar.NewOptions(
-		len(m.muts.Mutations),
-		progressbar.OptionSetWriter(os.Stdout),
-		progressbar.OptionSetDescription("transforming"),
-		progressbar.OptionSetRenderBlankState(true))
-
+	bar := fwlib.NewProgressbar(len(m.muts.Mutations), "transforming")
 	ms, err := m.transformResults(bar)
 	if err != nil {
 		return err
 	}
-	bar.Finish()
-	fmt.Println()
+	fwlib.FinishProgressbar(bar)
 
 	m.ms = ms
 	return nil
