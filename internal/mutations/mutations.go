@@ -205,6 +205,7 @@ func (m Mutations) MergeConflicting() {
 		if len(conflicts) <= 1 {
 			continue
 		}
+		conflicts.Sort()
 
 		merged := make(Conflicts, 0, len(conflicts))
 		current := conflicts[0]

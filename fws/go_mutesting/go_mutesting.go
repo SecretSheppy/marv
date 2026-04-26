@@ -121,7 +121,6 @@ func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status) e
 		)
 		for _, h := range d.Hunks {
 			hunkStartLine = h.FromLine
-
 			for _, l := range h.Lines {
 				switch l.Kind {
 				case udiff.Delete:
@@ -130,6 +129,7 @@ func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status) e
 					replacement.WriteString(l.Content)
 				}
 			}
+			break // NOTE: we never care about the second hunk for go-mutesting
 		}
 
 		startLine := mutator.OriginalStartLine - 1
