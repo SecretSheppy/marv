@@ -10,6 +10,7 @@ import (
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/aymanbagabas/go-udiff"
 	"github.com/rs/zerolog/log"
+	"github.com/schollz/progressbar/v3"
 	"gopkg.in/yaml.v3"
 )
 
@@ -46,6 +47,10 @@ type Report struct {
 	Timeouted []Mutation `json:"timeouted"`
 	Killed    []Mutation `json:"killed"`
 	Errored   []Mutation `json:"errored"`
+}
+
+func (r Report) Length() int {
+	return len(r.Escaped) + len(r.Timeouted) + len(r.Killed) + len(r.Errored)
 }
 
 type Mutation struct {
@@ -90,21 +95,27 @@ func (g *GoMutesting) LoadResults() error {
 }
 
 func (g *GoMutesting) TransformResults() error {
+	log.Info().Msgf("%s - transforming results", g.Meta().Name)
+	bar := fwlib.NewProgressbar(g.report.Length(), "transforming")
 	g.ms = make(mutations.Mutations)
 	g.files = make(map[string][]string)
-	if err := g.transformResults(g.report.Escaped, mutations.Survived); err != nil {
+	if err := g.transformResults(g.report.Escaped, mutations.Survived, bar); err != nil {
 		return err
 	}
-	if err := g.transformResults(g.report.Timeouted, mutations.Timeout); err != nil {
+	if err := g.transformResults(g.report.Timeouted, mutations.Timeout, bar); err != nil {
 		return err
 	}
-	if err := g.transformResults(g.report.Killed, mutations.Killed); err != nil {
+	if err := g.transformResults(g.report.Killed, mutations.Killed, bar); err != nil {
 		return err
 	}
-	return g.transformResults(g.report.Errored, mutations.Crashed)
+	if err := g.transformResults(g.report.Errored, mutations.Crashed, bar); err != nil {
+		return err
+	}
+	fwlib.FinishProgressbar(bar)
+	return nil
 }
 
-func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status) error {
+func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status, bar *progressbar.ProgressBar) error {
 	for _, mutation := range ms {
 		mutator := mutation.Mutator
 		lines := g.addOrGetFile(mutator)
@@ -153,6 +164,7 @@ func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status) e
 		}
 
 		g.ms.Append(mutator.OriginalFilePath, m)
+		bar.Add(1)
 	}
 	return nil
 }
