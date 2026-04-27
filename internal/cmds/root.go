@@ -180,6 +180,9 @@ func exportMutationReviews(conf *config.Config, activeFws []fwlib.Framework, db 
 		if err != nil {
 			return err
 		}
+		if len(reviews) == 0 {
+			continue
+		}
 		if conf.Marv.Output.Merge {
 			rs = append(rs, reviews...)
 			continue
@@ -189,7 +192,7 @@ func exportMutationReviews(conf *config.Config, activeFws []fwlib.Framework, db 
 			return err
 		}
 	}
-	if conf.Marv.Output.Merge {
+	if conf.Marv.Output.Merge && len(rs) != 0 {
 		out := path.Join(conf.Marv.Output.Path, "mutations-review.json")
 		return exportReviews(conf, rs, out)
 	}
