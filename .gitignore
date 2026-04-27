@@ -39,3 +39,6 @@ lib
 
 # Test Datasets
 .test_datasets
+
+# go-mutesting report
+report.json
