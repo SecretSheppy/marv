@@ -24,7 +24,7 @@ const marvYml = ".marv.yml"
 
 var (
 	port, configFile, outputPath string
-	mergeOutput                  bool
+	mergeOutput, verbose         bool
 	frameworks                   []string
 
 	rootCmd = &cobra.Command{
@@ -238,7 +238,8 @@ func rootCommand() {
 	}()
 
 	log.Info().Msgf("Starting server at http://localhost:%d/", conf.Marv.Port)
-	if err := server.NewServer(conf.Marv.Port, activeFws, db).Serve(); err != nil {
+	log.Info().Msgf("Use Ctrl + C to exit. Upon interrupt reviews will be saved in %s directory", conf.Marv.Output.Path)
+	if err := server.NewServer(conf.Marv.Port, activeFws, db).Serve(verbose); err != nil {
 		log.Fatal().Err(err).Msg("Failed to serve")
 		os.Exit(1)
 	}
@@ -251,6 +252,7 @@ func Execute() {
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", marvYml, ".marv.yml file path")
 	rootCmd.PersistentFlags().StringVarP(&outputPath, "output", "o", "", "specifies the output path")
 	rootCmd.PersistentFlags().BoolVarP(&mergeOutput, "merge", "m", false, "merges all frameworks output into one large json")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "logs verbose output to stdout")
 
 	rootCmd.Flags().StringVarP(&port, "port", "p", "", "port to listen on")
 
