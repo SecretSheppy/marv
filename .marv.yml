@@ -1,0 +1,8 @@
+marv:
+    port: 8080
+    output:
+        path: .marv
+        merge: false
+
+go-mutesting:
+    json-report: "report.json"
