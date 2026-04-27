@@ -46,14 +46,16 @@ func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *S
 	}
 }
 
-func (s *Server) Serve() error {
+func (s *Server) Serve(verbose bool) error {
 	staticFS, err := fs.Sub(web.StaticFS, "static")
 	if err != nil {
 		return err
 	}
 
 	r := mux.NewRouter()
-	r.Use(logger)
+	if verbose {
+		r.Use(logger)
+	}
 	r.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", http.FileServer(http.FS(staticFS))))
 	r.HandleFunc("/", s.startHandler).Methods("GET")
 	r.HandleFunc("/tree", s.treeHandler).Methods("GET")
