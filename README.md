@@ -55,7 +55,7 @@ A list of mutation testing frameworks that either are currently supported or wil
 Marv can be installed with the `go` tool. To use the installed executable, add the `GOPATH` environment variable 
 to your system path. For more information run `go help install`.
 ```
-go install github.com/SecretSheppy/marv/cmd/marv@latest
+go install github.com/SecretSheppy/marv@latest
 ```
 
 ### Build from source
