@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="web/static/branding/marv_logo.png" alt="Marv" style="width: 150px;">
-</p>
+<img width="1747" height="432" alt="marv_banner" src="https://github.com/user-attachments/assets/c042fb02-1dce-4886-8e9e-afbe12395d17" />
 
 <h2 align="center">Marv: Mutations Analysis, Review and Visualisation</h2>
 
