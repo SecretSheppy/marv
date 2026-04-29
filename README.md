@@ -1,5 +1,4 @@
-<img width="1747" height="422" alt="marv" src="https://github.com/user-attachments/assets/f59ec340-ba02-459e-aa5a-1f33d2febfb4" />
-
+<img width="1747" height="422" alt="marv2" src="https://github.com/user-attachments/assets/6cda7444-282c-4fc9-88c1-0ec4ccbc154c" />
 
 <h2 align="center">Marv: Mutations Analysis, Review and Visualisation</h2>
 
