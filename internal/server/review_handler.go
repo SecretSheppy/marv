@@ -33,6 +33,11 @@ func (s *Server) reviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, m := framework.Mutations()[reviewReq.File].GetMutant(mutantID); m == nil {
+		writeAPIError(w, r, nil, http.StatusBadRequest, "mutant does not exist")
+		return
+	}
+
 	_, mutation := framework.Mutations()[reviewReq.File].GetMutant(mutantID)
 	fwid := ""
 	if mutation != nil {
