@@ -120,8 +120,8 @@ func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPat
 	buff.WriteString(fmt.Sprintf("<div class=\"node directory\" style=\"--level: %d;\">"+
 		"<div class=\"spacer\">"+
 		"<div class=\"collapse-toggle\">"+
-		"<img class=\"icon icon-expanded\" src=\"/resources/icons/arrow_down.png\" alt=\"down arrow\" />"+
-		"<img class=\"icon icon-collapsed\" src=\"/resources/icons/arrow_right.png\" alt=\"right arrow\" />"+
+		"<img class=\"icon icon-expanded\" src=\"/resources/icons/arrow-down.svg\" alt=\"down arrow\" />"+
+		"<img class=\"icon icon-collapsed\" src=\"/resources/icons/arrow-right.svg\" alt=\"right arrow\" />"+
 		"</div>"+ // closes collapse-toggle
 		"</div>"+ // closes spacer
 		"<div class=\"icon-name-wrapper\">"+
@@ -173,8 +173,8 @@ func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 		"<a href=\"/\"><img class=\"header-logo\" src=\"/resources/branding/marv_logo.png\" alt=\"marv logo\" /></a>" +
 		"<div class=\"buttons-wrapper\">" +
 		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"/resources/icons/crosshair.png\" alt=\"crosshair icon\" /></button>" +
-		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"/resources/icons/up_down.png\" alt=\"up arrow above down arrow icon\" /></button>" +
-		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"/resources/icons/down_up.png\" alt=\"down arrow above up arrow icon\" /></button>" +
+		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"/resources/icons/arrows-up-down.svg\" alt=\"up arrow above down arrow icon\" /></button>" +
+		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"/resources/icons/arrows-down-up.svg\" alt=\"down arrow above up arrow icon\" /></button>" +
 		"</div>" +
 		"</div>")
 }

@@ -13,8 +13,8 @@ func writeFilters(buff *bytes.Buffer) {
 		"<img class=\"icon\" src=\"/resources/icons/sliders-solid.svg\" alt=\"filters icon\" />" +
 		"<h4 class=\"bar-title\">Status Filters</h4>" +
 		"<div class=\"right-content\">" +
-		"<img class=\"icon arrow-up\" src=\"/resources/icons/arrow_up.png\" alt=\"arrow up icon\" />" +
-		"<img class=\"icon arrow-down\" src=\"/resources/icons/arrow_down.png\" alt=\"arrow down icon\" />" +
+		"<img class=\"icon arrow-up\" src=\"/resources/icons/arrow-up.svg\" alt=\"arrow up icon\" />" +
+		"<img class=\"icon arrow-down\" src=\"/resources/icons/arrow-down.svg\" alt=\"arrow down icon\" />" +
 		"</div>" + // closes right-content
 		"</div>" + // closes filters-bar
 		"<div class=\"content-wrapper\">" +
