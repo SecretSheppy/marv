@@ -1,0 +1,84 @@
+{
+    "name": "Light",
+    "document": {
+        "background": "#FFFFFF"
+    },
+    "ui": {
+        "text": {
+            "font-family": "Helvetica",
+            "title-size": "14px",
+            "font-size": "13px",
+            "color": {
+                "main": "#2F3A45",
+                "dark": "#B2BBC5"
+            }
+        },
+        "colors": {
+            "primary-background": "#F8FAFC",
+            "secondary-background": "#EEF2F7",
+            "hover-background": "#E8EEF6",
+            "accent": {
+                "hover-background": "#E6F0FF",
+                "focus-background": "#BFD7FF"
+            },
+            "statistics": {
+                "positive": "#1AAD21",
+                "mediocre": "#F0AD4C",
+                "negative": "#CF3232"
+            },
+            "link-color": "#0B79D0"
+        },
+        "components": {
+            "divider": "solid 1px #E5E7EB",
+            "header-height": "41px"
+        }
+    },
+    "code": {
+        "chroma-theme": "github",
+        "text": {
+            "font-family": "monospace",
+            "font-size": "0.83rem"
+        },
+        "background": "#F8FAFC",
+        "line-number-color": "#3D3D3F",
+        "line-height": "24px",
+        "diff": {
+            "remove": {
+                "default": "#FF8D8D66",
+                "dark": "#FF4D4D66",
+                "inline": "#FF6B6B54"
+            },
+            "insert": {
+                "default": "#73E77966",
+                "dark": "#1FDA2D66",
+                "inline": "#3EA94440"
+            }
+        },
+        "components": {
+            "mutation-border": "solid 1px #D1D5DB",
+            "line-number-border": "solid 1px #E5E7EB"
+        }
+    },
+    "status": {
+        "killed": {
+            "foreground": "#2E7D32",
+            "background": "#EAF7EA"
+        },
+        "survived": {
+            "foreground": "#C62828",
+            "background": "#FDECEC"
+        },
+        "crashed": {
+            "foreground": "#B7791F",
+            "background": "#FFF3E0"
+        },
+        "timeout": {
+            "foreground": "#B58900",
+            "background": "#FFF8D6"
+        },
+        "no-coverage": {
+            "foreground": "#6B7280",
+            "background": "#F3F4F6"
+        }
+    }
+}

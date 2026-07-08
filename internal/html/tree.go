@@ -11,6 +11,7 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/internal/themes"
 )
 
 type nodeType int
@@ -91,19 +92,19 @@ func (p *pathNode) MergeOnlyChildren() {
 	}
 }
 
-func (p *pathNode) Render(buff *bytes.Buffer, fw fwlib.Framework) {
-	p.render(buff, fw, fw.Meta().Language, 1, "")
+func (p *pathNode) Render(buff *bytes.Buffer, fw fwlib.Framework, theme *themes.Theme) {
+	p.render(buff, fw, fw.Meta().Language, 1, "", theme)
 }
 
-func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string) {
+func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string, theme *themes.Theme) {
 	currentPath := path.Join(accPath, p.Name)
 	switch p.Type {
 	case directory:
 		buff.WriteString("<div class=\"directory-wrapper collapsed\">")
-		p.renderDirectoryNode(buff, level, currentPath, fw)
+		p.renderDirectoryNode(buff, level, currentPath, fw, theme)
 		buff.WriteString("<div class=\"directory-contents\">")
 		for _, child := range p.children {
-			child.render(buff, fw, lang, level+1, currentPath)
+			child.render(buff, fw, lang, level+1, currentPath, theme)
 		}
 		buff.WriteString("</div></div>")
 	case file:
@@ -116,16 +117,16 @@ var (
 	fwHeaderStats = &statsConfig{Count: true, Coverage: true, Score: true, OfCovered: true}
 )
 
-func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPath string, fw fwlib.Framework) {
+func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPath string, fw fwlib.Framework, theme *themes.Theme) {
 	buff.WriteString(fmt.Sprintf("<div class=\"node directory\" style=\"--level: %d;\">"+
 		"<div class=\"spacer\">"+
 		"<div class=\"collapse-toggle\">"+
-		"<img class=\"icon icon-expanded\" src=\"/resources/icons/arrow-down.svg\" alt=\"down arrow\" />"+
-		"<img class=\"icon icon-collapsed\" src=\"/resources/icons/arrow-right.svg\" alt=\"right arrow\" />"+
+		"<img class=\"icon icon-expanded\" src=\""+getIconURL(theme, "arrow-down.svg")+"\" alt=\"down arrow\" />"+
+		"<img class=\"icon icon-collapsed\" src=\""+getIconURL(theme, "arrow-right.svg")+"\" alt=\"right arrow\" />"+
 		"</div>"+ // closes collapse-toggle
 		"</div>"+ // closes spacer
 		"<div class=\"icon-name-wrapper\">"+
-		"<img class=\"icon\" src=\"/resources/icons/folder-solid.svg\" alt=\"folder icon\" />"+
+		"<img class=\"icon\" src=\""+getIconURL(theme, "folder-solid.svg")+"\" alt=\"folder icon\" />"+
 		"<p class=\"name\">%s</p>"+
 		"</div>", level, p.Name))
 	writeWrappedStats(buff, currentPath, fw, nodeStats)
@@ -146,7 +147,8 @@ func (p *pathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw
 }
 
 type treeRenderer struct {
-	fws []fwlib.Framework
+	fws   []fwlib.Framework
+	theme *themes.Theme
 }
 
 func (t *treeRenderer) Render(buff *bytes.Buffer) {
@@ -162,7 +164,7 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 		}
 		root.MergeOnlyChildren()
 		root.SortChildren()
-		root.Render(buff, fw)
+		root.Render(buff, fw, t.theme)
 		buff.WriteString("</div>")
 	}
 	buff.WriteString("</div></div>")
@@ -170,11 +172,11 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 
 func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 	buff.WriteString("<div class=\"tree-header\">" +
-		"<a href=\"/\"><img class=\"header-logo\" src=\"/resources/branding/marv_logo.png\" alt=\"marv logo\" /></a>" +
+		"<a href=\"/\"><img class=\"header-logo\" src=\"" + t.theme.Logo() + "\" alt=\"marv logo\" /></a>" +
 		"<div class=\"buttons-wrapper\">" +
-		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"/resources/icons/crosshair.svg\" alt=\"crosshair icon\" /></button>" +
-		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"/resources/icons/arrows-up-down.svg\" alt=\"up arrow above down arrow icon\" /></button>" +
-		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"/resources/icons/arrows-down-up.svg\" alt=\"down arrow above up arrow icon\" /></button>" +
+		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "crosshair.svg") + "\" alt=\"crosshair icon\" /></button>" +
+		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "arrows-up-down.svg") + "\" alt=\"up arrow above down arrow icon\" /></button>" +
+		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "arrows-down-up.svg") + "\" alt=\"down arrow above up arrow icon\" /></button>" +
 		"</div>" +
 		"</div>")
 }

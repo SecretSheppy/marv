@@ -3,6 +3,7 @@ package html
 import (
 	"bytes"
 
+	"github.com/SecretSheppy/marv/internal/themes"
 	"github.com/SecretSheppy/marv/web"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/css"
@@ -11,6 +12,7 @@ import (
 
 type resourcesRenderer struct {
 	styles, scripts []string
+	theme           *themes.Theme
 }
 
 func (r *resourcesRenderer) Render(buff *bytes.Buffer) error {
@@ -24,6 +26,9 @@ func (r *resourcesRenderer) minify(buff *bytes.Buffer) error {
 	if err := r.minifyStyles(buff, mini); err != nil {
 		return err
 	}
+	buff.WriteString("<style>")
+	buff.WriteString(r.theme.CSS())
+	buff.WriteString("</style>")
 	return r.minifyScripts(buff, mini)
 }
 

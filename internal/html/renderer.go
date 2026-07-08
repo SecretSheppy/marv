@@ -9,8 +9,13 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
+	"github.com/SecretSheppy/marv/internal/themes"
 	"github.com/google/uuid"
 )
+
+func getIconURL(theme *themes.Theme, name string) string {
+	return fmt.Sprintf("/icon/%s/%s", theme.IconColor(), name)
+}
 
 type cache map[string]string
 
@@ -33,6 +38,7 @@ func (c cache) getFile(file string) string {
 type Config struct {
 	Favicon         string
 	Styles, Scripts []string
+	Theme           *themes.Theme
 }
 
 type Renderer struct {
@@ -55,7 +61,7 @@ func (r *Renderer) getResources() (string, error) {
 	meta := r.cache.get("resources")
 	if meta == "" {
 		var temp bytes.Buffer
-		t := &resourcesRenderer{r.config.Styles, r.config.Scripts}
+		t := &resourcesRenderer{r.config.Styles, r.config.Scripts, r.config.Theme}
 		if err := t.Render(&temp); err != nil {
 			return "", err
 		}
@@ -69,7 +75,7 @@ func (r *Renderer) getTree() string {
 	tree := r.cache.get("tree")
 	if tree == "" {
 		var temp bytes.Buffer
-		t := &treeRenderer{r.frameworks}
+		t := &treeRenderer{r.frameworks, r.config.Theme}
 		t.Render(&temp)
 		tree = temp.String()
 		r.cache.set("tree", tree)
@@ -103,11 +109,11 @@ func (r *Renderer) RenderStart() ([]byte, error) {
 	buff.WriteString("<div class=\"layout\">")
 	buff.WriteString("<div class=\"sidebar-wrapper\">")
 	buff.WriteString(r.getTree())
-	writeFilters(&buff)
+	writeFilters(&buff, r.config.Theme)
 	buff.WriteString("</div>")
 
 	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")
-	buff.WriteString("<img class=\"content-icon\" src=\"/resources/icons/chart-simple-solid.svg\" alt=\"chart icon\" />" +
+	buff.WriteString("<img class=\"content-icon\" src=\"" + getIconURL(r.config.Theme, "chart-simple-solid.svg") + "\" alt=\"chart icon\" />" +
 		fmt.Sprintf("<h3 class=\"content-title\">%s</h3></div>", title))
 
 	buff.WriteString("<div class=\"overflow-wrapper\"><table class=\"generic-table\">")
@@ -161,7 +167,7 @@ func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, confli
 		return nil, "", err
 	}
 	meta := framework.Meta()
-	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config, r.db)
+	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config, r.db, r.config.Theme)
 	if err != nil {
 		return nil, "", err
 	}
@@ -198,7 +204,7 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	buff.WriteString("<div class=\"layout\">")
 	buff.WriteString("<div class=\"sidebar-wrapper\">")
 	buff.WriteString(r.getTree())
-	writeFilters(&buff)
+	writeFilters(&buff, r.config.Theme)
 	buff.WriteString("</div>") // closes sidebar-wrapper
 
 	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")

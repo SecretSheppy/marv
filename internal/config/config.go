@@ -14,6 +14,7 @@ type Output struct {
 type Marv struct {
 	Port   int    `yaml:"port"`
 	Output Output `yaml:"output"`
+	Theme  string `yaml:"-"`
 }
 
 type Config struct {

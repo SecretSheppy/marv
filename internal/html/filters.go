@@ -5,16 +5,17 @@ import (
 	"fmt"
 
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/internal/themes"
 )
 
-func writeFilters(buff *bytes.Buffer) {
+func writeFilters(buff *bytes.Buffer, theme *themes.Theme) {
 	buff.WriteString("<div id=\"filters\" class=\"filters-component collapsed\">" +
 		"<div id=\"filters-toggle\" class=\"filters-bar\">" +
-		"<img class=\"icon\" src=\"/resources/icons/sliders-solid.svg\" alt=\"filters icon\" />" +
+		"<img class=\"icon\" src=\"" + getIconURL(theme, "sliders-solid.svg") + "\" alt=\"filters icon\" />" +
 		"<h4 class=\"bar-title\">Status Filters</h4>" +
 		"<div class=\"right-content\">" +
-		"<img class=\"icon arrow-up\" src=\"/resources/icons/arrow-up.svg\" alt=\"arrow up icon\" />" +
-		"<img class=\"icon arrow-down\" src=\"/resources/icons/arrow-down.svg\" alt=\"arrow down icon\" />" +
+		"<img class=\"icon arrow-up\" src=\"" + getIconURL(theme, "arrow-up.svg") + "\" alt=\"arrow up icon\" />" +
+		"<img class=\"icon arrow-down\" src=\"" + getIconURL(theme, "arrow-down.svg") + "\" alt=\"arrow down icon\" />" +
 		"</div>" + // closes right-content
 		"</div>" + // closes filters-bar
 		"<div class=\"content-wrapper\">" +

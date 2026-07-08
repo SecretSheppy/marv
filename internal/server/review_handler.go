@@ -20,6 +20,7 @@ func (s *Server) reviewHandler(w http.ResponseWriter, r *http.Request) {
 	framework := s.getActiveFw(fwName)
 	if framework == nil {
 		writeAPIError(w, r, nil, http.StatusNotFound, "error: no active framework with name "+fwName)
+		return
 	}
 	mutantID, err := uuid.Parse(vars["mutant-id"])
 	if err != nil {
