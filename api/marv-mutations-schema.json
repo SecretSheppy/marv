@@ -1,0 +1,118 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Marv Mutations Schema",
+    "$defs": {
+        "UUID": {
+            "type": "string",
+            "description": "A UUID",
+            "minLength": 36
+        },
+        "Pos": {
+            "type": "object",
+            "description": "A position within a source code file",
+            "additionalProperties": false,
+            "required": [
+                "Line",
+                "Char"
+            ],
+            "properties": {
+                "Line": {
+                    "type": "integer",
+                    "description": "The source code line number (indexed from 0) that the position is describing"
+                },
+                "Char": {
+                    "type": "integer",
+                    "description": "The character number (indexed from 0) within the given source code line, that the position is describing"
+                }
+            }
+        }
+    },
+    "type": "object",
+    "description": "Map of source file paths to array of mutant regions (known in Marv as conflicts) found in the given file",
+    "additionalProperties": {
+        "type": "array",
+        "description": "Array of mutant regions (known in Marv as conflicts)",
+        "items": {
+            "type": "object",
+            "description": "A mutant region (known in Marv as a conflict region) which has a unique id, is bounded by start and end lines and contains an array of mutations that occur between those lines",
+            "additionalProperties": false,
+            "required": [
+                "ID",
+                "StartLine",
+                "EndLine",
+                "Mutations"
+            ],
+            "properties": {
+                "ID": {
+                    "$ref": "#/$defs/UUID"
+                },
+                "StartLine": {
+                    "type": "integer",
+                    "description": "The regions start line (indexed from 0 and inclusive)"
+                },
+                "EndLine": {
+                    "type": "integer",
+                    "description": "The regions end line (indexed from 0 and non-inclusive)"
+                },
+                "Mutations": {
+                    "type": "array",
+                    "description": "An array of mutations",
+                    "items": {
+                        "type": "object",
+                        "description": "A mutation which has a unique id accompanied by the data required for Marv to display it inline with the original source code file",
+                        "additionalProperties": false,
+                        "required": [
+                            "ID",
+                            "Description",
+                            "Operation",
+                            "Start",
+                            "End",
+                            "Status",
+                            "Replacement"
+                        ],
+                        "properties": {
+                            "ID": {
+                                "$ref": "#/$defs/UUID"
+                            },
+                            "FrameworkMutantID": {
+                                "type": "string",
+                                "description": "An optional field which contains the id assigned to the mutation by the mutation testing framework if one was created"
+                            },
+                            "Description": {
+                                "type": "string",
+                                "description": "A concise textual description of the mutation"
+                            },
+                            "Operation": {
+                                "type": "string",
+                                "description": "The mutation operator used to generate the mutation"
+                            },
+                            "Start": {
+                                "$ref": "#/$defs/Pos"
+                            },
+                            "End": {
+                                "$ref": "#/$defs/Pos"
+                            },
+                            "Status": {
+                                "type": "string",
+                                "description": "The mutations status after being run against the programs test suite",
+                                "enum": [
+                                    "KILLED",
+                                    "SURVIVED",
+                                    "CRASHED",
+                                    "TIMEOUT",
+                                    "NO_COVERAGE",
+                                    "PENDING",
+                                    "IGNORED"
+                                ]
+                            },
+                            "Replacement": {
+                                "type": "string",
+                                "description": "The source code mutation"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

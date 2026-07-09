@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Marv Review Schema",
+    "$defs": {
+        "UUID": {
+            "type": "string",
+            "description": "A UUID",
+            "minLength": 36
+        }
+    },
+    "type": "array",
+    "description": "Array of reviews that correspond to a particular mutation id",
+    "items": {
+        "type": "object",
+        "description": "A review which contains a unique id, framework name and review text",
+        "additionalProperties": false,
+        "required": [
+            "MutationID",
+            "Framework",
+            "Review"
+        ],
+        "properties": {
+            "MutationID": {
+                "$ref": "#/$defs/UUID"
+            },
+            "FrameworkMutationID": {
+                "type": "string",
+                "description": "An optional field which contains the id assigned to the mutation by the mutation testing framework if one was created"
+            },
+            "Framework": {
+                "type": "string",
+                "description": "The name of the mutation testing framework that generated the mutation"
+            },
+            "Review": {
+                "type": "string",
+                "description": "The textual review of the mutation"
+            }
+        }
+    }
+}

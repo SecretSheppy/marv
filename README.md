@@ -119,7 +119,11 @@ Screenshots of the Marv user interface showing results from various frameworks.
 ## Export Format
 
 Marv exports both the mutations and reviews as a `.json` marshal of its internal mutations format for all frameworks. 
-By using the `-m` or `--merge` flags, the results from all frameworks are merged into one large `.json` file.
+By using the `-m` or `--merge` flags, the results from all frameworks are merged into one large `.json` file. Brief
+textual descriptions of both formats are given below, and schemas for each can be found in the [`api`](api) directory:
+
+* [Mutations Format Schema](api/marv-mutations-schema.json)
+* [Reviews Format Schema](api/marv-reviews-schema.json)
 
 ### Mutations Format
 
@@ -130,51 +134,10 @@ The basic structure is `file path` > `conflict region` > `mutation`. Marv uses `
 Any `ID` field is a UUID created by Marv. Where frameworks create mutant identifiers, they are stored against the mutant
 as `FrameworkMutantID`.
 
-```json
-{
-    "path/file.lang": [
-        {
-            "ID": "00000000-0000-0000-0000-000000000000",
-            "StartLine": 94,
-            "EndLine": 94,
-            "Mutations": [
-                {
-                    "ID": "00000000-0000-0000-0000-000000000000",
-                    "FrameworkMutantID": "",
-                    "Description": "some description here",
-                    "Operation": "some operator here",
-                    "Start": {
-                        "Line": 94,
-                        "Char": 11
-                    },
-                    "End": {
-                        "Line": 94,
-                        "Char": 32
-                    },
-                    "Status": "SURVIVED",
-                    "Replacement": "some.Replacement.String.Here()"
-                }
-            ]
-        }
-    ]
-}
-```
-
 ### Reviews Format
 
 Reviews are exported against the corresponding mutations Marv Mutation ID and their Framework Mutation 
 ID (if applicable). The review structure is defined in [`internal/review`](internal/review/review.go).
-
-```json
-[
-    {
-        "MutationID": "00000000-0000-0000-0000-000000000000",
-        "FrameworkMutationID": "",
-        "Framework": "mock-fw",
-        "Review": "An example review"
-    }
-]
-```
 
 ## Other
 
