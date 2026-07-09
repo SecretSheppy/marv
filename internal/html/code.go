@@ -314,13 +314,13 @@ func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutati
 		"<div class=\"review-header\">"+
 		"<label for=\"review-%s\" class=\"generic-label\">Add Review</label>"+
 		"<div class=\"loader-wrapper saved\">"+
-		"<img class=\"saved-icon\" src=\""+getIconURL(r.theme, "circle-check-solid.svg")+"\" alt=\"saved icon\" />"+
+		"<img class=\"saved-icon\" src=\"%s\" alt=\"saved icon\" />"+
 		"<div class=\"loader\"></div>"+
 		"<p class=\"loader-status\">Saved</p>"+
 		"</div>"+ // closes loader-wrapper
 		"</div>"+ // closes review-header
 		"<textarea id=\"review-%s\" class=\"generic-textarea\" type=\"text\" placeholder=\"Enter review...\">%s</textarea>"+
 		"</div>"+
-		"</td></tr>", m.ID, m.ID, rev.Review))
+		"</td></tr>", m.ID, getIconURL(r.theme, "circle-check-solid.svg"), m.ID, rev.Review))
 	return nil
 }

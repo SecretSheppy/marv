@@ -121,14 +121,15 @@ func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPat
 	buff.WriteString(fmt.Sprintf("<div class=\"node directory\" style=\"--level: %d;\">"+
 		"<div class=\"spacer\">"+
 		"<div class=\"collapse-toggle\">"+
-		"<img class=\"icon icon-expanded\" src=\""+getIconURL(theme, "arrow-down.svg")+"\" alt=\"down arrow\" />"+
-		"<img class=\"icon icon-collapsed\" src=\""+getIconURL(theme, "arrow-right.svg")+"\" alt=\"right arrow\" />"+
+		"<img class=\"icon icon-expanded\" src=\"%s\" alt=\"down arrow\" />"+
+		"<img class=\"icon icon-collapsed\" src=\"%s\" alt=\"right arrow\" />"+
 		"</div>"+ // closes collapse-toggle
 		"</div>"+ // closes spacer
 		"<div class=\"icon-name-wrapper\">"+
-		"<img class=\"icon\" src=\""+getIconURL(theme, "folder-solid.svg")+"\" alt=\"folder icon\" />"+
+		"<img class=\"icon\" src=\"%s\" alt=\"folder icon\" />"+
 		"<p class=\"name\">%s</p>"+
-		"</div>", level, p.Name))
+		"</div>",
+		level, getIconURL(theme, "arrow-down.svg"), getIconURL(theme, "arrow-right.svg"), getIconURL(theme, "folder-solid.svg"), p.Name))
 	writeWrappedStats(buff, currentPath, fw, nodeStats)
 	buff.WriteString("</div>")
 }
