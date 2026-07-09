@@ -10,6 +10,7 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/SecretSheppy/marv/internal/review"
+	"github.com/SecretSheppy/marv/internal/themes"
 	"github.com/SecretSheppy/marv/web"
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog/log"
@@ -22,7 +23,7 @@ type Server struct {
 	renderer   *html.Renderer
 }
 
-func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *Server {
+func NewServer(port int, theme *themes.Theme, frameworks []fwlib.Framework, db *review.Repository) *Server {
 	return &Server{
 		port:       port,
 		frameworks: frameworks,
@@ -42,6 +43,7 @@ func NewServer(port int, frameworks []fwlib.Framework, db *review.Repository) *S
 				"scripts/tree.js",
 				"scripts/review.js",
 			},
+			Theme: theme,
 		}, frameworks, db),
 	}
 }
@@ -57,6 +59,7 @@ func (s *Server) Serve(verbose bool) error {
 		r.Use(logger)
 	}
 	r.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", http.FileServer(http.FS(staticFS))))
+	r.HandleFunc("/icon/{color}/{name}", s.iconHandler).Methods("GET")
 	r.HandleFunc("/", s.startHandler).Methods("GET")
 	r.HandleFunc("/tree", s.treeHandler).Methods("GET")
 	r.PathPrefix("/{framework}/mutant/").HandlerFunc(s.mutantHandler).Methods("GET")

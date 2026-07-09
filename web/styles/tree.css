@@ -110,6 +110,7 @@
         .collapse-toggle {
             width: var(--tab-size);
             margin-left: auto;
+            display: flex;
 
             .icon {
                 width: 15px;

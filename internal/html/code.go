@@ -10,6 +10,7 @@ import (
 
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
+	"github.com/SecretSheppy/marv/internal/themes"
 	"github.com/SecretSheppy/marv/pkg/highlighter"
 	"github.com/alecthomas/chroma/v2/styles"
 	"gorm.io/gorm"
@@ -62,9 +63,10 @@ type codeRenderer struct {
 	lnPadding            int
 	config               *codeRendererConfig
 	db                   *review.Repository
+	theme                *themes.Theme
 }
 
-func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts, config *codeRendererConfig, db *review.Repository) (*codeRenderer, error) {
+func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts, config *codeRendererConfig, db *review.Repository, theme *themes.Theme) (*codeRenderer, error) {
 	r := &codeRenderer{
 		ext:       ext,
 		framework: framework,
@@ -73,9 +75,10 @@ func newCodeRenderer(ext, framework, file string, lines []string, conflicts muta
 		conflicts: conflicts,
 		config:    config,
 		db:        db,
+		theme:     theme,
 	}
 	var err error
-	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get("darcula"))
+	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get(r.theme.Code.ChromaTheme))
 	return r, err
 }
 
@@ -265,7 +268,7 @@ func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mut
 	buff.WriteString(m.Status.IconWithText())
 	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.GetDescription())))
 	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
-	buff.WriteString("<button class=\"review-btn option-btn\"><img class=\"icon\" src=\"/resources/icons/pen-solid.svg\" alt=\"pen icon\" />Review</button>")
+	buff.WriteString("<button class=\"review-btn option-btn\"><img class=\"icon\" src=\"" + getIconURL(r.theme, "pen-solid.svg") + "\" alt=\"pen icon\" />Review</button>")
 	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID, m.ID))
 	buff.WriteString("</div></div></td></tr>")
 }
@@ -311,13 +314,13 @@ func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutati
 		"<div class=\"review-header\">"+
 		"<label for=\"review-%s\" class=\"generic-label\">Add Review</label>"+
 		"<div class=\"loader-wrapper saved\">"+
-		"<img class=\"saved-icon\" src=\"/resources/icons/circle-check-solid.svg\" alt=\"saved icon\" />"+
+		"<img class=\"saved-icon\" src=\"%s\" alt=\"saved icon\" />"+
 		"<div class=\"loader\"></div>"+
 		"<p class=\"loader-status\">Saved</p>"+
 		"</div>"+ // closes loader-wrapper
 		"</div>"+ // closes review-header
 		"<textarea id=\"review-%s\" class=\"generic-textarea\" type=\"text\" placeholder=\"Enter review...\">%s</textarea>"+
 		"</div>"+
-		"</td></tr>", m.ID, m.ID, rev.Review))
+		"</td></tr>", m.ID, getIconURL(r.theme, "circle-check-solid.svg"), m.ID, rev.Review))
 	return nil
 }

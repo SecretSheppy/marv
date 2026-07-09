@@ -52,7 +52,7 @@
             white-space: pre;
             text-align: right;
             padding: 0 8px 0 16px;
-            color: #b0b0b0;
+            color: var(--code-line-number-color);
             border-right: var(--line-number-border);
         }
 

@@ -15,6 +15,8 @@ import (
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/internal/server"
+	"github.com/SecretSheppy/marv/internal/themes"
+	"github.com/SecretSheppy/marv/web"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -23,9 +25,9 @@ import (
 const marvYml = ".marv.yml"
 
 var (
-	port, configFile, outputPath string
-	mergeOutput, verbose         bool
-	frameworks                   []string
+	port, configFile, outputPath, themeName string
+	mergeOutput, verbose                    bool
+	frameworks                              []string
 
 	rootCmd = &cobra.Command{
 		Use:   "marv",
@@ -83,6 +85,7 @@ func mergeFlagsWithConfig(cfg *config.Config) error {
 	if mergeOutput && !cfg.Marv.Output.Merge {
 		cfg.Marv.Output.Merge = mergeOutput
 	}
+	cfg.Marv.Theme = themeName
 	return nil
 }
 
@@ -221,6 +224,24 @@ func exportCommand() (*config.Config, []fwlib.Framework) {
 	return conf, activeFws
 }
 
+// The name parameter should be the name of the JSON file within the web/themes directory. This method formats the name
+// inside its file path.
+func loadTheme(name string) (*themes.Theme, error) {
+	return themes.LoadTheme("themes/"+name+".json", web.ThemesFS)
+}
+
+func getThemeOrDefault(name string) *themes.Theme {
+	theme, err := loadTheme(name)
+	if err == nil {
+		return theme
+	}
+	theme, err = loadTheme("darcula")
+	if err != nil {
+		panic(err)
+	}
+	return theme
+}
+
 func rootCommand() {
 	conf, activeFws := exportCommand()
 
@@ -240,9 +261,10 @@ func rootCommand() {
 		os.Exit(0)
 	}()
 
+	theme := getThemeOrDefault(conf.Marv.Theme)
 	log.Info().Msgf("Starting server at http://localhost:%d/", conf.Marv.Port)
 	log.Info().Msgf("Use Ctrl + C to exit. Upon interrupt reviews will be saved in %s directory", conf.Marv.Output.Path)
-	if err := server.NewServer(conf.Marv.Port, activeFws, db).Serve(verbose); err != nil {
+	if err := server.NewServer(conf.Marv.Port, theme, activeFws, db).Serve(verbose); err != nil {
 		log.Fatal().Err(err).Msg("Failed to serve")
 		os.Exit(1)
 	}
@@ -256,8 +278,8 @@ func Execute() {
 	rootCmd.PersistentFlags().StringVarP(&outputPath, "output", "o", "", "specifies the output path")
 	rootCmd.PersistentFlags().BoolVarP(&mergeOutput, "merge", "m", false, "merges all frameworks output into one large json")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "logs verbose output to stdout")
-
-	rootCmd.Flags().StringVarP(&port, "port", "p", "", "port to listen on")
+	rootCmd.PersistentFlags().StringVarP(&port, "port", "p", "", "port to listen on")
+	rootCmd.PersistentFlags().StringVarP(&themeName, "theme", "t", "", "name of the theme to use")
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to execute marv command")

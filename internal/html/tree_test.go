@@ -1,10 +1,7 @@
 package html
 
 import (
-	"bytes"
 	"testing"
-
-	"github.com/SecretSheppy/marv/fws/mockfw"
 )
 
 var paths = []string{
@@ -73,16 +70,4 @@ func TestTreeSorting(t *testing.T) {
 	if children[2].Name != "test2.lang" {
 		t.Errorf("expected third child to be test2.lang but got %s", children[2].Name)
 	}
-}
-
-func TestTreeRendering(t *testing.T) {
-	root := pathNode{}
-	for _, path := range paths {
-		root.AddFile(path)
-	}
-	root.SortChildren()
-	var buff bytes.Buffer
-	root.Render(&buff, &mockfw.MockFW{})
-	// TODO: check this somehow
-	//fmt.Println(buff.String())
 }

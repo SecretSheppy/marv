@@ -1,0 +1,84 @@
+{
+    "name": "Darcula",
+    "document": {
+        "background": "#2B2B2B"
+    },
+    "ui": {
+        "text": {
+            "font-family": "Helvetica",
+            "title-size": "14px",
+            "font-size": "13px",
+            "color": {
+                "main": "#A9B7C6",
+                "dark": "#696C73"
+            }
+        },
+        "colors": {
+            "primary-background": "#3C3F41",
+            "secondary-background": "#535457",
+            "hover-background": "#525557",
+            "accent": {
+                "hover-background": "#334565",
+                "focus-background": "#2F65CA"
+            },
+            "statistics": {
+                "positive": "#3A9E3A",
+                "mediocre": "#FFA500B2",
+                "negative": "#D25353"
+            },
+            "link-color": "#1395FF"
+        },
+        "components": {
+            "divider": "solid 1px #323232",
+            "header-height": "41px"
+        }
+    },
+    "code": {
+        "chroma-theme": "darcula",
+        "text": {
+            "font-family": "monospace",
+            "font-size": "0.83rem"
+        },
+        "background": "#2B2B2B",
+        "line-number-color": "#B0B0B0",
+        "line-height": "24px",
+        "diff": {
+            "remove": {
+                "default": "#492E2EB8",
+                "dark": "#571E1E",
+                "inline": "#A62D2D69"
+            },
+            "insert": {
+                "default": "#354A35BD",
+                "dark": "#1E561E",
+                "inline": "#20A4204A"
+            }
+        },
+        "components": {
+            "mutation-border": "solid 1px #565656",
+            "line-number-border": "solid 1px #4C4C4C"
+        }
+    },
+    "status": {
+        "killed": {
+            "foreground": "#008000",
+            "background": "#204020"
+        },
+        "survived": {
+            "foreground": "#FF0000",
+            "background": "#602020"
+        },
+        "crashed": {
+            "foreground": "#FFA500",
+            "background": "#604920"
+        },
+        "timeout": {
+            "foreground": "#FFFF00",
+            "background": "#606020"
+        },
+        "no-coverage": {
+            "foreground": "#808080",
+            "background": "#474747"
+        }
+    }
+}
