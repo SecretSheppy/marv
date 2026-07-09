@@ -85,7 +85,6 @@ func mergeFlagsWithConfig(cfg *config.Config) error {
 	if mergeOutput && !cfg.Marv.Output.Merge {
 		cfg.Marv.Output.Merge = mergeOutput
 	}
-	// TODO:
 	cfg.Marv.Theme = themeName
 	return nil
 }
@@ -225,26 +224,21 @@ func exportCommand() (*config.Config, []fwlib.Framework) {
 	return conf, activeFws
 }
 
-func getDefaultTheme() *themes.Theme {
-	theme, err := themes.LoadTheme("themes/darcula.json", web.ThemesFS)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to load default theme")
-		os.Exit(1)
-	}
-	log.Info().Msgf("Loaded default theme")
-	return theme
+// The name parameter should be the name of the JSON file within the web/themes directory. This method formats the name
+// inside its file path.
+func loadTheme(name string) (*themes.Theme, error) {
+	return themes.LoadTheme("themes/"+name+".json", web.ThemesFS)
 }
 
-func getTheme(themeName string) *themes.Theme {
-	if themeName == "" {
-		return getDefaultTheme()
+func getThemeOrDefault(name string) *themes.Theme {
+	theme, err := loadTheme(name)
+	if err == nil {
+		return theme
 	}
-	theme, err := themes.LoadTheme(themeName, web.ThemesFS)
+	theme, err = loadTheme("darcula")
 	if err != nil {
-		log.Error().Err(err).Msgf("Failed to load theme '%s'", themeName)
-		return getDefaultTheme()
+		panic(err)
 	}
-	log.Info().Msgf("Loaded theme '%s'", themeName)
 	return theme
 }
 
@@ -267,7 +261,7 @@ func rootCommand() {
 		os.Exit(0)
 	}()
 
-	theme := getTheme(conf.Marv.Theme)
+	theme := getThemeOrDefault(conf.Marv.Theme)
 	log.Info().Msgf("Starting server at http://localhost:%d/", conf.Marv.Port)
 	log.Info().Msgf("Use Ctrl + C to exit. Upon interrupt reviews will be saved in %s directory", conf.Marv.Output.Path)
 	if err := server.NewServer(conf.Marv.Port, theme, activeFws, db).Serve(verbose); err != nil {
