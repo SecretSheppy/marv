@@ -4,6 +4,7 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws/go_mutesting"
 	"github.com/SecretSheppy/marv/fws/infection"
+	"github.com/SecretSheppy/marv/fws/mewt"
 	"github.com/SecretSheppy/marv/fws/mull"
 	"github.com/SecretSheppy/marv/fws/mutest_rs"
 	"github.com/SecretSheppy/marv/fws/pitest"
@@ -16,6 +17,7 @@ func Frameworks() []fwlib.Framework {
 	return []fwlib.Framework{
 		go_mutesting.NewGoMutesting(),
 		infection.NewInfection(),
+		mewt.NewMewt(),
 		mull.NewMull(),
 		mutest_rs.NewMutestRS(),
 		pitest.NewPitest(),
