@@ -28,9 +28,9 @@ func NewServer(port int, theme *themes.Theme, frameworks []fwlib.Framework, db *
 		port:       port,
 		frameworks: frameworks,
 		db:         db,
-		renderer: html.NewRenderer(&html.Config{
+		renderer: html.NewRenderer(&html.Document{
 			Favicon: "/resources/branding/marv_favicon.png",
-			Styles: []string{
+			Stylesheets: []string{
 				"styles/main.css",
 				"styles/code.css",
 				"styles/tree.css",
