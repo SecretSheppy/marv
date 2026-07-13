@@ -44,7 +44,7 @@ func NewServer(port int, theme *themes.Theme, frameworks []fwlib.Framework, db *
 				"scripts/review.js",
 			},
 			Theme: theme,
-		}, frameworks, db),
+		}, db, frameworks),
 	}
 }
 

@@ -148,15 +148,18 @@ func (p *pathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw
 }
 
 type treeRenderer struct {
-	fws   []fwlib.Framework
-	theme *themes.Theme
+	shared *shared
+}
+
+func newTreeRenderer(shared *shared) *treeRenderer {
+	return &treeRenderer{shared: shared}
 }
 
 func (t *treeRenderer) Render(buff *bytes.Buffer) {
 	buff.WriteString("<div id=\"fw-tree\" class=\"tree\">")
 	t.renderHeader(buff)
 	buff.WriteString("<div id=\"tree-body\" class=\"tree-body\">")
-	for _, fw := range t.fws {
+	for _, fw := range t.shared.frameworks {
 		buff.WriteString("<div class=\"framework\">")
 		t.renderFrameworkHeader(buff, fw)
 		root := &pathNode{}
@@ -165,7 +168,7 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 		}
 		root.MergeOnlyChildren()
 		root.SortChildren()
-		root.Render(buff, fw, t.theme)
+		root.Render(buff, fw, t.shared.document.Theme)
 		buff.WriteString("</div>")
 	}
 	buff.WriteString("</div></div>")
@@ -173,11 +176,11 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 
 func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 	buff.WriteString("<div class=\"tree-header\">" +
-		"<a href=\"/\"><img class=\"header-logo\" src=\"" + t.theme.Logo() + "\" alt=\"marv logo\" /></a>" +
+		"<a href=\"/\"><img class=\"header-logo\" src=\"" + t.shared.document.Theme.Logo() + "\" alt=\"marv logo\" /></a>" +
 		"<div class=\"buttons-wrapper\">" +
-		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "crosshair.svg") + "\" alt=\"crosshair icon\" /></button>" +
-		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "arrows-up-down.svg") + "\" alt=\"up arrow above down arrow icon\" /></button>" +
-		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "arrows-down-up.svg") + "\" alt=\"down arrow above up arrow icon\" /></button>" +
+		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"" + t.shared.document.Theme.Icon("crosshair.svg") + "\" alt=\"crosshair icon\" /></button>" +
+		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"" + t.shared.document.Theme.Icon("arrows-up-down.svg") + "\" alt=\"up arrow above down arrow icon\" /></button>" +
+		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"" + t.shared.document.Theme.Icon("arrows-down-up.svg") + "\" alt=\"down arrow above up arrow icon\" /></button>" +
 		"</div>" +
 		"</div>")
 }
