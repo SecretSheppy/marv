@@ -2,7 +2,6 @@ package stryker4s
 
 import (
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
@@ -10,9 +9,8 @@ import (
 )
 
 var meta = fwlib.Meta{
-	Name:     "stryker4s",
-	Language: languages.Scala,
-	URL:      "https://github.com/stryker-mutator/stryker4s",
+	Name: "stryker4s",
+	URL:  "https://github.com/stryker-mutator/stryker4s",
 }
 
 type YamlConfig struct {

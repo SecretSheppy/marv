@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/rs/zerolog/log"
@@ -17,9 +16,8 @@ import (
 )
 
 var meta = fwlib.Meta{
-	Name:     "mutest-rs",
-	Language: languages.Rust,
-	URL:      "https://github.com/zalanlevai/mutest-rs",
+	Name: "mutest-rs",
+	URL:  "https://github.com/zalanlevai/mutest-rs",
 }
 
 // YamlConfig represents Mutest-RS yml config data.

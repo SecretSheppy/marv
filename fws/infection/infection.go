@@ -2,7 +2,6 @@ package infection
 
 import (
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
@@ -10,9 +9,8 @@ import (
 )
 
 var meta = fwlib.Meta{
-	Name:     "infection",
-	Language: languages.Php,
-	URL:      "https://https://infection.github.io/",
+	Name: "infection",
+	URL:  "https://https://infection.github.io/",
 }
 
 type YamlConfig struct {

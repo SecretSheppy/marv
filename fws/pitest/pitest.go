@@ -9,7 +9,6 @@ import (
 
 	"github.com/SecretSheppy/marv/decompilers"
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/rs/zerolog/log"
@@ -17,9 +16,8 @@ import (
 )
 
 var meta = fwlib.Meta{
-	Name:     "Pitest",
-	Language: languages.Java,
-	URL:      "https://pitest.org/",
+	Name: "Pitest",
+	URL:  "https://pitest.org/",
 }
 
 // YamlConfig represents Pitest's yml config data.

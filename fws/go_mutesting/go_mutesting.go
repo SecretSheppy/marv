@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/aymanbagabas/go-udiff"
 	"github.com/rs/zerolog/log"
@@ -15,9 +14,8 @@ import (
 )
 
 var meta = fwlib.Meta{
-	Name:     "go-mutesting",
-	Language: languages.Go,
-	URL:      "https://github.com/zimmski/go-mutesting", // NOTE: for actively maintained fork see https://github.com/avito-tech/go-mutesting
+	Name: "go-mutesting",
+	URL:  "https://github.com/zimmski/go-mutesting", // NOTE: for actively maintained fork see https://github.com/avito-tech/go-mutesting
 }
 
 type YamlConfig struct {

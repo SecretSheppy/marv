@@ -10,7 +10,6 @@ import (
 
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
-	"github.com/SecretSheppy/marv/internal/themes"
 	"github.com/SecretSheppy/marv/pkg/highlighter"
 	"github.com/alecthomas/chroma/v2/styles"
 	"gorm.io/gorm"
@@ -51,34 +50,25 @@ func (l lineDiffType) CSSClass() string {
 	}
 }
 
-type codeRendererConfig struct {
-	RenderAllMutantData bool
-}
-
 type codeRenderer struct {
-	ext, framework, file string
-	lines                []string
-	conflicts            mutations.Conflicts
-	highlight            *highlighter.Highlighter
-	lnPadding            int
-	config               *codeRendererConfig
-	db                   *review.Repository
-	theme                *themes.Theme
+	shared    *shared
+	config    *RenderConfig
+	lines     []string
+	lnPadding int // automatically configured value used to align line numbers throughout the document.
+	highlight *highlighter.Highlighter
 }
 
-func newCodeRenderer(ext, framework, file string, lines []string, conflicts mutations.Conflicts, config *codeRendererConfig, db *review.Repository, theme *themes.Theme) (*codeRenderer, error) {
-	r := &codeRenderer{
-		ext:       ext,
-		framework: framework,
-		file:      file,
-		lines:     lines,
-		conflicts: conflicts,
-		config:    config,
-		db:        db,
-		theme:     theme,
+func newCodeRenderer(shared *shared, config *RenderConfig) (*codeRenderer, error) {
+	var (
+		err   error
+		lines []string
+	)
+	lines, err = config.lines()
+	if err != nil {
+		return nil, err
 	}
-	var err error
-	r.highlight, err = highlighter.NewHighlighter(r.ext, r.lines, styles.Get(r.theme.Code.ChromaTheme))
+	r := &codeRenderer{shared: shared, config: config, lines: lines}
+	r.highlight, err = highlighter.NewHighlighter(r.config.language().MExt(), r.lines, styles.Get(r.shared.document.Theme.Code.ChromaTheme))
 	return r, err
 }
 
@@ -98,9 +88,10 @@ func (r *codeRenderer) Render(w *bytes.Buffer) error {
 }
 
 func (r *codeRenderer) render() ([]byte, error) {
-	r.conflicts.Sort()
-	rendered := make([]*renderedConflict, 0, len(r.conflicts))
-	for _, conflict := range r.conflicts {
+	conflicts := r.config.conflicts()
+	conflicts.Sort()
+	rendered := make([]*renderedConflict, 0, len(conflicts))
+	for _, conflict := range conflicts {
 		render, err := r.renderConflict(conflict)
 		if err != nil {
 			return nil, err
@@ -179,7 +170,7 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\" class=\"mutation\">", m.ID, c.ID, m.Status.Text()))
 	r.renderMutationHeader(&buff, m)
-	if r.config.RenderAllMutantData {
+	if r.config.Features.AdvancedDetail {
 		r.renderAllMutationData(&buff, m)
 	}
 
@@ -268,8 +259,8 @@ func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mut
 	buff.WriteString(m.Status.IconWithText())
 	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.GetDescription())))
 	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
-	buff.WriteString("<button class=\"review-btn option-btn\"><img class=\"icon\" src=\"" + getIconURL(r.theme, "pen-solid.svg") + "\" alt=\"pen icon\" />Review</button>")
-	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.framework, r.file, m.ID, m.ID, m.ID))
+	buff.WriteString("<button class=\"review-btn option-btn\"><img class=\"icon\" src=\"" + getIconURL(r.shared.document.Theme, "pen-solid.svg") + "\" alt=\"pen icon\" />Review</button>")
+	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.config.Framework.Meta().Name, r.config.FilePath, m.ID, m.ID, m.ID))
 	buff.WriteString("</div></div></td></tr>")
 }
 
@@ -280,9 +271,9 @@ func (r *codeRenderer) renderAllMutationData(buff *bytes.Buffer, m *mutations.Mu
 	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutant ID (Marv):</span> %s</p>", m.ID))
 
 	// Framework Mutant ID
-	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutant ID (%s):</span> ", r.framework))
+	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutant ID (%s):</span> ", r.config.Framework.Meta().Name))
 	if m.FrameworkMutantID == "" {
-		buff.WriteString(fmt.Sprintf("<span class=\"orange\">Framework <strong>%s</strong> does not create mutant ids</span>", r.framework))
+		buff.WriteString(fmt.Sprintf("<span class=\"orange\">Framework <strong>%s</strong> does not create mutant ids</span>", r.config.Framework.Meta().Name))
 	} else {
 		buff.WriteString(m.FrameworkMutantID)
 	}
@@ -295,7 +286,7 @@ func (r *codeRenderer) renderAllMutationData(buff *bytes.Buffer, m *mutations.Mu
 }
 
 func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutation) error {
-	rev, err := r.db.GetReviewByMutationID(m.ID)
+	rev, err := r.shared.db.GetReviewByMutationID(m.ID)
 	switch true {
 	case errors.Is(err, gorm.ErrRecordNotFound):
 		rev = &review.Review{}
@@ -321,6 +312,6 @@ func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutati
 		"</div>"+ // closes review-header
 		"<textarea id=\"review-%s\" class=\"generic-textarea\" type=\"text\" placeholder=\"Enter review...\">%s</textarea>"+
 		"</div>"+
-		"</td></tr>", m.ID, getIconURL(r.theme, "circle-check-solid.svg"), m.ID, rev.Review))
+		"</td></tr>", m.ID, r.shared.document.Theme.Icon("circle-check-solid.svg"), m.ID, rev.Review))
 	return nil
 }

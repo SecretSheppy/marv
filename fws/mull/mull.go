@@ -6,7 +6,6 @@ import (
 	"slices"
 
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
@@ -15,9 +14,8 @@ import (
 
 var (
 	meta = fwlib.Meta{
-		Name:     "Mull",
-		Language: languages.Cpp,
-		URL:      "https://mull-project.com/",
+		Name: "Mull",
+		URL:  "https://mull-project.com/",
 	}
 	function = regexp.MustCompile(`\s*([A-Za-z_0-9]*)\s*\(`)
 

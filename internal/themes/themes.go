@@ -197,6 +197,10 @@ func (t *Theme) IconColor() string {
 	return t.UI.Text.Color.Main[1:]
 }
 
+func (t *Theme) Icon(name string) string {
+	return fmt.Sprintf("/icon/%s/%s", t.IconColor(), name)
+}
+
 func LoadTheme(file string, fsys fs.FS) (*Theme, error) {
 	raw, err := fs.ReadFile(fsys, file)
 	if err != nil {

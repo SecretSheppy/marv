@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -26,7 +27,13 @@ func (s *Server) mutantHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render, err := s.renderer.RenderMutant(framework, file, mutantID)
+	render, err := s.renderer.RenderMutant(&html.RenderConfig{
+		Framework: framework,
+		FilePath:  file,
+		Features: &html.RenderFeatures{
+			AdvancedDetail: true,
+		},
+	}, mutantID)
 	switch true {
 	case errors.Is(err, ErrFailedToInitRender):
 		writeError(w, r, err, http.StatusInternalServerError, err.Error())
@@ -52,7 +59,13 @@ func (s *Server) mutantsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render, err := s.renderer.RenderMutants(framework, file)
+	render, err := s.renderer.RenderMutants(&html.RenderConfig{
+		Framework: framework,
+		FilePath:  file,
+		Features: &html.RenderFeatures{
+			Filtering: true,
+		},
+	})
 	switch true {
 	case errors.Is(err, ErrFailedToInitRender):
 		writeError(w, r, err, http.StatusInternalServerError, err.Error())

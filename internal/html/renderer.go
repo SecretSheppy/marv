@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/internal/themes"
@@ -35,25 +36,57 @@ func (c cache) getFile(file string) string {
 	return c["file:"+file]
 }
 
-type Config struct {
-	Favicon         string
-	Styles, Scripts []string
-	Theme           *themes.Theme
+type RenderFeatures struct {
+	Filtering, AdvancedDetail bool
+}
+
+type RenderConfig struct {
+	Framework fwlib.Framework
+	Conflicts mutations.Conflicts
+	FilePath  string
+	Features  *RenderFeatures
+}
+
+func (r *RenderConfig) title() string {
+	return fmt.Sprintf("[%s] %s", r.Framework.Meta().Name, r.FilePath)
+}
+
+func (r *RenderConfig) conflicts() mutations.Conflicts {
+	if r.Conflicts != nil {
+		return r.Conflicts
+	}
+	return r.Framework.Mutations()[r.FilePath]
+}
+
+func (r *RenderConfig) lines() ([]string, error) {
+	return r.Framework.ReadLines(r.FilePath)
+}
+
+func (r *RenderConfig) language() *languages.Language {
+	return languages.GetLanguageFromFile(r.FilePath)
+}
+
+type Document struct {
+	Theme                *themes.Theme
+	Favicon              string
+	Stylesheets, Scripts []string
+}
+
+type shared struct {
+	db         *review.Repository
+	document   *Document
+	frameworks []fwlib.Framework
 }
 
 type Renderer struct {
-	cache      cache
-	config     *Config
-	frameworks []fwlib.Framework
-	db         *review.Repository
+	cache  cache
+	shared *shared
 }
 
-func NewRenderer(config *Config, frameworks []fwlib.Framework, db *review.Repository) *Renderer {
+func NewRenderer(document *Document, db *review.Repository, frameworks []fwlib.Framework) *Renderer {
 	return &Renderer{
-		cache:      make(cache),
-		config:     config,
-		frameworks: frameworks,
-		db:         db,
+		cache:  make(cache),
+		shared: &shared{db: db, document: document, frameworks: frameworks},
 	}
 }
 
@@ -61,8 +94,7 @@ func (r *Renderer) getResources() (string, error) {
 	meta := r.cache.get("resources")
 	if meta == "" {
 		var temp bytes.Buffer
-		t := &resourcesRenderer{r.config.Styles, r.config.Scripts, r.config.Theme}
-		if err := t.Render(&temp); err != nil {
+		if err := newResourcesRenderer(r.shared).Render(&temp); err != nil {
 			return "", err
 		}
 		meta = temp.String()
@@ -75,8 +107,7 @@ func (r *Renderer) getTree() string {
 	tree := r.cache.get("tree")
 	if tree == "" {
 		var temp bytes.Buffer
-		t := &treeRenderer{r.frameworks, r.config.Theme}
-		t.Render(&temp)
+		newTreeRenderer(r.shared).Render(&temp)
 		tree = temp.String()
 		r.cache.set("tree", tree)
 	}
@@ -93,10 +124,36 @@ func (r *Renderer) renderHead(buff *bytes.Buffer, title string, elements ...stri
 	for _, element := range elements {
 		buff.WriteString(element)
 	}
-	m := &metaRenderer{title, r.config.Favicon}
+	m := &metaRenderer{title, r.shared.document.Favicon}
 	m.Render(buff)
 	buff.WriteString("</head><body>")
 	return nil
+}
+
+func (r *Renderer) renderFilters(buff *bytes.Buffer) {
+	buff.WriteString("<div id=\"filters\" class=\"filters-component collapsed\">" +
+		"<div id=\"filters-toggle\" class=\"filters-bar\">" +
+		"<img class=\"icon\" src=\"" + r.shared.document.Theme.Icon("sliders-solid.svg") + "\" alt=\"filters icon\" />" +
+		"<h4 class=\"bar-title\">Status Filters</h4>" +
+		"<div class=\"right-content\">" +
+		"<img class=\"icon arrow-up\" src=\"" + r.shared.document.Theme.Icon("arrow-up.svg") + "\" alt=\"arrow up icon\" />" +
+		"<img class=\"icon arrow-down\" src=\"" + r.shared.document.Theme.Icon("arrow-down.svg") + "\" alt=\"arrow down icon\" />" +
+		"</div>" + // closes right-content
+		"</div>" + // closes filters-bar
+		"<div class=\"content-wrapper\">" +
+		"<p class=\"section-description\">" +
+		"Using the filters will hide all mutants with statuses that are not enabled. " +
+		"This setting syncs across all open tabs." +
+		"</p>" +
+		"<div class=\"filters-wrapper\">")
+	for _, status := range mutations.Statuses {
+		buff.WriteString(fmt.Sprintf("<label for=\"show-%s\" class=\"filter\">"+
+			"<input id=\"show-%s\" type=\"checkbox\" name=\"%s\" checked /> %s"+
+			"</label>", status.Text(), status.Text(), status.Text(), status.Text()))
+	}
+	buff.WriteString("</div>" + // closes filters-wrapper
+		"</div>" + // closes content-wrapper
+		"</div>")
 }
 
 func (r *Renderer) RenderStart() ([]byte, error) {
@@ -109,12 +166,13 @@ func (r *Renderer) RenderStart() ([]byte, error) {
 	buff.WriteString("<div class=\"layout\">")
 	buff.WriteString("<div class=\"sidebar-wrapper\">")
 	buff.WriteString(r.getTree())
-	writeFilters(&buff, r.config.Theme)
+	r.renderFilters(&buff)
 	buff.WriteString("</div>")
 
 	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")
-	buff.WriteString("<img class=\"content-icon\" src=\"" + getIconURL(r.config.Theme, "chart-simple-solid.svg") + "\" alt=\"chart icon\" />" +
-		fmt.Sprintf("<h3 class=\"content-title\">%s</h3></div>", title))
+	buff.WriteString(fmt.Sprintf("<img class=\"content-icon\" src=\"%s\" alt=\"chart icon\" />",
+		r.shared.document.Theme.Icon("chart-simple-solid.svg")))
+	buff.WriteString(fmt.Sprintf("<h3 class=\"content-title\">%s</h3></div>", title))
 
 	buff.WriteString("<div class=\"overflow-wrapper\"><table class=\"generic-table\">")
 	buff.WriteString("<tr>" +
@@ -127,14 +185,15 @@ func (r *Renderer) RenderStart() ([]byte, error) {
 	}
 	buff.WriteString("</tr>")
 
-	for _, framework := range r.frameworks {
+	for _, framework := range r.shared.frameworks {
 		meta := framework.Meta()
 		for f, _ := range framework.Mutations() {
+			lang := languages.GetLanguageFromFile(f)
 			stats := framework.Mutations().StatisticsFrom(f)
 			buff.WriteString("<tr>")
 			buff.WriteString(fmt.Sprintf("<td><a href=\"/%s/mutants/%s\">"+
 				"<img class=\"icon\" src=\"%s\" alt=\"%s language icon\"/>%s</a></td>",
-				meta.Name, f, meta.Language.Icon(), meta.Language.Name(), f))
+				meta.Name, f, lang.Icon(), lang.Name(), f))
 			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Coverage(), 2)))
 			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Score(), 2)))
 			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.ScoreOfCovered(), 2)))
@@ -161,13 +220,8 @@ func (r *Renderer) RenderTree() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, conflicts mutations.Conflicts, config *codeRendererConfig) ([]byte, string, error) {
-	lines, err := framework.ReadLines(filePath)
-	if err != nil {
-		return nil, "", err
-	}
-	meta := framework.Meta()
-	c, err := newCodeRenderer(meta.Language.Ext(), meta.Name, filePath, lines, conflicts, config, r.db, r.config.Theme)
+func (r *Renderer) renderCode(config *RenderConfig) ([]byte, string, error) {
+	c, err := newCodeRenderer(r.shared, config)
 	if err != nil {
 		return nil, "", err
 	}
@@ -182,20 +236,18 @@ func (r *Renderer) renderCode(framework fwlib.Framework, filePath string, confli
 	return temp.Bytes(), css, nil
 }
 
-func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.Conflicts, filePath, title string, filteringEnabled, extraData bool) ([]byte, error) {
-	meta := framework.Meta()
-	lang := meta.Language
+func (r *Renderer) renderMutants(config *RenderConfig) ([]byte, error) {
+	meta := config.Framework.Meta()
 
 	var buff bytes.Buffer
-	crConfig := &codeRendererConfig{RenderAllMutantData: extraData}
-	render, codeStyle, err := r.renderCode(framework, filePath, conflicts, crConfig)
+	render, codeStyle, err := r.renderCode(config)
 	if err != nil {
 		return nil, err
 	}
-	err = r.renderHead(&buff, title,
+	err = r.renderHead(&buff, config.title(),
 		"<style>"+codeStyle+"</style>",
-		fmt.Sprintf("<meta name=\"filtering-enabled\" content=\"%v\">", filteringEnabled),
-		fmt.Sprintf("<meta name=\"current-file\" content=\"/%s/mutants/%s\">", meta.Name, filePath),
+		fmt.Sprintf("<meta name=\"filtering-enabled\" content=\"%v\">", config.Features.Filtering),
+		fmt.Sprintf("<meta name=\"current-file\" content=\"/%s/mutants/%s\">", meta.Name, config.FilePath),
 		fmt.Sprintf("<meta name=\"current-framework\" content=\"%s\">", meta.Name))
 	if err != nil {
 		return nil, err
@@ -204,17 +256,18 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	buff.WriteString("<div class=\"layout\">")
 	buff.WriteString("<div class=\"sidebar-wrapper\">")
 	buff.WriteString(r.getTree())
-	writeFilters(&buff, r.config.Theme)
+	r.renderFilters(&buff)
 	buff.WriteString("</div>") // closes sidebar-wrapper
 
 	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")
-	writeFrameworkName(&buff, framework)
+	writeFrameworkName(&buff, config.Framework)
 	buff.WriteString(fmt.Sprintf("<img class=\"content-icon\" src=\"%s\" alt=\"%s language icon\" />"+
-		"<h3 class=\"content-title\">%s</h3></div>", lang.Icon(), lang.Name(), path.Base(filePath)))
+		"<h3 class=\"content-title\">%s</h3></div>",
+		config.language().Icon(), config.language().Name(), path.Base(config.FilePath)))
 	buff.WriteString("<div class=\"code-wrapper\">")
 	buff.Write(render)
 	buff.WriteString("</div><div class=\"content-gutter\">")
-	writeStats(&buff, filePath, framework, &statsConfig{
+	writeStats(&buff, config.FilePath, config.Framework, &statsConfig{
 		Count:     true,
 		Coverage:  true,
 		Score:     true,
@@ -226,14 +279,12 @@ func (r *Renderer) renderMutants(framework fwlib.Framework, conflicts mutations.
 	return buff.Bytes(), nil
 }
 
-func (r *Renderer) RenderMutant(framework fwlib.Framework, filePath string, mutantID uuid.UUID) ([]byte, error) {
-	title := fmt.Sprintf("[%s] %s -> mutant[%s]", framework.Meta().Name, filePath, mutantID)
-
-	conflict, mutant := framework.Mutations()[filePath].GetMutant(mutantID)
+func (r *Renderer) RenderMutant(config *RenderConfig, mutantID uuid.UUID) ([]byte, error) {
+	conflict, mutant := config.conflicts().GetMutant(mutantID)
 	if mutant == nil {
 		return nil, errors.New("mutant not found with id " + mutantID.String())
 	}
-	conflicts := mutations.Conflicts{
+	config.Conflicts = mutations.Conflicts{
 		&mutations.Conflict{
 			ID:        conflict.ID,
 			StartLine: conflict.StartLine,
@@ -242,10 +293,9 @@ func (r *Renderer) RenderMutant(framework fwlib.Framework, filePath string, muta
 		},
 	}
 
-	return r.renderMutants(framework, conflicts, filePath, title, false, true)
+	return r.renderMutants(config)
 }
 
-func (r *Renderer) RenderMutants(framework fwlib.Framework, filePath string) ([]byte, error) {
-	title := fmt.Sprintf("[%s] %s", framework.Meta().Name, filePath)
-	return r.renderMutants(framework, framework.Mutations()[filePath], filePath, title, true, false)
+func (r *Renderer) RenderMutants(config *RenderConfig) ([]byte, error) {
+	return r.renderMutants(config)
 }

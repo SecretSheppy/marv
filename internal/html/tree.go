@@ -93,10 +93,10 @@ func (p *pathNode) MergeOnlyChildren() {
 }
 
 func (p *pathNode) Render(buff *bytes.Buffer, fw fwlib.Framework, theme *themes.Theme) {
-	p.render(buff, fw, fw.Meta().Language, 1, "", theme)
+	p.render(buff, fw, 1, "", theme)
 }
 
-func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string, theme *themes.Theme) {
+func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, level int, accPath string, theme *themes.Theme) {
 	currentPath := path.Join(accPath, p.Name)
 	switch p.Type {
 	case directory:
@@ -104,7 +104,7 @@ func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *language
 		p.renderDirectoryNode(buff, level, currentPath, fw, theme)
 		buff.WriteString("<div class=\"directory-contents\">")
 		for _, child := range p.children {
-			child.render(buff, fw, lang, level+1, currentPath, theme)
+			child.render(buff, fw, level+1, currentPath, theme)
 		}
 		buff.WriteString("</div></div>")
 	case file:
@@ -135,7 +135,7 @@ func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPat
 }
 
 func (p *pathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw fwlib.Framework) {
-	lang := fw.Meta().Language
+	lang := languages.GetLanguageFromFile(p.Name)
 	prefix := fmt.Sprintf("/%s/mutants/", fw.Meta().Name)
 	buff.WriteString(fmt.Sprintf("<a class=\"node file\" style=\"--level: %d;\" href=\"%s%s\">"+
 		"<div class=\"spacer\"></div>"+
@@ -148,15 +148,18 @@ func (p *pathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw
 }
 
 type treeRenderer struct {
-	fws   []fwlib.Framework
-	theme *themes.Theme
+	shared *shared
+}
+
+func newTreeRenderer(shared *shared) *treeRenderer {
+	return &treeRenderer{shared: shared}
 }
 
 func (t *treeRenderer) Render(buff *bytes.Buffer) {
 	buff.WriteString("<div id=\"fw-tree\" class=\"tree\">")
 	t.renderHeader(buff)
 	buff.WriteString("<div id=\"tree-body\" class=\"tree-body\">")
-	for _, fw := range t.fws {
+	for _, fw := range t.shared.frameworks {
 		buff.WriteString("<div class=\"framework\">")
 		t.renderFrameworkHeader(buff, fw)
 		root := &pathNode{}
@@ -165,7 +168,7 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 		}
 		root.MergeOnlyChildren()
 		root.SortChildren()
-		root.Render(buff, fw, t.theme)
+		root.Render(buff, fw, t.shared.document.Theme)
 		buff.WriteString("</div>")
 	}
 	buff.WriteString("</div></div>")
@@ -173,11 +176,11 @@ func (t *treeRenderer) Render(buff *bytes.Buffer) {
 
 func (t *treeRenderer) renderHeader(buff *bytes.Buffer) {
 	buff.WriteString("<div class=\"tree-header\">" +
-		"<a href=\"/\"><img class=\"header-logo\" src=\"" + t.theme.Logo() + "\" alt=\"marv logo\" /></a>" +
+		"<a href=\"/\"><img class=\"header-logo\" src=\"" + t.shared.document.Theme.Logo() + "\" alt=\"marv logo\" /></a>" +
 		"<div class=\"buttons-wrapper\">" +
-		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "crosshair.svg") + "\" alt=\"crosshair icon\" /></button>" +
-		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "arrows-up-down.svg") + "\" alt=\"up arrow above down arrow icon\" /></button>" +
-		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"" + getIconURL(t.theme, "arrows-down-up.svg") + "\" alt=\"down arrow above up arrow icon\" /></button>" +
+		"<button id=\"tree-crosshair-btn\" class=\"header-button\" title=\"Locate Selected File\"><img class=\"icon\" src=\"" + t.shared.document.Theme.Icon("crosshair.svg") + "\" alt=\"crosshair icon\" /></button>" +
+		"<button id=\"tree-expand-all-btn\" class=\"header-button\" title=\"Expand All\"><img class=\"icon\" src=\"" + t.shared.document.Theme.Icon("arrows-up-down.svg") + "\" alt=\"up arrow above down arrow icon\" /></button>" +
+		"<button id=\"tree-collapse-all-btn\" class=\"header-button\" title=\"Collapse All\"><img class=\"icon\" src=\"" + t.shared.document.Theme.Icon("arrows-down-up.svg") + "\" alt=\"down arrow above up arrow icon\" /></button>" +
 		"</div>" +
 		"</div>")
 }
@@ -192,8 +195,7 @@ func (t *treeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framew
 func writeFrameworkName(buff *bytes.Buffer, fw fwlib.Framework) {
 	meta := fw.Meta()
 	buff.WriteString(fmt.Sprintf("<div class=\"framework-name\" "+
-		"title=\"Mutants created by the %s mutation testing framework for %s\">%s</div>",
-		meta.Name, meta.Language.Name(), meta.Name))
+		"title=\"Mutants created by the %s mutation testing framework\">%s</div>", meta.Name, meta.Name))
 }
 
 type statsConfig struct {
