@@ -2,7 +2,6 @@ package mockfw
 
 import (
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
@@ -25,9 +24,8 @@ type MockFW struct {
 
 func (m *MockFW) Meta() *fwlib.Meta {
 	return &fwlib.Meta{
-		Name:     "mock-framework",
-		Language: &languages.Language{},
-		URL:      "https://github.com/SecretSheppy/marv/fws/mockfw",
+		Name: "mock-framework",
+		URL:  "https://github.com/SecretSheppy/marv/fws/mockfw",
 	}
 }
 

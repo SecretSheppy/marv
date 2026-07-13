@@ -93,10 +93,10 @@ func (p *pathNode) MergeOnlyChildren() {
 }
 
 func (p *pathNode) Render(buff *bytes.Buffer, fw fwlib.Framework, theme *themes.Theme) {
-	p.render(buff, fw, fw.Meta().Language, 1, "", theme)
+	p.render(buff, fw, 1, "", theme)
 }
 
-func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *languages.Language, level int, accPath string, theme *themes.Theme) {
+func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, level int, accPath string, theme *themes.Theme) {
 	currentPath := path.Join(accPath, p.Name)
 	switch p.Type {
 	case directory:
@@ -104,7 +104,7 @@ func (p *pathNode) render(buff *bytes.Buffer, fw fwlib.Framework, lang *language
 		p.renderDirectoryNode(buff, level, currentPath, fw, theme)
 		buff.WriteString("<div class=\"directory-contents\">")
 		for _, child := range p.children {
-			child.render(buff, fw, lang, level+1, currentPath, theme)
+			child.render(buff, fw, level+1, currentPath, theme)
 		}
 		buff.WriteString("</div></div>")
 	case file:
@@ -135,7 +135,7 @@ func (p *pathNode) renderDirectoryNode(buff *bytes.Buffer, level int, currentPat
 }
 
 func (p *pathNode) renderFileNode(buff *bytes.Buffer, level int, href string, fw fwlib.Framework) {
-	lang := fw.Meta().Language
+	lang := languages.GetLanguageFromFile(p.Name)
 	prefix := fmt.Sprintf("/%s/mutants/", fw.Meta().Name)
 	buff.WriteString(fmt.Sprintf("<a class=\"node file\" style=\"--level: %d;\" href=\"%s%s\">"+
 		"<div class=\"spacer\"></div>"+
@@ -195,8 +195,7 @@ func (t *treeRenderer) renderFrameworkHeader(buff *bytes.Buffer, fw fwlib.Framew
 func writeFrameworkName(buff *bytes.Buffer, fw fwlib.Framework) {
 	meta := fw.Meta()
 	buff.WriteString(fmt.Sprintf("<div class=\"framework-name\" "+
-		"title=\"Mutants created by the %s mutation testing framework for %s\">%s</div>",
-		meta.Name, meta.Language.Name(), meta.Name))
+		"title=\"Mutants created by the %s mutation testing framework\">%s</div>", meta.Name, meta.Name))
 }
 
 type statsConfig struct {

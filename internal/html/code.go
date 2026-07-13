@@ -68,7 +68,7 @@ func newCodeRenderer(shared *shared, config *RenderConfig) (*codeRenderer, error
 		return nil, err
 	}
 	r := &codeRenderer{shared: shared, config: config, lines: lines}
-	r.highlight, err = highlighter.NewHighlighter(r.config.Framework.Meta().Language.Ext(), r.lines, styles.Get(r.shared.document.Theme.Code.ChromaTheme))
+	r.highlight, err = highlighter.NewHighlighter(r.config.language().MExt(), r.lines, styles.Get(r.shared.document.Theme.Code.ChromaTheme))
 	return r, err
 }
 

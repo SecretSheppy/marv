@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/internal/themes"
@@ -59,6 +60,10 @@ func (r *RenderConfig) conflicts() mutations.Conflicts {
 
 func (r *RenderConfig) lines() ([]string, error) {
 	return r.Framework.ReadLines(r.FilePath)
+}
+
+func (r *RenderConfig) language() *languages.Language {
+	return languages.GetLanguageFromFile(r.FilePath)
 }
 
 type Document struct {
@@ -183,11 +188,12 @@ func (r *Renderer) RenderStart() ([]byte, error) {
 	for _, framework := range r.shared.frameworks {
 		meta := framework.Meta()
 		for f, _ := range framework.Mutations() {
+			lang := languages.GetLanguageFromFile(f)
 			stats := framework.Mutations().StatisticsFrom(f)
 			buff.WriteString("<tr>")
 			buff.WriteString(fmt.Sprintf("<td><a href=\"/%s/mutants/%s\">"+
 				"<img class=\"icon\" src=\"%s\" alt=\"%s language icon\"/>%s</a></td>",
-				meta.Name, f, meta.Language.Icon(), meta.Language.Name(), f))
+				meta.Name, f, lang.Icon(), lang.Name(), f))
 			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Coverage(), 2)))
 			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Score(), 2)))
 			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.ScoreOfCovered(), 2)))
@@ -232,7 +238,6 @@ func (r *Renderer) renderCode(config *RenderConfig) ([]byte, string, error) {
 
 func (r *Renderer) renderMutants(config *RenderConfig) ([]byte, error) {
 	meta := config.Framework.Meta()
-	lang := meta.Language
 
 	var buff bytes.Buffer
 	render, codeStyle, err := r.renderCode(config)
@@ -257,7 +262,8 @@ func (r *Renderer) renderMutants(config *RenderConfig) ([]byte, error) {
 	buff.WriteString("<div class=\"content-wrapper\"><div class=\"content-header\">")
 	writeFrameworkName(&buff, config.Framework)
 	buff.WriteString(fmt.Sprintf("<img class=\"content-icon\" src=\"%s\" alt=\"%s language icon\" />"+
-		"<h3 class=\"content-title\">%s</h3></div>", lang.Icon(), lang.Name(), path.Base(config.FilePath)))
+		"<h3 class=\"content-title\">%s</h3></div>",
+		config.language().Icon(), config.language().Name(), path.Base(config.FilePath)))
 	buff.WriteString("<div class=\"code-wrapper\">")
 	buff.Write(render)
 	buff.WriteString("</div><div class=\"content-gutter\">")

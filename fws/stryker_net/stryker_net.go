@@ -2,7 +2,6 @@ package stryker_net
 
 import (
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
@@ -10,9 +9,8 @@ import (
 )
 
 var meta = fwlib.Meta{
-	Name:     "stryker-net",
-	Language: languages.CSharp,
-	URL:      "https://github.com/stryker-mutator/stryker-net",
+	Name: "stryker-net",
+	URL:  "https://github.com/stryker-mutator/stryker-net",
 }
 
 type YamlConfig struct {

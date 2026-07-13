@@ -4,15 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/schollz/progressbar/v3"
 )
 
 type Meta struct {
-	Name     string
-	Language *languages.Language
-	URL      string
+	Name, URL string
 }
 
 // Runnable interface describes Framework instances that have the ability to re-run the framework to generate a

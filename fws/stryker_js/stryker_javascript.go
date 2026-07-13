@@ -2,7 +2,6 @@ package stryker_js
 
 import (
 	"github.com/SecretSheppy/marv/fwlib"
-	"github.com/SecretSheppy/marv/internal/languages"
 	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/rs/zerolog/log"
@@ -10,14 +9,12 @@ import (
 )
 
 var meta = fwlib.Meta{
-	Name:     "stryker-js",
-	Language: languages.JavaScript,
-	URL:      "https://github.com/stryker-mutator/stryker-net",
+	Name: "stryker-js",
+	URL:  "https://github.com/stryker-mutator/stryker-net",
 }
 
 type YamlConfig struct {
-	MTEJson  string `yaml:"mte-json"`
-	Language string `yaml:"language"`
+	MTEJson string `yaml:"mte-json"`
 }
 
 type YamlWrapper struct {
@@ -35,10 +32,7 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 	if y.Cfg == nil {
 		return false, nil
 	}
-	if y.Cfg.Language == "ts" || y.Cfg.Language == "typescript" {
-		meta.Language = languages.TypeScript
-	}
-	return y.Cfg.MTEJson != "" && y.Cfg.Language != "", nil
+	return y.Cfg.MTEJson != "", nil
 }
 
 type StrykerJS struct {
