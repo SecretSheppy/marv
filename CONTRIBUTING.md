@@ -1,6 +1,6 @@
 # Contributing to Marv
 
-Marv was designed as a tool that could be easily extended by users, and as such new contributions to Marv are welcome.
+Marv was designed as a tool that could be easily extended by users, and as such new contributions are welcome.
 Please read the rest of this documented to best understand how one can contribute, and more importantly, what not to
 try contributing.
 
