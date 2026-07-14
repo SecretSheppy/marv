@@ -33,7 +33,7 @@ A list of mutation testing frameworks that either are currently supported or wil
 
 | Framework                                                                    | language   | Support | Marv Version | Notes                                                                                                                                                      |
 |------------------------------------------------------------------------------|------------|:-------:|:------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Mewt](https://github.com/trailofbits/mewt)                                  | Any        |   🚧    |              |                                                                                                                                                            |
+| [Mewt](https://github.com/trailofbits/mewt)                                  | Any        |   🏆    |    1.2.5     |                                                                                                                                                            |
 | [Mull](https://mull-project.com/)                                            | C/C++      |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
 | [Dextool Mutate](https://joakim-brannstrom.github.io/dextool/plugin/mutate/) | C/C++      |   🚫    |              |                                                                                                                                                            |
 | [stryker-net](https://github.com/stryker-mutator/stryker-net)                | C#         |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
@@ -51,9 +51,8 @@ A list of mutation testing frameworks that either are currently supported or wil
 
 ### LLM Based Mutation Testing Frameworks
 
-LLM based mutation testing frameworks will not receive first party support in Marv as use of LLMs cannot guarantee a
-standardized uniform output across all runs. Instead, for LLM based tools to be compatible with Marv, they must
-output in the [Marv mutations schema](api/marv-mutations-schema.json) which is supported through the use of the
+Marv does not provide first party support for LLM based mutation testing frameworks. Instead, for LLM based tools to
+be compatible with Marv, they must output in the [Marv mutations schema](api/marv-mutations-schema.json) which is supported through the use of the
 `generic` framework implementation.
 
 ## Installation
