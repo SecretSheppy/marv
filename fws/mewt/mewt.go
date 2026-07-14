@@ -113,6 +113,17 @@ func (m *Mutant) operator() (string, string) {
 	}
 }
 
+func (m *Mutant) charOffset(file []byte) int {
+	count := -1
+	for i := m.ByteOffset; i > 0; i-- {
+		if file[i] == '\n' {
+			return count
+		}
+		count++
+	}
+	return count
+}
+
 type Outcome struct {
 	MutantID int `gorm:"primary_key;foreign_key:MutantID"`
 	Status   string
@@ -147,22 +158,17 @@ func (m *Mewt) LoadResults() error {
 	return err
 }
 
-func (m *Mewt) getOriginalCharacterOffset(byteOffset int, file []byte) int {
-	count := -1
-	for i := byteOffset; i > 0; i-- {
-		if file[i] == '\n' {
-			return count
-		}
-		count++
-	}
-	return count
-}
-
 func (m *Mewt) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
 
+	m.ms = make(mutations.Mutations)
+	m.files = make(map[string][]string)
+
 	var targets []Target
-	if err := m.mdb.Preload("Mutants").Preload("Mutants.Outcome").Find(&targets).Error; err != nil {
+	if err := m.mdb.
+		Preload("Mutants").
+		Preload("Mutants.Outcome").
+		Find(&targets).Error; err != nil {
 		return err
 	}
 
@@ -172,32 +178,30 @@ func (m *Mewt) TransformResults() error {
 	}
 	bar := fwlib.NewProgressbar(size, "transforming")
 
-	m.ms = make(mutations.Mutations)
-	m.files = make(map[string][]string)
 	for _, file := range targets {
 		m.addFile(file.Path, file.Text)
-		byteFile := []byte(file.Text)
+		fileBytes := []byte(file.Text)
 
 		for _, mutant := range file.Mutants {
-			op, opDesc := mutant.operator()
-			lines := strings.Split(mutant.OldText, "\n")
-			singleLineCharOffset := m.getOriginalCharacterOffset(mutant.ByteOffset, byteFile)
-			endCharOffset := len(lines[len(lines)-1])
-			if len(lines) == 1 {
-				endCharOffset += singleLineCharOffset
+			op, desc := mutant.operator()
+			oldLines := strings.Split(mutant.OldText, "\n")
+			startCharOffset := mutant.charOffset(fileBytes)
+			endCharOffset := len(oldLines[len(oldLines)-1])
+			if len(oldLines) == 1 {
+				endCharOffset += startCharOffset
 			}
 
 			m.ms.Append(file.Path, &mutations.Mutation{
 				ID:                uuid.New(),
 				FrameworkMutantID: strconv.Itoa(mutant.MutantID),
-				Description:       opDesc,
+				Description:       desc,
 				Operation:         op,
 				Start: &mutations.Range{
 					Line: mutant.LineOffset,
-					Char: singleLineCharOffset,
+					Char: startCharOffset,
 				},
 				End: &mutations.Range{
-					Line: mutant.LineOffset + len(lines) - 1,
+					Line: mutant.LineOffset + len(oldLines) - 1,
 					Char: endCharOffset,
 				},
 				Status:      mutant.status(),
