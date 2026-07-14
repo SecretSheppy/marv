@@ -1,7 +1,6 @@
 package mewt
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -52,6 +51,7 @@ type Target struct {
 type Mutant struct {
 	MutantID     int `gorm:"primary_key;column:id"`
 	TargetID     int `gorm:"foreign_key:TargetID"`
+	ByteOffset   int
 	LineOffset   int
 	OldText      string
 	NewText      string
@@ -69,6 +69,47 @@ func (m *Mutant) status() mutations.Status {
 		return mutations.Timeout
 	default: // "Uncaught"
 		return mutations.Survived
+	}
+}
+
+func (m *Mutant) operator() (string, string) {
+	switch m.MutationSlug {
+	case "ER":
+		return "Error Replacement", "Replaced statement with an error"
+	case "CR":
+		return "Comment Replacement", "Replaced statement with an in-line comment"
+	case "IF":
+		return "If False", "Hardcoded an if condition to false"
+	case "IT":
+		return "If True", "Hardcoded an if condition to true"
+	case "WF":
+		return "While False", "Hardcoded while condition to false"
+	case "AS":
+		return "Argument Swap", "Swaped pairs of adjacent arguments"
+	case "LC":
+		return "Loop Control", "Swaped break and continue statements"
+	case "BL":
+		return "Boolean Literal Flip", "Flipped boolean literal true <-> false"
+	case "AOS":
+		return "Arithmetic Operator Shuffle", "Replaced arithmetic operators (+, -, *, /)"
+	case "AAOS":
+		return "Arithmetic Assignment Operator Shuffle", "Replaced arithmetic assignment operators (+=, -=, *=, /=)"
+	case "BOS":
+		return "Bitwise Operator Shuffle", "Replaced bitwise operators (&, |, ^)"
+	case "BAOS":
+		return "Bitwise Assignment Operator Shuffle", "Replaced bitwise assignment operators (&=, |=, ^=)"
+	case "LOS":
+		return "Logical Operator Shuffle", "Replaced logical operators (&&, ||)"
+	case "COS":
+		return "Comparison Operator Shuffle", "Replaced comparison operators (==, !=, <, <=, >, >=)"
+	case "SOS":
+		return "Shift Operator Shuffle", "Replaced shift operators (<<, >>)"
+	case "SAOS":
+		return "Shift Assignment Operator Shuffle", "Replaced shift assignment operators (<<=, >>=)"
+	case "NR":
+		return "Negation Removal", "Removed logical negation operator (!x -> x)"
+	default:
+		return m.MutationSlug, "Marv: Unknown Operator"
 	}
 }
 
@@ -106,6 +147,17 @@ func (m *Mewt) LoadResults() error {
 	return err
 }
 
+func (m *Mewt) getOriginalCharacterOffset(byteOffset int, file []byte) int {
+	count := -1
+	for i := byteOffset; i > 0; i-- {
+		if file[i] == '\n' {
+			return count
+		}
+		count++
+	}
+	return count
+}
+
 func (m *Mewt) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
 
@@ -114,35 +166,47 @@ func (m *Mewt) TransformResults() error {
 		return err
 	}
 
-	// TODO: add progress bar
+	size := 0
+	for _, target := range targets {
+		size += len(target.Mutants)
+	}
+	bar := fwlib.NewProgressbar(size, "transforming")
 
 	m.ms = make(mutations.Mutations)
 	m.files = make(map[string][]string)
 	for _, file := range targets {
 		m.addFile(file.Path, file.Text)
+		byteFile := []byte(file.Text)
 
-		// TODO: this whole section needs to be re thought through
 		for _, mutant := range file.Mutants {
-			originalLines := strings.Split(mutant.OldText, "\n")
+			op, opDesc := mutant.operator()
+			lines := strings.Split(mutant.OldText, "\n")
+			singleLineCharOffset := m.getOriginalCharacterOffset(mutant.ByteOffset, byteFile)
+			endCharOffset := len(lines[len(lines)-1])
+			if len(lines) == 1 {
+				endCharOffset += singleLineCharOffset
+			}
+
 			m.ms.Append(file.Path, &mutations.Mutation{
 				ID:                uuid.New(),
 				FrameworkMutantID: strconv.Itoa(mutant.MutantID),
-				Description:       "", // TODO: generate description
-				Operation:         mutant.MutationSlug,
+				Description:       opDesc,
+				Operation:         op,
 				Start: &mutations.Range{
 					Line: mutant.LineOffset,
-					Char: 0, // TODO: might need to use byte offset to find actual position in line
+					Char: singleLineCharOffset,
 				},
 				End: &mutations.Range{
-					Line: mutant.LineOffset + len(originalLines) - 1,
-					Char: len(originalLines[len(originalLines)-1]) - 1, // TODO: this is wrong and doesn't account for start offset
+					Line: mutant.LineOffset + len(lines) - 1,
+					Char: endCharOffset,
 				},
 				Status:      mutant.status(),
 				Replacement: mutant.NewText,
 			})
+			bar.Add(1)
 		}
 	}
-	fmt.Println(m)
+	fwlib.FinishProgressbar(bar)
 	return nil
 }
 
