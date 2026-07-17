@@ -1,6 +1,7 @@
 package cargo_mutants
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path"
@@ -130,7 +131,16 @@ func (c *CargoMutants) LoadResults() error {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(data, &c.outcomes)
+
+	// NOTE: removing the first "Baseline" scenario as this does not follow the same schema as the rest of the outcomes
+	// JSON file does, which was causing the unmarshalling process to fail.
+	data = bytes.ReplaceAll(data, []byte("\"Baseline\""), []byte("null"))
+	if err := json.Unmarshal(data, &c.outcomes); err != nil {
+		return err
+	}
+	c.outcomes.Outcomes = c.outcomes.Outcomes[1:]
+
+	return nil
 }
 
 func (c *CargoMutants) TransformResults() error {
