@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
@@ -60,6 +61,11 @@ type Mutant struct {
 	Genre       string `json:"genre"`
 }
 
+func (m *Mutant) description() string {
+	split := strings.Split(m.Name, " ")
+	return strings.Join(split[1:], " ")
+}
+
 type Scenario struct {
 	Mutant *Mutant `json:"Mutant"`
 }
@@ -69,7 +75,7 @@ type Outcome struct {
 	Summary  string    `json:"summary"`
 }
 
-func (o *Outcome) GetMarvStatus() mutations.Status {
+func (o *Outcome) getMarvStatus() mutations.Status {
 	switch o.Summary {
 	case "CaughtMutant":
 		return mutations.Killed
@@ -82,10 +88,10 @@ func (o *Outcome) GetMarvStatus() mutations.Status {
 	}
 }
 
-func (o *Outcome) ToMarvMutation() *mutations.Mutation {
+func (o *Outcome) toMarvMutation() *mutations.Mutation {
 	return &mutations.Mutation{
 		ID:          uuid.New(),
-		Description: o.Scenario.Mutant.Name, // TODO: trim first section
+		Description: o.Scenario.Mutant.description(),
 		Operation:   o.Scenario.Mutant.Genre,
 		Start: &mutations.Range{
 			Line: o.Scenario.Mutant.Span.Start.Line - 1,
@@ -95,7 +101,7 @@ func (o *Outcome) ToMarvMutation() *mutations.Mutation {
 			Line: o.Scenario.Mutant.Span.End.Line - 1,
 			Char: o.Scenario.Mutant.Span.End.Column - 1,
 		},
-		Status:      o.GetMarvStatus(),
+		Status:      o.getMarvStatus(),
 		Replacement: o.Scenario.Mutant.Replacement,
 	}
 }
@@ -158,7 +164,7 @@ func (c *CargoMutants) TransformResults() error {
 			}
 			c.files[file] = lines
 		}
-		c.ms.Append(file, outcome.ToMarvMutation())
+		c.ms.Append(file, outcome.toMarvMutation())
 		bar.Add(1)
 	}
 	fwlib.FinishProgressbar(bar)
