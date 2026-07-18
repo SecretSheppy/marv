@@ -1,5 +1,37 @@
 package mutant
 
+import (
+	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v3"
+)
+
+var meta = fwlib.Meta{
+	Name: "mutant",
+	URL:  "https://github.com/mbj/mutant",
+}
+
+type YamlConfig struct{}
+
+type YamlWrapper struct {
+	Cfg *YamlConfig `yaml:"mutant"`
+}
+
+func (y *YamlWrapper) Init() interface{} {
+	return &YamlWrapper{Cfg: &YamlConfig{}}
+}
+
+func (y *YamlWrapper) Load(yml []byte) (bool, error) {
+	if err := yaml.Unmarshal(yml, y); err != nil {
+		return false, err
+	}
+	if y.Cfg == nil {
+		return false, nil
+	}
+	return y.Cfg != nil, nil // TODO: check YamlConfig for required fields here
+}
+
 type Exception struct{}
 
 type ProcessStatus struct {
@@ -12,6 +44,8 @@ type Value struct {
 	Passed bool `json:"passed"`
 }
 
+// IsolationResult uses the presence of an Exception or Timeout to determine whether the status should be
+// CRASHED or TIMEOUT.
 type IsolationResult struct {
 	Exception     *Exception     `json:"exception"`
 	ProcessStatus *ProcessStatus `json:"process_status"`
@@ -34,6 +68,45 @@ type SubjectResult struct {
 
 type Results struct {
 	SubjectResults []*SubjectResult `json:"subject_results"`
+}
+
+type Mutant struct {
+	yml     *YamlWrapper
+	results Results
+	ms      mutations.Mutations
+	files   map[string][]string
+}
+
+func NewMutant() *Mutant {
+	return &Mutant{yml: &YamlWrapper{}}
+}
+
+func (m *Mutant) Meta() *fwlib.Meta {
+	return &meta
+}
+
+func (m *Mutant) Yaml() fwlib.FWConfig {
+	return m.yml
+}
+
+func (m *Mutant) LoadResults() error {
+	log.Info().Msgf("%s - loading results", m.Meta().Name)
+
+	return nil
+}
+
+func (m *Mutant) TransformResults() error {
+	log.Info().Msgf("%s - transforming results", m.Meta().Name)
+	_ = fwlib.NewProgressbar(0, "transforming") // TODO
+	return nil
+}
+
+func (m *Mutant) Mutations() mutations.Mutations {
+	return m.ms
+}
+
+func (m *Mutant) ReadLines(file string) ([]string, error) {
+	return m.files[file], nil
 }
 
 // TODO: Diff MutationResult.MutationSource and SubjectResult.Source to get the actual mutation and its lines etc...

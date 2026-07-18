@@ -8,6 +8,7 @@ import (
 	"github.com/SecretSheppy/marv/fws/infection"
 	"github.com/SecretSheppy/marv/fws/mewt"
 	"github.com/SecretSheppy/marv/fws/mull"
+	"github.com/SecretSheppy/marv/fws/mutant"
 	"github.com/SecretSheppy/marv/fws/mutest_rs"
 	"github.com/SecretSheppy/marv/fws/pitest"
 	"github.com/SecretSheppy/marv/fws/stryker4s"
@@ -23,6 +24,7 @@ func Frameworks() []fwlib.Framework {
 		infection.NewInfection(),
 		mewt.NewMewt(),
 		mull.NewMull(),
+		mutant.NewMutant(),
 		mutest_rs.NewMutestRS(),
 		pitest.NewPitest(),
 		stryker4s.NewStryker4s(),
