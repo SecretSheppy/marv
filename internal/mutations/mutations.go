@@ -19,6 +19,8 @@ const (
 	NoCoverage Status = "NO_COVERAGE"
 	Pending    Status = "PENDING"
 	Ignored    Status = "IGNORED"
+
+	UnknownOperator = "UNKNOWN_OPERATOR"
 )
 
 var Statuses = []Status{Killed, Survived, Crashed, Timeout, NoCoverage, Ignored, Pending}

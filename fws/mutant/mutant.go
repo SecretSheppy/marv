@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/pkg/pathutil"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
@@ -70,6 +72,38 @@ type MutationResult struct {
 	MutationIdentification string           `json:"mutation_identification"`
 }
 
+func (m *MutationResult) getMarvStatus() mutations.Status {
+	if m.IsolationResult.Timeout != nil {
+		return mutations.Timeout
+	}
+	if m.IsolationResult.Exception != nil || m.IsolationResult.ProcessStatus.ExitStatus != 0 {
+		return mutations.Crashed
+	}
+	if m.IsolationResult.Value.Passed {
+		return mutations.Survived
+	}
+	return mutations.Killed
+}
+
+func (m *MutationResult) toMarvMutation(originalCode string, startLine int) *mutations.Mutation {
+	return &mutations.Mutation{
+		ID:                uuid.New(),
+		FrameworkMutantID: m.MutationIdentification,
+		Description:       "", // TODO: generate
+		Operation:         mutations.UnknownOperator,
+		Start: &mutations.Range{ // TODO: calculate based on diffs
+			Line: 0,
+			Char: 0,
+		},
+		End: &mutations.Range{ // TODO: calculate based on diffs
+			Line: 0,
+			Char: 0,
+		},
+		Status:      m.getMarvStatus(),
+		Replacement: "", // TODO: calculate based on diffs
+	}
+}
+
 type CoverageResult struct {
 	MutationResult *MutationResult `json:"mutation_result"`
 }
@@ -82,8 +116,22 @@ type SubjectResult struct {
 	SourcePath      string            `json:"source_path"`
 }
 
+func (s *SubjectResult) startLine() (int64, error) {
+	split := strings.Split(s.Identification, ":")
+	sln := split[len(split)-1]
+	return strconv.ParseInt(sln, 10, 32)
+}
+
 type Results struct {
 	SubjectResults []*SubjectResult `json:"subject_results"`
+}
+
+func (r *Results) mutationsCount() int {
+	count := 0
+	for _, sr := range r.SubjectResults {
+		count += sr.AmountMutations
+	}
+	return count
 }
 
 type Mutant struct {
@@ -154,11 +202,40 @@ func (m *Mutant) LoadResults() error {
 
 func (m *Mutant) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
-	_ = fwlib.NewProgressbar(0, "transforming") // TODO
 
-	// TODO: use m.yml.Cfg.RootDir to generate relative paths for all files. need to join it with the workdir and then
-	//  take the last directory name and use that to strip out the absolute paths from the mutant results.
-	//  - only need to generate the head path once, and can just trim prefix for all others
+	wd, _ := os.Getwd()
+	root := path.Base(path.Join(wd, m.yml.Cfg.RootDir))
+	var absPathPrefix string
+	if len(m.results.SubjectResults) > 0 {
+		for _, dir := range pathutil.Split(m.results.SubjectResults[0].SourcePath) {
+			absPathPrefix += "/" + dir
+			if dir == root {
+				absPathPrefix += "/"
+				break
+			}
+		}
+	}
+	log.Info().Msgf("%s - removing absolute path %s", m.Meta().Name, absPathPrefix)
+
+	bar := fwlib.NewProgressbar(m.results.mutationsCount(), "transforming")
+	m.ms = make(mutations.Mutations)
+	m.files = make(map[string][]string)
+
+	for _, sr := range m.results.SubjectResults {
+		sourcePath := strings.TrimPrefix(sr.SourcePath, absPathPrefix)
+
+		for _, cr := range sr.CoverageResults {
+			sl, err := sr.startLine()
+			if err != nil {
+				return err
+			}
+			mu := cr.MutationResult.toMarvMutation(sr.Source, int(sl))
+			m.ms.Append(sourcePath, mu)
+			bar.Add(1)
+		}
+	}
+
+	fwlib.FinishProgressbar(bar)
 	return nil
 }
 
