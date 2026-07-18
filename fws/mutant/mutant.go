@@ -12,7 +12,11 @@ var meta = fwlib.Meta{
 	URL:  "https://github.com/mbj/mutant",
 }
 
-type YamlConfig struct{}
+type YamlConfig struct {
+	RootDir    string `yaml:"root-dir"`
+	ResultsDir string `yaml:"results-dir"`
+	Session    string `yaml:"results-session,omitempty"`
+}
 
 type YamlWrapper struct {
 	Cfg *YamlConfig `yaml:"mutant"`
@@ -29,7 +33,7 @@ func (y *YamlWrapper) Load(yml []byte) (bool, error) {
 	if y.Cfg == nil {
 		return false, nil
 	}
-	return y.Cfg != nil, nil // TODO: check YamlConfig for required fields here
+	return y.Cfg.RootDir != "" && y.Cfg.ResultsDir != "", nil
 }
 
 type Exception struct{}
@@ -92,12 +96,17 @@ func (m *Mutant) Yaml() fwlib.FWConfig {
 func (m *Mutant) LoadResults() error {
 	log.Info().Msgf("%s - loading results", m.Meta().Name)
 
+	// TODO: if m.yml.Cfg.Session != "", load that file,
+	//  else scan the directory and load the most recently created JSON with a uuid name
 	return nil
 }
 
 func (m *Mutant) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
 	_ = fwlib.NewProgressbar(0, "transforming") // TODO
+
+	// TODO: use m.yml.Cfg.RootDir to generate relative paths for all files
+	//  - only need to generate the head path once, and can just trim prefix for all others
 	return nil
 }
 
