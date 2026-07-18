@@ -25,13 +25,13 @@ marv:
 
 # Enable the mutant framework
 mutant:
-    # The projects root directory name (usually name of the repository). This is
-    # used by Marv to convert the absolute paths exported by mutant into relative
-    # paths. See "Locating the source files" for more information.
-    root-dir: project
+    # The path to the projects root directory. This is used by Marv to convert the
+    # absolute paths exported by mutant into relative paths. See "Locating the
+    # source files" for more information.
+    root-dir: .
     
     # The relative path to the results directory created by mutant.
-    results-dir: results
+    results-dir: .mutant/results
     
     # An optional field to fix which JSON is loaded by Marv. By default, Marv will
     # scan the contents of the mutant results directory and load the most recently
@@ -67,5 +67,7 @@ that Marv has been run from. Marv uses the name of the local source files root d
 absolute paths exported by mutant. An example is provided below for clarification.
 
 If mutant exports the path `/home/user1/project/src/lib/file.rb` and you are running Marv in the
-`/home/user2/project` directory, one simply has to set `root-dir: project` and Marv will then strip
-`/home/user1/project/` out of all the paths provided by mutant, leaving only relative paths in the Marv output.
+`/home/user2/project` directory, one simply has to set `root-dir: .`. Marv will join the specified `root-dir` with the
+current working directory and take the last folder in the path, in 
+this case `project`, as the projects root directory. It will then use that to strip `/home/user1/project/` out of all
+the paths provided by mutant, leaving only relative paths in the Marv output.
