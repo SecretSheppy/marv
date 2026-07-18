@@ -41,12 +41,14 @@ mutant:
 ```
 
 Once this file has been edited and saved, simply run the `marv` command in the directory the file was created and Marv
-will process and visualize the results for you. If something goes wrong at this stage it is likely that one of the
-provided paths is slightly incorrect. Reading the stderr output can most often tell you where you have gone wrong.
+will process and visualize the results for you.
 
 ```terminaloutput
 marv
 ```
+
+If something goes wrong at this stage it is likely that one of the provided paths is slightly incorrect. Reading the
+stderr output can most often tell you where you have gone wrong.
 
 ## Locating the correct JSON output
 
