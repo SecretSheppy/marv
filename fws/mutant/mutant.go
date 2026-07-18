@@ -90,7 +90,7 @@ func (m *MutationResult) toMarvMutation(originalCode string, startLine int) *mut
 		ID:                uuid.New(),
 		FrameworkMutantID: m.MutationIdentification,
 		Description:       "", // TODO: generate
-		Operation:         mutations.UnknownOperator,
+		Operation:         mutations.UnrecoverableOperator,
 		Start: &mutations.Range{ // TODO: calculate based on diffs
 			Line: 0,
 			Char: 0,
