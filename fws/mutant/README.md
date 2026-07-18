@@ -26,8 +26,8 @@ marv:
 # Enable the mutant framework
 mutant:
     # The projects root directory name (usually name of the repository). This is
-    # used by Marv to convert mutants absolute paths into relative paths. See
-    # "Locating the source files" for more information.
+    # used by Marv to convert the absolute paths exported by mutant into relative
+    # paths. See "Locating the source files" for more information.
     root-dir: project
     
     # The relative path to the results directory created by mutant.
