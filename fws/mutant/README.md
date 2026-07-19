@@ -2,6 +2,16 @@
 
 [Mutant](https://github.com/mbj/mutant) is a mutation testing framework for Ruby. It is supported by Marv versions `1.2.6+`.
 
+## Contents
+
+* [Getting started](#getting-started)
+* [Locating the correct JSON output](#locating-the-correct-json-output)
+* [Locating the source files](#locating-the-source-files)
+* [Notes on Mutant to Marv data transformation](#notes-on-mutant-to-marv-data-transformation)
+    * [Mutation Statuses](#mutation-statuses)
+    * [Mutation Operators](#mutation-operators)
+    * [Mutation Types](#mutation-types)
+
 ## Getting started
 
 To get started with mutant in Marv, simply run the following command to generate the
@@ -71,3 +81,15 @@ If mutant exports the path `/home/user1/project/src/lib/file.rb` and you are run
 current working directory and take the last folder in the path, in 
 this case `project`, as the projects root directory. It will then use that to strip `/home/user1/project/` out of all
 the paths provided by mutant, leaving only relative paths in the Marv output.
+
+## Notes on Mutant to Marv data transformation
+
+### Mutation Statuses
+
+### Mutation Operators
+
+`UNRECOVERABLE_OPERATOR`
+
+### Mutation Types
+
+Neutral "mutations" are not supported.
