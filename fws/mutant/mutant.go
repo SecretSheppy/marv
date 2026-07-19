@@ -2,6 +2,7 @@ package mutant
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -10,7 +11,9 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/SecretSheppy/marv/pkg/pathutil"
+	"github.com/aymanbagabas/go-udiff"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
@@ -69,6 +72,7 @@ type IsolationResult struct {
 type MutationResult struct {
 	IsolationResult        *IsolationResult `json:"isolation_result"`
 	MutationSource         string           `json:"mutation_source"`
+	MutationType           string           `json:"mutation_type"`
 	MutationIdentification string           `json:"mutation_identification"`
 }
 
@@ -85,23 +89,57 @@ func (m *MutationResult) getMarvStatus() mutations.Status {
 	return mutations.Killed
 }
 
-func (m *MutationResult) toMarvMutation(originalCode string, startLine int) *mutations.Mutation {
+func (m *MutationResult) toMarvMutation(lines []string, originalCode string, startLine int) (*mutations.Mutation, error) {
+	edits := udiff.Strings(originalCode, m.MutationSource)
+	diff, err := udiff.ToUnifiedDiff("old", "new", originalCode, edits, 0)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		endLine     = startLine
+		endChar     int
+		replacement string
+	)
+	// NOTE: there should only ever be one hunk here
+	for _, hunk := range diff.Hunks {
+		startLine += hunk.FromLine - 2
+		endLine += hunk.FromLine - 3
+
+		trimmed := strings.TrimSpace(lines[startLine])
+		padding := len(lines[startLine]) - len(trimmed)
+
+		for i, line := range hunk.Lines {
+			switch line.Kind {
+			case udiff.Equal:
+				endLine++
+			case udiff.Delete:
+				endLine++
+				endChar = len(lines[startLine+i])
+			case udiff.Insert:
+				replacement += strings.Repeat(" ", padding) + strings.TrimSpace(line.Content)
+			}
+		}
+	}
+
+	desc := fmt.Sprintf("Replaced ```ruby\n%s\n``` with ```ruby\n%s\n```",
+		strings.Join(lines[startLine:endLine+1], "\n"),
+		strings.TrimSpace(replacement))
 	return &mutations.Mutation{
 		ID:                uuid.New(),
 		FrameworkMutantID: m.MutationIdentification,
-		Description:       "", // TODO: generate
+		Description:       desc,
 		Operation:         mutations.UnrecoverableOperator,
-		Start: &mutations.Range{ // TODO: calculate based on diffs
-			Line: 0,
+		Start: &mutations.Range{
+			Line: startLine,
 			Char: 0,
 		},
-		End: &mutations.Range{ // TODO: calculate based on diffs
-			Line: 0,
-			Char: 0,
+		End: &mutations.Range{
+			Line: endLine,
+			Char: endChar,
 		},
 		Status:      m.getMarvStatus(),
-		Replacement: "", // TODO: calculate based on diffs
-	}
+		Replacement: replacement,
+	}, nil
 }
 
 type CoverageResult struct {
@@ -223,13 +261,28 @@ func (m *Mutant) TransformResults() error {
 
 	for _, sr := range m.results.SubjectResults {
 		sourcePath := strings.TrimPrefix(sr.SourcePath, absPathPrefix)
+		lines, err := fio.ReadLines(path.Join(m.yml.Cfg.RootDir, sourcePath))
+		if err != nil {
+			return err
+		}
+		m.files[sourcePath] = lines
 
 		for _, cr := range sr.CoverageResults {
+			// NOTE: Marv does not support rendering original unmutated source code inside a mutation block. If the
+			// replacement field is blank then Marv marks the last line of the block as deleted. This is not
+			// deliberate behavior, but it causes no issues in any other frameworks and has not been fixed for
+			// this framework. Neutral "mutations" are therefore be ignored.
+			if cr.MutationResult.MutationType == "neutral" {
+				continue
+			}
 			sl, err := sr.startLine()
 			if err != nil {
 				return err
 			}
-			mu := cr.MutationResult.toMarvMutation(sr.Source, int(sl))
+			mu, err := cr.MutationResult.toMarvMutation(lines, sr.Source, int(sl))
+			if err != nil {
+				return err
+			}
 			m.ms.Append(sourcePath, mu)
 			bar.Add(1)
 		}
@@ -246,20 +299,3 @@ func (m *Mutant) Mutations() mutations.Mutations {
 func (m *Mutant) ReadLines(file string) ([]string, error) {
 	return m.files[file], nil
 }
-
-// TODO: Diff MutationResult.MutationSource and SubjectResult.Source to get the actual mutation and its lines etc...
-
-// TODO: schema very useful:
-//  https://github.com/mbj/mutant/blob/main/docs/session-json-schema.yml
-
-// TODO: mutation_type can be either evil (not test killed it) or neutral (killed by a test) or noop
-
-// TODO: will have to extract replacement lines beginning with + and deleted lines with -
-// TODO: (contd) will have to diff the original and replacement to produce descriptions as well as actual replacements
-
-// TODO: operators will have to be defined by marv and then determined based off of this list: (? maybe, this could be very difficult)
-//  https://github.com/mbj/mutant/blob/59517844547eef3d67b71a3c736f05bb3c2376da/ruby/lib/mutant/mutation/operators.rb
-
-// TODO: exit_status != 0 || exception == STATUS CRASHED
-
-// TODO: if value:passed == STATUS SURVIVED else STATUS KILLED
