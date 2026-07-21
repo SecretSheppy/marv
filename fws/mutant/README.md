@@ -6,11 +6,10 @@
 
 * [Getting Started With Mutant In Marv](#getting-started-with-mutant-in-marv)
 * [Locating The Source Files For Marv](#locating-the-source-files-for-marv)
+  * [An example `root-dir` value](#an-example-root-dir-value)
+    * [1. Inside The `/home/fred/mutant/quick_start` Directory](#1-inside-the-homefredmutantquick_start-directory)
+    * [2. Inside The `/home/fred/mutant` Directory](#2-inside-the-homefredmutant-directory)
 * [Loading Results From Mutant Into Marv](#loading-results-from-mutant-into-marv)
-* [Notes on Mutant to Marv data transformation](#notes-on-mutant-to-marv-data-transformation)
-    * [Mutation Statuses](#mutation-statuses)
-    * [Mutation Operators](#mutation-operators)
-    * [Mutation Types](#mutation-types)
 
 ## Getting Started With Mutant In Marv
 
@@ -123,15 +122,3 @@ JSON files with
 UUID names and to display the results from the most recently created JSON. Marv accepts an optional `session` field in
 the `.marv.yml` configuration for mutant. Setting `session` will tell Marv to always load the file named with the 
 provided UUID. If no file with the provided name exists no results will be loaded.
-
-## Notes on Mutant to Marv data transformation
-
-### Mutation Statuses
-
-### Mutation Operators
-
-`UNRECOVERABLE_OPERATOR`
-
-### Mutation Types
-
-Neutral "mutations" are not supported.
