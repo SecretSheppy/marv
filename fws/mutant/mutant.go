@@ -121,8 +121,8 @@ func (m *MutationResult) toMarvMutation(lines []string, originalCode string, sta
 		}
 	}
 
-	desc := fmt.Sprintf("Replaced ```rb\n%s\n``` with ```rb\n%s\n```",
-		strings.Join(lines[startLine:endLine+1], "\n"),
+	desc := fmt.Sprintf("Replaced `%s` with `%s`",
+		strings.TrimSpace(strings.Join(lines[startLine:endLine+1], "\n")),
 		strings.TrimSpace(replacement))
 	return &mutations.Mutation{
 		ID:                uuid.New(),
