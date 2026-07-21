@@ -14,25 +14,19 @@
 
 ## Getting started
 
-To get started with mutant in Marv, simply run the following command to generate the
+1. To get started with mutant in Marv, simply run the following command to generate the
 required `.marv.yml` file in your current working directory. It is usually better to do this inside the project you
-are working on, but this is not an absolute requirement.
+are working on as a `.marv.yml` file can be committed and shared if correctly configured, but this is not an absolute
+requirement.
 
 ```terminaloutput
 marv init -f mutant
 ```
 
-When the file has been created, you will need to edit the fields under the `mutant` section to match the layout of the
+2. When the file has been created, you will need to edit the fields under the `mutant` section to match the layout of the
 project you are working on. The `mutant` fields are described in the below YAML file.
 
 ```yaml
-# The default Marv configuration options. These can be changed at will.
-marv:
-    port: 8080
-    output:
-        path: .marv
-        merge: false
-
 # Enable the mutant framework
 mutant:
     # The path to the projects root directory. This is used by Marv to convert the
@@ -50,14 +44,15 @@ mutant:
     session: 00000000-0000-0000-0000-000000000000
 ```
 
-Once this file has been edited and saved, simply run the `marv` command in the directory the file was created and Marv
+3. Once this file has been edited and saved, simply run the `marv` command in the directory the file was created and Marv
 will process and visualize the results for you.
 
 ```terminaloutput
 marv
 ```
 
-If something goes wrong at this stage it is likely that one of the provided paths is slightly incorrect. Reading the
+> [!TIP]
+> If something goes wrong at this stage it is likely that one of the provided paths is slightly incorrect. Reading the
 stderr output can most often tell you where you have gone wrong.
 
 ## Locating the correct JSON output
