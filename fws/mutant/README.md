@@ -4,15 +4,15 @@
 
 ## Contents
 
-* [Getting started](#getting-started)
-* [Locating the correct JSON output](#locating-the-correct-json-output)
+* [Getting Started With Mutant In Marv](#getting-started-with-mutant-in-marv)
+* [Loading Results From Mutant Into Marv](#loading-results-from-mutant-into-marv)
 * [Locating the source files](#locating-the-source-files)
 * [Notes on Mutant to Marv data transformation](#notes-on-mutant-to-marv-data-transformation)
     * [Mutation Statuses](#mutation-statuses)
     * [Mutation Operators](#mutation-operators)
     * [Mutation Types](#mutation-types)
 
-## Getting started
+## Getting Started With Mutant In Marv
 
 1. To get started with mutant in Marv, simply run the following command to generate the
 required `.marv.yml` file in your current working directory. It is usually better to do this inside the project you
@@ -30,8 +30,7 @@ project you are working on. The `mutant` fields are described in the below YAML 
 # Enable the mutant framework
 mutant:
     # The path to the projects root directory. This is used by Marv to convert the
-    # absolute paths exported by mutant into relative paths. See "Locating the
-    # source files" for more information.
+    # absolute paths exported by mutant into relative paths.
     root-dir: .
     
     # The relative path to the results directory created by mutant.
@@ -39,8 +38,7 @@ mutant:
     
     # An optional field to fix which JSON is loaded by Marv. By default, Marv will
     # scan the contents of the mutant results directory and load the most recently
-    # created JSON which has a UUID name. See "Locating the correct JSON output"
-    # for more information.
+    # created JSON which has a UUID name.
     session: 00000000-0000-0000-0000-000000000000
 ```
 
@@ -55,17 +53,17 @@ marv
 > If something goes wrong at this stage it is likely that one of the provided paths is slightly incorrect. Reading the
 stderr output can most often tell you where you have gone wrong.
 
-## Locating the correct JSON output
+## Loading Results From Mutant Into Marv
 
-The JSON data exported by mutant does not have a standard name. Instead, names each file with the session UUID that it
-creates. Marv's default behavior is to read the entirety of the specified `results` directory and use the most recently
-created JSON file with a UUID name as the results to process and display. One can, however, direct Marv towards a
-specific session ID, which will ensure that Marv always opens the same JSON results file.
+Mutant exports results as a JSON file in the `results` directory. Each file is named with that particular sessions UUID.
+Marv's default behavior is to scan the `results` directory, specified in the `.marv.yml` file, for all JSON files with
+UUID names and to display the results from the most recently created JSON. Marv accepts an optional `session` field in
+the `.marv.yml` configuration for mutant. Setting `session` will tell Marv to always load the file named with the 
+provided UUID. If no file with the provided name exists no results will be loaded.
 
 ## Locating the source files
 
-Mutant exports absolute paths for its source code files. This causes issues when running Marv on the mutant results
-from a machine that was not responsible for running mutant.
+The results exported by Mutant use absolute paths to reference the source files mutations were made in.
 
 The mutant configuration for Marv requires the location of the files under test in relation to the working directory
 that Marv has been run from. Marv uses the name of the local source files root directory to try and strip out the
