@@ -2,8 +2,10 @@ package cmds
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
@@ -20,9 +22,12 @@ var listCmd = &cobra.Command{
 		slices.SortFunc(frameworks, func(a, b fwlib.Framework) int {
 			return strings.Compare(a.Meta().Name, b.Meta().Name)
 		})
+		w := new(tabwriter.Writer)
+		w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 		for _, fw := range frameworks {
-			fmt.Println(fw.Meta().Name)
+			fmt.Fprintf(w, "%s\t%s\n", fw.Meta().Name, fw.Meta().URL)
 		}
+		w.Flush()
 	},
 }
 
