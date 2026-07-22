@@ -16,7 +16,7 @@ Pitest must be run with the `-Dfeatures="+EXPORT"` flag which exports the mutate
 Marv will decompile these class files to construct each mutants replacement string.
 
 ```cli
-mvn org.pitest:pitest-maven:mutationCoverage -Dfeatures="+EXPORT
+mvn org.pitest:pitest-maven:mutationCoverage -Dfeatures="+EXPORT"
 ```
 
 ## Getting Started With Pitest In Marv
