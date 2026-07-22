@@ -10,7 +10,7 @@ import (
 
 var meta = fwlib.Meta{
 	Name: "infection",
-	URL:  "https://https://infection.github.io/",
+	URL:  "https://infection.github.io/",
 }
 
 type YamlConfig struct {
