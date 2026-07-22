@@ -21,19 +21,22 @@ mutations format (through the Marv mutations schema) and visualization for resul
 * A large number of supported frameworks
 * Framework support is built into Marv (tools don't need to add and maintain support for Marv)
 
-## Table of Contents
+<h2>Table of Contents</h2>
 
-* [Supported Frameworks](#supported-frameworks)
-  * [LLM Based Mutation Testing Frameworks](#llm-based-mutation-testing-frameworks)
-* [Installation](#installation)
-  * [Build from source](#build-from-source)
-  * [Libraries](#libraries)
-* [Usage](#usage)
-* [Gallery](#gallery)
-* [Export Formats](#export-formats)
-  * [Marv Mutations Schema](#marv-mutations-schema)
-  * [Marv Reviews Schema](#marv-reviews-schema)
-* [Other](#other)
+<!-- TOC -->
+  * [Supported Frameworks](#supported-frameworks)
+    * [Unsupported Frameworks](#unsupported-frameworks)
+    * [The Generic Framework](#the-generic-framework)
+  * [Installation](#installation)
+    * [Build from source](#build-from-source)
+    * [Libraries](#libraries)
+  * [Usage](#usage)
+  * [Gallery](#gallery)
+  * [Export Formats](#export-formats)
+    * [Marv Mutations Schema](#marv-mutations-schema)
+    * [Marv Reviews Schema](#marv-reviews-schema)
+  * [Other](#other)
+<!-- TOC -->
 
 ## Supported Frameworks
 
