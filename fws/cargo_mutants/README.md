@@ -1,6 +1,41 @@
 # cargo-mutants
 
-This document outlines important details one should be aware of when using cargo-mutants with Marv.
+[cargo-mutants](https://github.com/sourcefrog/cargo-mutants) is a mutation testing framework for rust. It is supported
+by all Marv versions `1.2.6+`.
+
+## Contents
+
+* [Getting Started With cargo-mutants In Marv](#getting-started-with-cargo-mutants-in-marv)
+* [JSON parsing](#json-parsing)
+* [Status Conversions](#status-conversions)
+
+## Getting Started With cargo-mutants In Marv
+
+1. To get started with cargo-mutants in Marv, run the `marv init` command to generate the required `.marv.yml`
+   configuration file.
+
+```terminaloutput
+marv init -f cargo-mutants
+```
+
+2. Edit the fields under the `cargo-mutants` section in the `.marv.yml` file to point at the relevant locations.
+   An example is shown below:
+
+```yaml
+# Enable the cargo-mutants framework
+cargo-mutants:
+    # The relative path to the working directory that the tests are run from.
+    test-work-dir: .
+    
+    # The relative path to the mutants.out directory created by cargo-mutants.
+    mutants-out-dir: mutants.out
+```
+
+3. Run the `marv` command to launch Marv and click the localhost URL to open the Marv interface.
+
+```terminaloutput
+marv
+```
 
 ## JSON parsing
 
