@@ -69,7 +69,7 @@ go install github.com/SecretSheppy/marv@latest
 Builds exactly as a normal go project would. See the [go.dev](https://go.dev/doc/tutorial/compile-install) tutorial
 for more information. The target file to build is [`cmd/marv/main.go`](cmd/marv/main.go).
 ```cli
-go build cmd/marv/main.go -o [output]
+go build main.go -o marv
 ```
 
 ### Libraries
