@@ -2,11 +2,24 @@
 
 <h2 align="center">Marv: Mutations Analysis, Review and Visualisation</h2>
 
-Marv is a visualization and review tool for mutation testing. It provides a standardized results format and 
-visualization across all [supported frameworks](#supported-frameworks).
+Marv is a data processing, visualization and review tool for mutation testing. Marv provides both a standardized
+mutations format (through the Marv mutations schema) and visualization for results of mutation analysis across all
+[supported frameworks](#supported-frameworks).
 
-Marv displays the results of multiple frameworks simultaneously, allowing for review of results across many frameworks
-or even languages in one go.
+**What Makes Marv Great?:**
+* High quality visualizations of source code mutations
+* Calculates a range of metrics by which to evaluate the results
+* Generates textual descriptions of mutations where none are provided
+* Filter mutants by mutation status
+* Work with results from multiple frameworks simultaneously
+* Resolves issues with output from mutation testing tools
+* Produces a standardized output (the Marv mutations schema)
+* Can store and export textual reviews for each mutation
+* Fast, responsive and intuitive user interface ([gallery](#gallery))
+* Themable interface through JSON theme files
+* Scales to hundreds of thousands of mutations without issue
+* A large number of supported frameworks
+* Framework support is built into Marv (tools don't need to add and maintain support for Marv)
 
 ## Table of Contents
 
@@ -23,7 +36,8 @@ or even languages in one go.
 
 ## Supported Frameworks
 
-A list of mutation testing frameworks that either are currently supported or will be supported in the future.
+The following table lists the mutation testing frameworks that are supported by Marv, and breaks down the quality of
+support for each framework against certain key features.
 
 * 🏆 Supported to a high standard
 * 🥈 Supported to an acceptable standard
@@ -124,7 +138,7 @@ Screenshots of the Marv user interface showing results from various frameworks.
 | **Marv Results Overview:** Showing results from [stryker-net](https://github.com/stryker-mutator/stryker-net) run on itself<br/> ![](docs/marv_results_overview.png)                                                     | **Marv Pitest Results:** Showing [hcoles/pitest](https://github.com/hcoles/pitest) mutants inline with a file from [guava](https://github.com/google/guava)<br/> ![](docs/marv_pitest_guava.png)  |
 | **Marv mutest-rs Results:** Showing [mutest-rs](https://github.com/zalanlevai/mutest-rs) mutants inline with a file from [alacritty](https://github.com/alacritty/alacritty)<br/> ![](docs/marv_mutest_rs_alacritty.png) | **Marv Infection PHP Mutant:** Showing an isolated [Infection](https://github.com/infection/infection) mutant inline with a file from its own source<br/> ![](docs/marv_infection_php_mutant.png) |
 
-## Export Format
+## Export Formats
 
 Marv exports both the mutations and reviews as a `.json` marshal of its internal mutations format for all frameworks. 
 By using the `-m` or `--merge` flags, the results from all frameworks are merged into one large `.json` file. Brief
@@ -133,16 +147,16 @@ textual descriptions of both formats are given below, and schemas for each can b
 * [Mutations Format Schema](api/marv-mutations-schema.json)
 * [Reviews Format Schema](api/marv-reviews-schema.json)
 
-### Mutations Format
+### Marv Mutations Schema
 
-The mutations format follows the internal structures defined in [`internal/mutations`](internal/mutations/mutations.go). 
+The mutations schema follows the internal structures defined in [`internal/mutations`](internal/mutations/mutations.go). 
 The basic structure is `file path` > `conflict region` > `mutation`. Marv uses `conflict regions` or internally called 
 `mutations.Conflict` to wrap all mutations that would conflict with each other if just rendered inline due to overlaps.
 
 Any `ID` field is a UUID created by Marv. Where frameworks create mutant identifiers, they are stored against the mutant
 as `FrameworkMutantID`.
 
-### Reviews Format
+### Marv Reviews Schema
 
 Reviews are exported against the corresponding mutations Marv Mutation ID and their Framework Mutation 
 ID (if applicable). The review structure is defined in [`internal/review`](internal/review/review.go).
