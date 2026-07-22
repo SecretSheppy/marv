@@ -25,30 +25,30 @@ or even languages in one go.
 
 A list of mutation testing frameworks that either are currently supported or will be supported in the future.
 
-* 🏆 Supported out of the box
-* ✅️ Supported with some configuration
-* ⚠️ Experimental support
+* 🏆 Supported to a high standard
+* 🥈 Supported to an acceptable standard
+* ⚠️ Supported but experimental
 * 🚧 In development
-* 🚫 Not currently supported
+* 🚫 Not supported
 
-| Framework                                                                       | language   | Support | Marv Version | Notes                                                                                                                                                      |
-|---------------------------------------------------------------------------------|------------|:-------:|:------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Mewt](https://github.com/trailofbits/mewt)                                     | Any        |   🏆    |    1.2.5     |                                                                                                                                                            |
-| [Mull](https://mull-project.com/)                                               | C/C++      |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
-| [Dextool Mutate](https://joakim-brannstrom.github.io/dextool/plugin/mutate/)    | C/C++      |   🚫    |              |                                                                                                                                                            |
-| [stryker&#8288;&#45;&#8288;net](https://github.com/stryker-mutator/stryker-net) | C#         |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
-| [go&#8288;&#45;&#8288;mutesting](https://github.com/zimmski/go-mutesting)       | Go         |   🏆    |    1.2.1     |                                                                                                                                                            |
-| [hcoles/pitest](https://github.com/hcoles/pitest)                               | Java       |   ✅️    |    1.0.0     | See [Pitest configuration](fws/pitest/README.md)                                                                                                           |
-| [Major](https://mutation-testing.org/)                                          | Java       |   🏆    |    1.2.6     |                                                                                                                                                            |
-| [stryker&#8288;&#45;&#8288;js](https://github.com/stryker-mutator/stryker-js)   | JavaScript |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
-| [mutaml](https://github.com/jmid/mutaml)                                        | OCaml      |   🚫    |              |                                                                                                                                                            |
-| [infection](https://github.com/infection/infection)                             | PHP        |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema, additionally see [infection readme](fws/infection/README.md) |
-| [Cosmic Ray](https://github.com/sixty-north/cosmic-ray)                         | Python     |   🚧    |              |                                                                                                                                                            |
-| [MutPy](https://github.com/mutpy/mutpy)                                         | Python     |   🚫    |              |                                                                                                                                                            |
-| [mutant](https://github.com/mbj/mutant)                                         | Ruby       |   🏆    |    1.2.6     | See mutant [usage docuementation](fws/mutant/README.md)                                                                                                    |
-| [cargo&#8288;&#45;&#8288;mutants](https://github.com/sourcefrog/cargo-mutants)  | Rust       |   🏆    |    1.2.6     | See cargo-mutants [usage notes](fws/cargo_mutants/README.md)                                                                                               |
-| [mutest&#8288;&#45;&#8288;rs](https://github.com/zalanlevai/mutest-rs)          | Rust       |   🏆    |    1.0.0     |                                                                                                                                                            |
-| [strkyer4s](https://github.com/stryker-mutator/stryker4s)                       | Scala      |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
+| Framework                                                                       | Language | Source Code Replacements |  Descriptions  | Operators | Framework IDs | Marv Version | Documentation                       |
+|---------------------------------------------------------------------------------|----------|:------------------------:|:--------------:|:---------:|:-------------:|:------------:|-------------------------------------|
+| [Mewt](https://github.com/trailofbits/mewt)                                     |          |            🏆            | 🥈<sup>1</sup> |    🏆     |      🏆       |    1.2.5     | TODO                                |
+| [Mull](https://mull-project.com/)                                               | C/C++    |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
+| [stryker&#8288;&#45;&#8288;net](https://github.com/stryker-mutator/stryker-net) | C#       |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
+| [go&#8288;&#45;&#8288;mutesting](https://github.com/zimmski/go-mutesting)       | Go       |            🥈            |       🚫       |    🏆     |      🚫       |    1.2.1     | TODO                                |
+| [hcoles/pitest](https://github.com/hcoles/pitest)                               | Java     |            ⚠️            |       🏆       |    🏆     |      🚫       |    1.0.0     | [docs](fws/pitest/README.md)        |
+| [Major](https://mutation-testing.org/)                                          | Java     |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.6     | TODO                                |
+| [stryker&#8288;&#45;&#8288;js](https://github.com/stryker-mutator/stryker-js)   | JS/TS    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
+| [infection](https://github.com/infection/infection)                             | PHP      |            🥈            |       🏆       |    🏆     |      🏆       |    1.2.0     | TODO                                |
+| [mutant](https://github.com/mbj/mutant)                                         | Ruby     |            🥈            | 🥈<sup>1</sup> |    🚫     |      🏆       |    1.2.6     | [docs](fws/mutant/README.md)        |
+| [cargo&#8288;&#45;&#8288;mutants](https://github.com/sourcefrog/cargo-mutants)  | Rust     |            🏆            |       🏆       |    🏆     |      🚫       |    1.2.6     | [docs](fws/cargo_mutants/README.md) |
+| [mutest&#8288;&#45;&#8288;rs](https://github.com/zalanlevai/mutest-rs)          | Rust     |            🏆            |       🏆       |    🏆     |      🏆       |    1.0.0     | TODO                                |
+| [strkyer4s](https://github.com/stryker-mutator/stryker4s)                       | Scala    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
+
+**Notes:**
+1. Generated by Marv
+2. If provided by framework
 
 ### LLM Based Mutation Testing Frameworks
 
