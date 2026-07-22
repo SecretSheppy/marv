@@ -24,14 +24,15 @@ mutations format (through the Marv mutations schema) and visualization for resul
 ## Table of Contents
 
 * [Supported Frameworks](#supported-frameworks)
+  * [LLM Based Mutation Testing Frameworks](#llm-based-mutation-testing-frameworks)
 * [Installation](#installation)
   * [Build from source](#build-from-source)
   * [Libraries](#libraries)
 * [Usage](#usage)
 * [Gallery](#gallery)
-* [Export Format](#export-format)
-  * [Mutations Format](#mutations-format)
-  * [Reviews Format](#reviews-format)
+* [Export Formats](#export-formats)
+  * [Marv Mutations Schema](#marv-mutations-schema)
+  * [Marv Reviews Schema](#marv-reviews-schema)
 * [Other](#other)
 
 ## Supported Frameworks
