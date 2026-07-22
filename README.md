@@ -33,11 +33,11 @@ A list of mutation testing frameworks that either are currently supported or wil
 
 | Framework                                                                       | Language | Source Code Replacements |  Descriptions  | Operators | Framework IDs | Marv Version | Documentation                       |
 |---------------------------------------------------------------------------------|----------|:------------------------:|:--------------:|:---------:|:-------------:|:------------:|-------------------------------------|
-| [Mewt](https://github.com/trailofbits/mewt)                                     |          |            🏆            | 🥈<sup>1</sup> |    🏆     |      🏆       |    1.2.5     | TODO                                |
+| [Mewt](https://github.com/trailofbits/mewt)                                     | —        |            🏆            | 🥈<sup>1</sup> |    🏆     |      🏆       |    1.2.5     | TODO                                |
 | [Mull](https://mull-project.com/)                                               | C/C++    |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
 | [stryker&#8288;&#45;&#8288;net](https://github.com/stryker-mutator/stryker-net) | C#       |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
 | [go&#8288;&#45;&#8288;mutesting](https://github.com/zimmski/go-mutesting)       | Go       |            🥈            |       🚫       |    🏆     |      🚫       |    1.2.1     | TODO                                |
-| [hcoles/pitest](https://github.com/hcoles/pitest)                               | Java     |            ⚠️            |       🏆       |    🏆     |      🚫       |    1.0.0     | [docs](fws/pitest/README.md)        |
+| [pitest](https://github.com/hcoles/pitest)                                      | Java     |            ⚠️            |       🏆       |    🏆     |      🚫       |    1.0.0     | [docs](fws/pitest/README.md)        |
 | [Major](https://mutation-testing.org/)                                          | Java     |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.6     | TODO                                |
 | [stryker&#8288;&#45;&#8288;js](https://github.com/stryker-mutator/stryker-js)   | JS/TS    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
 | [infection](https://github.com/infection/infection)                             | PHP      |            🥈            |       🏆       |    🏆     |      🏆       |    1.2.0     | TODO                                |
