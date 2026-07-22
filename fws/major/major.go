@@ -182,6 +182,7 @@ type Major struct {
 	mutants []*Mutant
 	details []*Detail
 	ms      mutations.Mutations
+	files   map[string][]string
 }
 
 func NewMajor() *Major {
@@ -216,7 +217,16 @@ func (m *Major) TransformResults() error {
 	bar := fwlib.NewProgressbar(len(m.mutants), "transforming")
 
 	m.ms = make(mutations.Mutations)
+	m.files = make(map[string][]string)
 	for _, mutant := range m.mutants {
+		if m.files[mutant.file()] == nil {
+			file, err := fio.ReadLines(path.Join(m.yml.Cfg.SrcDir, mutant.file()))
+			if err != nil {
+				return nil
+			}
+			m.files[mutant.file()] = file
+		}
+		startChar := strings.Index(m.files[mutant.file()][mutant.LineNumber-1], mutant.Original)
 		m.ms.Append(mutant.file(), &mutations.Mutation{
 			ID:                uuid.New(),
 			FrameworkMutantID: strconv.Itoa(mutant.ID),
@@ -224,11 +234,11 @@ func (m *Major) TransformResults() error {
 			Operation:         mutant.Operator,
 			Start: &mutations.Range{
 				Line: mutant.LineNumber - 1,
-				Char: 0, // TODO:
+				Char: startChar,
 			},
 			End: &mutations.Range{
 				Line: mutant.LineNumber - 1,
-				Char: 1, // TODO:
+				Char: startChar + len(mutant.Original),
 			},
 			Status:      m.details[mutant.ID-1].status(),
 			Replacement: mutant.Replacement,
@@ -244,5 +254,5 @@ func (m *Major) Mutations() mutations.Mutations {
 }
 
 func (m *Major) ReadLines(file string) ([]string, error) {
-	return fio.ReadLines(path.Join(m.yml.Cfg.SrcDir, file))
+	return m.files[file], nil
 }
