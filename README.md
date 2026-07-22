@@ -6,7 +6,8 @@ Marv is a data processing, visualization and review tool for mutation testing. M
 mutations format (through the Marv mutations schema) and visualization for results of mutation analysis across all
 [supported frameworks](#supported-frameworks).
 
-**What Makes Marv Great?:**
+<h3>What Makes Marv Great?</h3>
+
 * High quality visualizations of source code mutations
 * Calculates a range of metrics by which to evaluate the results
 * Generates textual descriptions of mutations where none are provided
