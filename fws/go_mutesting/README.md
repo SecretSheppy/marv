@@ -1,7 +1,7 @@
 # go-mutesting
 
 [go-mutesting](https://github.com/zimmski/go-mutesting) is a mutation testing framework for Go. It has a few maintained
-forks that vary in operator level, but all output results in the same format. This makes all
+forks that vary in operator level, but all output their results in the same format. This makes all
 of them compatible with Marv. go-mutesting is supported by Marv versions `1.2.1+`.
 
 ## Getting Started With go-mutesting In Marv
