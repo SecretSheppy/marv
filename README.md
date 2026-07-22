@@ -2,59 +2,87 @@
 
 <h2 align="center">Marv: Mutations Analysis, Review and Visualisation</h2>
 
-Marv is a visualization and review tool for mutation testing. It provides a standardized results format and 
-visualization across all [supported frameworks](#supported-frameworks).
+Marv is a data processing, visualization and review tool for mutation testing. Marv provides both a standardized
+mutations format (through the Marv mutations schema) and visualization for results of mutation analysis across all
+[supported frameworks](#supported-frameworks).
 
-Marv displays the results of multiple frameworks simultaneously, allowing for review of results across many frameworks
-or even languages in one go.
+<h3>What Makes Marv Great?</h3>
 
-## Table of Contents
+* High quality visualizations of source code mutations
+* Calculates a range of metrics by which to evaluate the results
+* Generates textual descriptions of mutations where none are provided
+* Filter mutants by mutation status
+* Work with results from multiple frameworks simultaneously
+* Resolves issues with output from mutation testing tools
+* Produces a standardized output (the Marv mutations schema)
+* Can store and export textual reviews for each mutation
+* Fast, responsive and intuitive user interface ([gallery](#gallery))
+* Themable interface through JSON theme files
+* Scales to hundreds of thousands of mutations without issue
+* A large number of supported frameworks
+* Framework support is built into Marv (tools don't need to add and maintain support for Marv)
 
-* [Supported Frameworks](#supported-frameworks)
-* [Installation](#installation)
-  * [Build from source](#build-from-source)
-  * [Libraries](#libraries)
-* [Usage](#usage)
-* [Gallery](#gallery)
-* [Export Format](#export-format)
-  * [Mutations Format](#mutations-format)
-  * [Reviews Format](#reviews-format)
-* [Other](#other)
+<h2>Table of Contents</h2>
+
+<!-- TOC -->
+  * [Supported Frameworks](#supported-frameworks)
+    * [Unsupported Frameworks](#unsupported-frameworks)
+    * [The Generic Framework](#the-generic-framework)
+  * [Installation](#installation)
+    * [Build from source](#build-from-source)
+    * [Libraries](#libraries)
+  * [Usage](#usage)
+  * [Gallery](#gallery)
+  * [Export Formats](#export-formats)
+    * [Marv Mutations Schema](#marv-mutations-schema)
+    * [Marv Reviews Schema](#marv-reviews-schema)
+  * [Other](#other)
+<!-- TOC -->
 
 ## Supported Frameworks
 
-A list of mutation testing frameworks that either are currently supported or will be supported in the future.
+The following table lists the mutation testing frameworks that are supported by Marv, and breaks down the quality of
+support for each framework against certain key features.
 
-* 🏆 Supported out of the box
-* ✅️ Supported with some configuration
-* ⚠️ Experimental support
+* 🏆 Supported to a high standard
+* 🥈 Supported to an acceptable standard
+* ⚠️ Supported but experimental
 * 🚧 In development
-* 🚫 Not currently supported
+* 🚫 Not supported
 
-| Framework                                                                       | language   | Support | Marv Version | Notes                                                                                                                                                      |
-|---------------------------------------------------------------------------------|------------|:-------:|:------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Mewt](https://github.com/trailofbits/mewt)                                     | Any        |   🏆    |    1.2.5     |                                                                                                                                                            |
-| [Mull](https://mull-project.com/)                                               | C/C++      |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
-| [Dextool Mutate](https://joakim-brannstrom.github.io/dextool/plugin/mutate/)    | C/C++      |   🚫    |              |                                                                                                                                                            |
-| [stryker&#8288;&#45;&#8288;net](https://github.com/stryker-mutator/stryker-net) | C#         |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
-| [go&#8288;&#45;&#8288;mutesting](https://github.com/zimmski/go-mutesting)       | Go         |   🏆    |    1.2.1     |                                                                                                                                                            |
-| [hcoles/pitest](https://github.com/hcoles/pitest)                               | Java       |   ✅️    |    1.0.0     | See [Pitest configuration](fws/pitest/README.md)                                                                                                           |
-| [Major](https://mutation-testing.org/)                                          | Java       |   🏆    |    1.2.6     |                                                                                                                                                            |
-| [stryker&#8288;&#45;&#8288;js](https://github.com/stryker-mutator/stryker-js)   | JavaScript |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
-| [mutaml](https://github.com/jmid/mutaml)                                        | OCaml      |   🚫    |              |                                                                                                                                                            |
-| [infection](https://github.com/infection/infection)                             | PHP        |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema, additionally see [infection readme](fws/infection/README.md) |
-| [Cosmic Ray](https://github.com/sixty-north/cosmic-ray)                         | Python     |   🚧    |              |                                                                                                                                                            |
-| [MutPy](https://github.com/mutpy/mutpy)                                         | Python     |   🚫    |              |                                                                                                                                                            |
-| [mutant](https://github.com/mbj/mutant)                                         | Ruby       |   🏆    |    1.2.6     | See mutant [usage docuementation](fws/mutant/README.md)                                                                                                    |
-| [cargo&#8288;&#45;&#8288;mutants](https://github.com/sourcefrog/cargo-mutants)  | Rust       |   🏆    |    1.2.6     | See cargo-mutants [usage notes](fws/cargo_mutants/README.md)                                                                                               |
-| [mutest&#8288;&#45;&#8288;rs](https://github.com/zalanlevai/mutest-rs)          | Rust       |   🏆    |    1.0.0     |                                                                                                                                                            |
-| [strkyer4s](https://github.com/stryker-mutator/stryker4s)                       | Scala      |   🏆    |    1.2.0     | Supported through [MTE](https://github.com/stryker-mutator/mutation-testing-elements) schema                                                               |
+| Framework                                                                       | Language | Source Code Replacements |  Descriptions  | Operators | Framework IDs | Marv Version | Documentation                                                                  |
+|---------------------------------------------------------------------------------|----------|:------------------------:|:--------------:|:---------:|:-------------:|:------------:|--------------------------------------------------------------------------------|
+| [Mewt](https://github.com/trailofbits/mewt)                                     | —        |            🏆            | 🥈<sup>1</sup> |    🏆     |      🏆       |    1.2.5     | [mewt](fws/mewt/README.md)                                                     |
+| [Mull](https://mull-project.com/)                                               | C/C++    |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
+| [stryker&#8288;&#45;&#8288;net](https://github.com/stryker-mutator/stryker-net) | C#       |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
+| [go&#8288;&#45;&#8288;mutesting](https://github.com/zimmski/go-mutesting)       | Go       |            🥈            |       🚫       |    🏆     |      🚫       |    1.2.1     | [go-mutesting](fws/go_mutesting/README.md)                                     |
+| [pitest](https://github.com/hcoles/pitest)                                      | Java     |            ⚠️            |       🏆       |    🏆     |      🚫       |    1.0.0     | [pitest](fws/pitest/README.md)                                                 |
+| [Major](https://mutation-testing.org/)                                          | Java     |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.6     | [major](fws/major/README.md)                                                   |
+| [stryker&#8288;&#45;&#8288;js](https://github.com/stryker-mutator/stryker-js)   | JS/TS    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
+| [infection](https://github.com/infection/infection)                             | PHP      |            🥈            |       🏆       |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md), [infection](fws/infection/README.md) |
+| [mutant](https://github.com/mbj/mutant)                                         | Ruby     |            🥈            | 🥈<sup>1</sup> |    🚫     |      🏆       |    1.2.6     | [mutant](fws/mutant/README.md)                                                 |
+| [cargo&#8288;&#45;&#8288;mutants](https://github.com/sourcefrog/cargo-mutants)  | Rust     |            🏆            |       🏆       |    🏆     |      🚫       |    1.2.6     | [cargo-mutants](fws/cargo_mutants/README.md)                                   |
+| [mutest&#8288;&#45;&#8288;rs](https://github.com/zalanlevai/mutest-rs)          | Rust     |            🏆            |       🏆       |    🏆     |      🏆       |    1.0.0     | [mutest-rs](fws/mutest_rs/README.md)                                           |
+| [strkyer4s](https://github.com/stryker-mutator/stryker4s)                       | Scala    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
 
-### LLM Based Mutation Testing Frameworks
+**Notes:**
+1. Generated by Marv
+2. If provided by framework
 
-Marv does not provide first party support for LLM based mutation testing frameworks. Instead, for LLM based tools to
-be compatible with Marv, they must output in the [Marv mutations schema](api/marv-mutations-schema.json) which is supported through the use of the
-`generic` framework implementation.
+### Unsupported Frameworks
+
+There are many more mutation testing frameworks than the subset currently supported by Marv. 
+Issues and or pull requests (see [contributing](CONTRIBUTING.md)) requesting or adding support for new frameworks
+are welcome.
+
+Marv does not provide first party support for LLM based mutation testing frameworks, but they can be supported through
+the generic framework (see [The Generic Framework](#the-generic-framework)).
+
+### The Generic Framework
+
+Any unsupported tools that output 
+in the [Marv mutations schema](api/marv-mutations-schema.json) are instead supported through the use of the [generic](fws/generic/README.md)
+framework implementation.
 
 ## Installation
 
@@ -124,7 +152,7 @@ Screenshots of the Marv user interface showing results from various frameworks.
 | **Marv Results Overview:** Showing results from [stryker-net](https://github.com/stryker-mutator/stryker-net) run on itself<br/> ![](docs/marv_results_overview.png)                                                     | **Marv Pitest Results:** Showing [hcoles/pitest](https://github.com/hcoles/pitest) mutants inline with a file from [guava](https://github.com/google/guava)<br/> ![](docs/marv_pitest_guava.png)  |
 | **Marv mutest-rs Results:** Showing [mutest-rs](https://github.com/zalanlevai/mutest-rs) mutants inline with a file from [alacritty](https://github.com/alacritty/alacritty)<br/> ![](docs/marv_mutest_rs_alacritty.png) | **Marv Infection PHP Mutant:** Showing an isolated [Infection](https://github.com/infection/infection) mutant inline with a file from its own source<br/> ![](docs/marv_infection_php_mutant.png) |
 
-## Export Format
+## Export Formats
 
 Marv exports both the mutations and reviews as a `.json` marshal of its internal mutations format for all frameworks. 
 By using the `-m` or `--merge` flags, the results from all frameworks are merged into one large `.json` file. Brief
@@ -133,16 +161,16 @@ textual descriptions of both formats are given below, and schemas for each can b
 * [Mutations Format Schema](api/marv-mutations-schema.json)
 * [Reviews Format Schema](api/marv-reviews-schema.json)
 
-### Mutations Format
+### Marv Mutations Schema
 
-The mutations format follows the internal structures defined in [`internal/mutations`](internal/mutations/mutations.go). 
+The mutations schema follows the internal structures defined in [`internal/mutations`](internal/mutations/mutations.go). 
 The basic structure is `file path` > `conflict region` > `mutation`. Marv uses `conflict regions` or internally called 
 `mutations.Conflict` to wrap all mutations that would conflict with each other if just rendered inline due to overlaps.
 
 Any `ID` field is a UUID created by Marv. Where frameworks create mutant identifiers, they are stored against the mutant
 as `FrameworkMutantID`.
 
-### Reviews Format
+### Marv Reviews Schema
 
 Reviews are exported against the corresponding mutations Marv Mutation ID and their Framework Mutation 
 ID (if applicable). The review structure is defined in [`internal/review`](internal/review/review.go).
