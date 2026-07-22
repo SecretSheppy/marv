@@ -46,20 +46,20 @@ support for each framework against certain key features.
 * 🚧 In development
 * 🚫 Not supported
 
-| Framework                                                                       | Language | Source Code Replacements |  Descriptions  | Operators | Framework IDs | Marv Version | Documentation                       |
-|---------------------------------------------------------------------------------|----------|:------------------------:|:--------------:|:---------:|:-------------:|:------------:|-------------------------------------|
-| [Mewt](https://github.com/trailofbits/mewt)                                     | —        |            🏆            | 🥈<sup>1</sup> |    🏆     |      🏆       |    1.2.5     | TODO                                |
-| [Mull](https://mull-project.com/)                                               | C/C++    |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
-| [stryker&#8288;&#45;&#8288;net](https://github.com/stryker-mutator/stryker-net) | C#       |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
-| [go&#8288;&#45;&#8288;mutesting](https://github.com/zimmski/go-mutesting)       | Go       |            🥈            |       🚫       |    🏆     |      🚫       |    1.2.1     | TODO                                |
-| [pitest](https://github.com/hcoles/pitest)                                      | Java     |            ⚠️            |       🏆       |    🏆     |      🚫       |    1.0.0     | [docs](fws/pitest/README.md)        |
-| [Major](https://mutation-testing.org/)                                          | Java     |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.6     | TODO                                |
-| [stryker&#8288;&#45;&#8288;js](https://github.com/stryker-mutator/stryker-js)   | JS/TS    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
-| [infection](https://github.com/infection/infection)                             | PHP      |            🥈            |       🏆       |    🏆     |      🏆       |    1.2.0     | TODO                                |
-| [mutant](https://github.com/mbj/mutant)                                         | Ruby     |            🥈            | 🥈<sup>1</sup> |    🚫     |      🏆       |    1.2.6     | [docs](fws/mutant/README.md)        |
-| [cargo&#8288;&#45;&#8288;mutants](https://github.com/sourcefrog/cargo-mutants)  | Rust     |            🏆            |       🏆       |    🏆     |      🚫       |    1.2.6     | [docs](fws/cargo_mutants/README.md) |
-| [mutest&#8288;&#45;&#8288;rs](https://github.com/zalanlevai/mutest-rs)          | Rust     |            🏆            |       🏆       |    🏆     |      🏆       |    1.0.0     | TODO                                |
-| [strkyer4s](https://github.com/stryker-mutator/stryker4s)                       | Scala    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | TODO                                |
+| Framework                                                                       | Language | Source Code Replacements |  Descriptions  | Operators | Framework IDs | Marv Version | Documentation                                                                  |
+|---------------------------------------------------------------------------------|----------|:------------------------:|:--------------:|:---------:|:-------------:|:------------:|--------------------------------------------------------------------------------|
+| [Mewt](https://github.com/trailofbits/mewt)                                     | —        |            🏆            | 🥈<sup>1</sup> |    🏆     |      🏆       |    1.2.5     | [mewt](fws/mewt/README.md)                                                     |
+| [Mull](https://mull-project.com/)                                               | C/C++    |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
+| [stryker&#8288;&#45;&#8288;net](https://github.com/stryker-mutator/stryker-net) | C#       |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
+| [go&#8288;&#45;&#8288;mutesting](https://github.com/zimmski/go-mutesting)       | Go       |            🥈            |       🚫       |    🏆     |      🚫       |    1.2.1     | [go-mutesting](fws/go_mutesting/README.md)                                     |
+| [pitest](https://github.com/hcoles/pitest)                                      | Java     |            ⚠️            |       🏆       |    🏆     |      🚫       |    1.0.0     | [pitest](fws/pitest/README.md)                                                 |
+| [Major](https://mutation-testing.org/)                                          | Java     |            🏆            | 🏆<sup>1</sup> |    🏆     |      🏆       |    1.2.6     | [major](fws/major/README.md)                                                   |
+| [stryker&#8288;&#45;&#8288;js](https://github.com/stryker-mutator/stryker-js)   | JS/TS    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
+| [infection](https://github.com/infection/infection)                             | PHP      |            🥈            |       🏆       |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md), [infection](fws/infection/README.md) |
+| [mutant](https://github.com/mbj/mutant)                                         | Ruby     |            🥈            | 🥈<sup>1</sup> |    🚫     |      🏆       |    1.2.6     | [mutant](fws/mutant/README.md)                                                 |
+| [cargo&#8288;&#45;&#8288;mutants](https://github.com/sourcefrog/cargo-mutants)  | Rust     |            🏆            |       🏆       |    🏆     |      🚫       |    1.2.6     | [cargo-mutants](fws/cargo_mutants/README.md)                                   |
+| [mutest&#8288;&#45;&#8288;rs](https://github.com/zalanlevai/mutest-rs)          | Rust     |            🏆            |       🏆       |    🏆     |      🏆       |    1.0.0     | [mutest-rs](fws/mutest_rs/README.md)                                           |
+| [strkyer4s](https://github.com/stryker-mutator/stryker4s)                       | Scala    |            🏆            | 🏆<sup>2</sup> |    🏆     |      🏆       |    1.2.0     | [stryker-mte](fws/stryker_net/README.md)                                       |
 
 **Notes:**
 1. Generated by Marv
