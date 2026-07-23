@@ -3,6 +3,7 @@ package fws
 import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws/cargo_mutants"
+	"github.com/SecretSheppy/marv/fws/cosmic_ray"
 	"github.com/SecretSheppy/marv/fws/generic"
 	"github.com/SecretSheppy/marv/fws/go_mutesting"
 	"github.com/SecretSheppy/marv/fws/infection"
@@ -20,6 +21,7 @@ import (
 func Frameworks() []fwlib.Framework {
 	return []fwlib.Framework{
 		cargo_mutants.NewCargoMutants(),
+		cosmic_ray.NewCosmicRay(),
 		generic.NewGeneric(),
 		go_mutesting.NewGoMutesting(),
 		infection.NewInfection(),
