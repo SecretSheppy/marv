@@ -74,6 +74,7 @@ type Document struct {
 
 type shared struct {
 	db         *review.Repository
+	debug      bool
 	document   *Document
 	frameworks []fwlib.Framework
 }
@@ -83,10 +84,10 @@ type Renderer struct {
 	shared *shared
 }
 
-func NewRenderer(document *Document, db *review.Repository, frameworks []fwlib.Framework) *Renderer {
+func NewRenderer(document *Document, db *review.Repository, frameworks []fwlib.Framework, debug bool) *Renderer {
 	return &Renderer{
 		cache:  make(cache),
-		shared: &shared{db: db, document: document, frameworks: frameworks},
+		shared: &shared{db: db, debug: debug, document: document, frameworks: frameworks},
 	}
 }
 

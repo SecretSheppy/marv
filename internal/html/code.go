@@ -146,6 +146,7 @@ func (r *codeRenderer) padding() int {
 
 func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
 	var buff bytes.Buffer
+	r.renderDebugMessage(&buff, c.String())
 	buff.WriteString(fmt.Sprintf("<tbody class=\"hidden\" data-conflict-id=\"%s\">", c.ID))
 	if err := r.renderLines(&buff, c.StartLine, c.EndLine); err != nil {
 		return nil, err
@@ -178,6 +179,7 @@ func (r *codeRenderer) renderLines(buff *bytes.Buffer, from, to int) error {
 
 func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
+	r.renderDebugMessage(&buff, m.String())
 	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\" class=\"mutation\">", m.ID, c.ID, m.Status.Text()))
 	r.renderMutationHeader(&buff, m)
 	if r.config.Features.AdvancedDetail {
@@ -316,4 +318,11 @@ func (r *codeRenderer) renderReviewField(buff *bytes.Buffer, m *mutations.Mutati
 		"</div>"+
 		"</td></tr>", m.ID, r.shared.document.Theme.Icon("circle-check-solid.svg"), m.ID, rev.Review))
 	return nil
+}
+
+func (r *codeRenderer) renderDebugMessage(buff *bytes.Buffer, msg string) {
+	if !r.shared.debug {
+		return
+	}
+	buff.WriteString(fmt.Sprintf(`<tbody><tr><td colspan="100%%" style="background:orange;color:black">%s</td></tr></tbody>`, msg))
 }
