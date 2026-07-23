@@ -110,6 +110,9 @@ func (r *codeRenderer) render() ([]byte, error) {
 				continue
 			}
 		}
+
+		// TODO: somehow here we want to use the new system to highlight multiple
+		//  lines simultaneously
 		line, err := r.highlight.HighlightLine(i)
 		if err != nil {
 			return nil, err
@@ -144,12 +147,8 @@ func (r *codeRenderer) padding() int {
 func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict, error) {
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("<tbody class=\"hidden\" data-conflict-id=\"%s\">", c.ID))
-	for i := c.StartLine; i <= c.EndLine; i++ {
-		line, err := r.highlight.HighlightLine(i)
-		if err != nil {
-			return nil, err
-		}
-		r.renderLine(&buff, i+1, lineEqual, line)
+	if err := r.renderLines(&buff, c.StartLine, c.EndLine); err != nil {
+		return nil, err
 	}
 	buff.WriteString("</tbody>")
 	for _, mutation := range c.Mutations {
@@ -166,6 +165,17 @@ func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 	}, nil
 }
 
+func (r *codeRenderer) renderLines(buff *bytes.Buffer, from, to int) error {
+	lines, err := r.highlight.HighlightLines(from, to)
+	if err != nil {
+		return err
+	}
+	for i, line := range lines {
+		r.renderLine(buff, from+i+1, lineEqual, line)
+	}
+	return nil
+}
+
 func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
 	var buff bytes.Buffer
 	buff.WriteString(fmt.Sprintf("<tbody id=\"%s\" data-conflict-id=\"%s\" data-status=\"%s\" data-class=\"mutant\" class=\"mutation\">", m.ID, c.ID, m.Status.Text()))
@@ -174,12 +184,8 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		r.renderAllMutationData(&buff, m)
 	}
 
-	for i := c.StartLine; i < m.Start.Line; i++ {
-		line, err := r.highlight.HighlightLine(i)
-		if err != nil {
-			return "", err
-		}
-		r.renderLine(&buff, i+1, lineEqual, line)
+	if err := r.renderLines(&buff, c.StartLine, m.Start.Line-1); err != nil {
+		return "", err
 	}
 
 	for i := m.Start.Line; i <= m.End.Line; i++ {
@@ -221,12 +227,8 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		r.renderLine(&buff, 0, lineInserted, code)
 	}
 
-	for i := m.End.Line + 1; i <= c.EndLine; i++ {
-		line, err := r.highlight.HighlightLine(i)
-		if err != nil {
-			return "", err
-		}
-		r.renderLine(&buff, i+1, lineEqual, line)
+	if err := r.renderLines(&buff, m.End.Line+1, c.EndLine); err != nil {
+		return "", err
 	}
 
 	if err := r.renderReviewField(&buff, m); err != nil {

@@ -94,7 +94,7 @@ func (h *Highlighter) HighlightLines(start, end int) ([]string, error) {
 	var err error
 	lines := make([]string, end-start+1)
 	for line := start; line <= end; line++ {
-		lines[line], err = h.HighlightLine(line)
+		lines[line-start], err = h.HighlightLine(line)
 		if err != nil {
 			return nil, err
 		}
