@@ -10,8 +10,7 @@ import (
 
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
-	"github.com/SecretSheppy/marv/pkg/highlighter"
-	"github.com/alecthomas/chroma/v2/styles"
+	"github.com/SecretSheppy/marv/pkg/chroma_proxy"
 	"gorm.io/gorm"
 )
 
@@ -51,29 +50,19 @@ func (l lineDiffType) CSSClass() string {
 }
 
 type codeRenderer struct {
-	shared    *shared
-	config    *RenderConfig
-	lines     []string
-	lnPadding int // automatically configured value used to align line numbers throughout the document.
-	highlight *highlighter.Highlighter
+	shared             *shared
+	config             *RenderConfig
+	lines, highlighted []string
+	lnPadding          int // automatically configured value used to align line numbers throughout the document.
+	proxy              *chroma_proxy.ProxyHighlighter
 }
 
-func newCodeRenderer(shared *shared, config *RenderConfig) (*codeRenderer, error) {
-	var (
-		err   error
-		lines []string
-	)
-	lines, err = config.lines()
-	if err != nil {
-		return nil, err
-	}
-	r := &codeRenderer{shared: shared, config: config, lines: lines}
-	r.highlight, err = highlighter.NewHighlighter(r.config.language().MExt(), r.lines, styles.Get(r.shared.document.Theme.Code.ChromaTheme))
-	return r, err
+func newCodeRenderer(shared *shared, config *RenderConfig) *codeRenderer {
+	return &codeRenderer{shared: shared, config: config}
 }
 
-func (r *codeRenderer) SyntaxHighlighter() *highlighter.Highlighter {
-	return r.highlight
+func (r *codeRenderer) Highlighter() *chroma_proxy.ProxyHighlighter {
+	return r.proxy
 }
 
 func (r *codeRenderer) Render(w *bytes.Buffer) error {
@@ -91,6 +80,27 @@ func (r *codeRenderer) render() ([]byte, error) {
 	conflicts := r.config.conflicts()
 	conflicts.Sort()
 	rendered := make([]*renderedConflict, 0, len(conflicts))
+
+	// TODO: move out of this function
+	lines, err := r.config.lines()
+	if err != nil {
+		return nil, err
+	}
+	r.lines = lines
+
+	// TODO: move out of this function
+	proxy, err := chroma_proxy.NewProxyHighlighter(r.config.language().MExt(), r.shared.document.Theme.Code.ChromaTheme)
+	if err != nil {
+		return nil, err
+	}
+	r.proxy = proxy
+
+	highlighted, err := proxy.Highlight(r.lines)
+	if err != nil {
+		return nil, err
+	}
+	r.highlighted = highlighted
+
 	for _, conflict := range conflicts {
 		render, err := r.renderConflict(conflict)
 		if err != nil {
@@ -111,13 +121,7 @@ func (r *codeRenderer) render() ([]byte, error) {
 			}
 		}
 
-		// TODO: somehow here we want to use the new system to highlight multiple
-		//  lines simultaneously
-		line, err := r.highlight.HighlightLine(i)
-		if err != nil {
-			return nil, err
-		}
-		r.renderLine(&buff, i+1, lineEqual, line)
+		r.renderLine(&buff, i+1, lineEqual, r.highlighted[i])
 	}
 	buff.WriteString("</table>")
 	return buff.Bytes(), nil
@@ -148,9 +152,7 @@ func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 	var buff bytes.Buffer
 	r.renderDebugMessage(&buff, c.String())
 	buff.WriteString(fmt.Sprintf("<tbody class=\"hidden\" data-conflict-id=\"%s\">", c.ID))
-	if err := r.renderLines(&buff, c.StartLine, c.EndLine); err != nil {
-		return nil, err
-	}
+	r.renderLines(&buff, c.StartLine, c.EndLine)
 	buff.WriteString("</tbody>")
 	for _, mutation := range c.Mutations {
 		render, err := r.renderMutation(c, mutation)
@@ -166,15 +168,10 @@ func (r *codeRenderer) renderConflict(c *mutations.Conflict) (*renderedConflict,
 	}, nil
 }
 
-func (r *codeRenderer) renderLines(buff *bytes.Buffer, from, to int) error {
-	lines, err := r.highlight.HighlightLines(from, to)
-	if err != nil {
-		return err
-	}
-	for i, line := range lines {
+func (r *codeRenderer) renderLines(buff *bytes.Buffer, from, to int) {
+	for i, line := range r.highlighted[from : to+1] {
 		r.renderLine(buff, from+i+1, lineEqual, line)
 	}
-	return nil
 }
 
 func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutation) (string, error) {
@@ -186,9 +183,7 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		r.renderAllMutationData(&buff, m)
 	}
 
-	if err := r.renderLines(&buff, c.StartLine, m.Start.Line-1); err != nil {
-		return "", err
-	}
+	r.renderLines(&buff, c.StartLine, m.Start.Line-1)
 
 	for i := m.Start.Line; i <= m.End.Line; i++ {
 		var pre, post string
@@ -201,10 +196,11 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 			pre = diff[:m.Start.Char]
 			diff = diff[m.Start.Char:]
 		}
-		lines, err := r.highlightMutationParts(pre, diff, post)
-		if err != nil {
-			return "", err
-		}
+		//lines, err := r.proxy.Highlight([]string{pre, diff, post})
+		//if err != nil {
+		//	return "", err
+		//}
+		lines := []string{pre, diff, post}
 		code := fmt.Sprintf("%s<span class=\"highlight remove\">%s</span>%s", lines[0], lines[1], lines[2])
 		r.renderLine(&buff, i+1, lineRemoved, code)
 	}
@@ -221,17 +217,16 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		if i == 0 { // NOTE: first mutated line
 			pre = r.lines[m.Start.Line][:m.Start.Char]
 		}
-		lines, err := r.highlightMutationParts(pre, diff, post)
-		if err != nil {
-			return "", err
-		}
+		//lines, err := r.proxy.Highlight([]string{pre, diff, post})
+		//if err != nil {
+		//	return "", err
+		//}
+		lines := []string{pre, diff, post}
 		code := fmt.Sprintf("%s<span class=\"highlight insert\">%s</span>%s", lines[0], lines[1], lines[2])
 		r.renderLine(&buff, 0, lineInserted, code)
 	}
 
-	if err := r.renderLines(&buff, m.End.Line+1, c.EndLine); err != nil {
-		return "", err
-	}
+	r.renderLines(&buff, m.End.Line+1, c.EndLine)
 
 	if err := r.renderReviewField(&buff, m); err != nil {
 		return "", err
@@ -239,23 +234,6 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 
 	buff.WriteString("</tbody>")
 	return buff.String(), nil
-}
-
-func (r *codeRenderer) highlightMutationParts(pre, diff, post string) ([]string, error) {
-	hl, err := highlighter.NewHighlighter(r.highlight.Lang(), []string{pre, diff, post}, r.highlight.Style())
-	if err != nil {
-		return nil, err
-	}
-	lines, err := hl.HighlightLines(0, 2)
-	if err != nil {
-		return nil, err
-	}
-	for j := 0; j < len(lines); j++ {
-		if line := lines[j]; line != "" {
-			lines[j] = line[19 : len(line)-7]
-		}
-	}
-	return lines, nil
 }
 
 func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mutation) {

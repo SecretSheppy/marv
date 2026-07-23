@@ -222,15 +222,12 @@ func (r *Renderer) RenderTree() ([]byte, error) {
 }
 
 func (r *Renderer) renderCode(config *RenderConfig) ([]byte, string, error) {
-	c, err := newCodeRenderer(r.shared, config)
-	if err != nil {
-		return nil, "", err
-	}
+	c := newCodeRenderer(r.shared, config)
 	var temp bytes.Buffer
 	if err := c.Render(&temp); err != nil {
 		return nil, "", err
 	}
-	css, err := c.SyntaxHighlighter().CSS()
+	css, err := c.Highlighter().CSS()
 	if err != nil {
 		return nil, "", err
 	}
