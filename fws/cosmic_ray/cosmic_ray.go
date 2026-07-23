@@ -7,6 +7,7 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
+	"github.com/SecretSheppy/marv/pkg/diffutil"
 	"github.com/SecretSheppy/marv/pkg/fio"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -83,20 +84,6 @@ func (m *MutationResult) EndChar() int {
 	return m.EndPosCol
 }
 
-func changes(diff string) (remove, insert string) {
-	for _, line := range strings.Split(diff, "\n")[4:] {
-		if line[:1] == "-" && line != "-" {
-			remove = strings.TrimSpace(line[1:])
-			continue
-		}
-		if line[:1] == "+" && line != "+" {
-			insert = strings.TrimSpace(line[1:])
-			continue
-		}
-	}
-	return
-}
-
 type CosmicRay struct {
 	yml     *YamlWrapper
 	results []*MutationResult
@@ -144,18 +131,27 @@ func (c *CosmicRay) TransformResults() error {
 			return err
 		}
 
-		line := lines[result.StartLine()]
-		trim := strings.TrimSpace(line)
-		padding := len(line) - len(trim)
+		diff := diffutil.FromFormattedDiff(result.Diff, &diffutil.DiffConfig{
+			PrefixLines:            4,
+			FirstRemovedLineNumber: result.StartLine(),
+			IgnoreBlankLines:       true,
+		})
+		if err = diff.Number(); err != nil {
+			return err
+		}
+		diff.SyncLineFormatting(lines)
 
-		removed, inserted := changes(result.Diff)
-		prefix := removed[:result.StartChar()-padding]
-		suffix := removed[result.EndChar()-padding:]
+		removed, inserted := diff.Lines().LineChanges()
+		prefix := removed.Get(result.StartLine()).Text[:result.StartChar()]
+		suffix := removed.Get(result.EndLine()).Text[result.EndChar():]
 		start := len(prefix)
 		end := len(suffix)
 
-		original := removed[start : len(removed)-end]
-		replacement := inserted[start : len(inserted)-end]
+		rem := strings.Join(removed.StringLines(), "\n")
+		ins := strings.Join(inserted.StringLines(), "\n")
+
+		original := rem[start : len(rem)-end]
+		replacement := ins[start : len(ins)-end]
 
 		c.ms.Append(result.ModulePath, &mutations.Mutation{
 			ID:                uuid.New(),
