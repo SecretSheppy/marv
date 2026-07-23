@@ -134,7 +134,6 @@ func (c *CosmicRay) TransformResults() error {
 		diff := diffutil.FromFormattedDiff(result.Diff, &diffutil.DiffConfig{
 			PrefixLines:            4,
 			FirstRemovedLineNumber: result.StartLine(),
-			IgnoreBlankLines:       true,
 		})
 		if err = diff.Number(); err != nil {
 			return err

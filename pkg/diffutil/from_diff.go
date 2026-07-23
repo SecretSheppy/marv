@@ -67,7 +67,6 @@ func (d DiffLines) StringLines() []string {
 
 type DiffConfig struct {
 	PrefixLines, SuffixLines, FirstRemovedLineNumber int
-	IgnoreBlankLines                                 bool
 }
 
 type FormattedDiff struct {
