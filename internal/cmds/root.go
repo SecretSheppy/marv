@@ -26,7 +26,7 @@ const marvYml = ".marv.yml"
 
 var (
 	port, configFile, outputPath, themeName string
-	mergeOutput, verbose                    bool
+	mergeOutput, verbose, debug             bool
 	frameworks                              []string
 
 	rootCmd = &cobra.Command{
@@ -85,6 +85,7 @@ func mergeFlagsWithConfig(cfg *config.Config) error {
 	if mergeOutput && !cfg.Marv.Output.Merge {
 		cfg.Marv.Output.Merge = mergeOutput
 	}
+	cfg.Marv.Debug = debug
 	cfg.Marv.Theme = themeName
 	return nil
 }
@@ -264,7 +265,7 @@ func rootCommand() {
 	theme := getThemeOrDefault(conf.Marv.Theme)
 	log.Info().Msgf("Starting server at http://localhost:%d/", conf.Marv.Port)
 	log.Info().Msgf("Use Ctrl + C to exit. Upon interrupt reviews will be saved in %s directory", conf.Marv.Output.Path)
-	if err := server.NewServer(conf.Marv.Port, theme, activeFws, db).Serve(verbose); err != nil {
+	if err := server.NewServer(conf, theme, activeFws, db).Serve(verbose); err != nil {
 		log.Fatal().Err(err).Msg("Failed to serve")
 		os.Exit(1)
 	}
@@ -280,6 +281,7 @@ func Execute() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "logs verbose output to stdout")
 	rootCmd.PersistentFlags().StringVarP(&port, "port", "p", "", "port to listen on")
 	rootCmd.PersistentFlags().StringVarP(&themeName, "theme", "t", "", "name of the theme to use")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "", false, "enable debugging mode in the web interface")
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to execute marv command")

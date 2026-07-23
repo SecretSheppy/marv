@@ -115,6 +115,11 @@ func (m Mutation) IsBroken() bool {
 	return m.End.LessThan(m.Start)
 }
 
+func (m Mutation) String() string {
+	return fmt.Sprintf("MARV: %s, FW: %s\n(0-indexed) FROM %s TO %s, STATUS=%s, REPLACEMENT=%s",
+		m.ID, m.FrameworkMutantID, m.Start, m.End, m.Status, m.Replacement)
+}
+
 // Conflict represents all mutations that would conflict with each other if they were displayed simultaneously.
 type Conflict struct {
 	ID        uuid.UUID
@@ -161,6 +166,10 @@ func (c *Conflict) Merge(cb *Conflict) {
 		c.EndLine = cb.EndLine
 	}
 	c.Mutations = append(c.Mutations, cb.Mutations...)
+}
+
+func (c *Conflict) String() string {
+	return fmt.Sprintf("%s - %d mutations from (1-indexed lines) line %d to line %d", c.ID, len(c.Mutations), c.StartLine+1, c.EndLine+1)
 }
 
 // Conflicts is a slice of Conflict instances.
