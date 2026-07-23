@@ -67,6 +67,22 @@ func (m *MutationResult) status() mutations.Status {
 	}
 }
 
+func (m *MutationResult) StartLine() int {
+	return m.StartPosRow - 1
+}
+
+func (m *MutationResult) StartChar() int {
+	return m.StartPosCol
+}
+
+func (m *MutationResult) EndLine() int {
+	return m.EndPosRow - 1
+}
+
+func (m *MutationResult) EndChar() int {
+	return m.EndPosCol
+}
+
 func changes(diff string) (remove, insert string) {
 	for _, line := range strings.Split(diff, "\n")[4:] {
 		if line[:1] == "-" && line != "-" {
@@ -123,37 +139,39 @@ func (c *CosmicRay) TransformResults() error {
 	bar := fwlib.NewProgressbar(len(c.results), "transforming")
 
 	for _, result := range c.results {
-		if c.files[result.ModulePath] == nil {
-			lines, err := fio.ReadLines(path.Join(c.yml.Cfg.CRWorkDir, result.ModulePath))
-			if err != nil {
-				return err
-			}
-			c.files[result.ModulePath] = lines
+		lines, err := c.getOrAddFile(result.ModulePath)
+		if err != nil {
+			return err
 		}
-		lines := c.files[result.ModulePath]
-		remove, insert := changes(result.Diff)
-		originalLine := lines[result.StartPosRow-1]
-		padding := len(originalLine) - len(strings.TrimSpace(originalLine))
-		fromStart := len(remove[:result.StartPosCol-padding])
-		fromEnd := len(remove[result.EndPosCol-padding:])
-		originalCode := remove[fromStart : len(remove)-fromEnd]
-		newCode := insert[fromStart : len(insert)-fromEnd]
+
+		line := lines[result.StartLine()]
+		trim := strings.TrimSpace(line)
+		padding := len(line) - len(trim)
+
+		removed, inserted := changes(result.Diff)
+		prefix := removed[:result.StartChar()-padding]
+		suffix := removed[result.EndChar()-padding:]
+		start := len(prefix)
+		end := len(suffix)
+
+		original := removed[start : len(removed)-end]
+		replacement := inserted[start : len(inserted)-end]
 
 		c.ms.Append(result.ModulePath, &mutations.Mutation{
 			ID:                uuid.New(),
 			FrameworkMutantID: result.JobID.String(),
-			Description:       fmt.Sprintf("Replaced `%s` with `%s`", originalCode, newCode),
+			Description:       fmt.Sprintf("Replaced `%s` with `%s`", original, replacement),
 			Operation:         result.OperatorName,
 			Start: &mutations.Range{
-				Line: result.StartPosRow - 1,
-				Char: result.StartPosCol,
+				Line: result.StartLine(),
+				Char: result.StartChar(),
 			},
 			End: &mutations.Range{
-				Line: result.EndPosRow - 1,
-				Char: result.EndPosCol,
+				Line: result.EndLine(),
+				Char: result.EndChar(),
 			},
 			Status:      result.status(),
-			Replacement: newCode,
+			Replacement: replacement,
 		})
 	}
 
@@ -163,6 +181,18 @@ func (c *CosmicRay) TransformResults() error {
 
 func (c *CosmicRay) Mutations() mutations.Mutations {
 	return c.ms
+}
+
+func (c *CosmicRay) getOrAddFile(file string) ([]string, error) {
+	if c.files[file] == nil {
+		fp := path.Join(c.yml.Cfg.CRWorkDir, file)
+		lines, err := fio.ReadLines(fp)
+		if err != nil {
+			return nil, err
+		}
+		c.files[file] = lines
+	}
+	return c.ReadLines(file)
 }
 
 func (c *CosmicRay) ReadLines(file string) ([]string, error) {
