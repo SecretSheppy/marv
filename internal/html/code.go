@@ -196,12 +196,10 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 			pre = diff[:m.Start.Char]
 			diff = diff[m.Start.Char:]
 		}
-		//lines, err := r.proxy.Highlight([]string{pre, diff, post})
-		//if err != nil {
-		//	return "", err
-		//}
-		lines := []string{pre, diff, post}
-		code := fmt.Sprintf("%s<span class=\"highlight remove\">%s</span>%s", lines[0], lines[1], lines[2])
+		code, err := r.renderInnerHighlight(pre, diff, post, "remove")
+		if err != nil {
+			return "", err
+		}
 		r.renderLine(&buff, i+1, lineRemoved, code)
 	}
 
@@ -217,12 +215,10 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 		if i == 0 { // NOTE: first mutated line
 			pre = r.lines[m.Start.Line][:m.Start.Char]
 		}
-		//lines, err := r.proxy.Highlight([]string{pre, diff, post})
-		//if err != nil {
-		//	return "", err
-		//}
-		lines := []string{pre, diff, post}
-		code := fmt.Sprintf("%s<span class=\"highlight insert\">%s</span>%s", lines[0], lines[1], lines[2])
+		code, err := r.renderInnerHighlight(pre, diff, post, "insert")
+		if err != nil {
+			return "", err
+		}
 		r.renderLine(&buff, 0, lineInserted, code)
 	}
 
@@ -234,6 +230,36 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 
 	buff.WriteString("</tbody>")
 	return buff.String(), nil
+}
+
+func (r *codeRenderer) renderInnerHighlight(pre, diff, post, class string) (string, error) {
+	var builder strings.Builder
+
+	if pre != "" {
+		preHighlight, err := r.proxy.Highlight([]string{pre})
+		if err != nil {
+			return "", err
+		}
+		builder.WriteString(preHighlight[0])
+	}
+
+	if diff != "" {
+		diffHighlight, err := r.proxy.Highlight([]string{diff})
+		if err != nil {
+			return "", err
+		}
+		builder.WriteString(fmt.Sprintf("<span class=\"highlight %s\">%s</span>", class, diffHighlight[0]))
+	}
+
+	if post != "" {
+		postHighlight, err := r.proxy.Highlight([]string{post})
+		if err != nil {
+			return "", err
+		}
+		builder.WriteString(postHighlight[0])
+	}
+
+	return builder.String(), nil
 }
 
 func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mutation) {
