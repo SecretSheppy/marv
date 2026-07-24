@@ -28,6 +28,9 @@ mewt:
 marv
 ```
 
+> [!IMPORTANT]
+> Marv will only process and display completed mutations, any pending mutations will not be processed.
+
 ## Mewt To Marv Status Conversions
 
 | Mewt Status | Marv Status |
