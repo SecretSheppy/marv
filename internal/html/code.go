@@ -234,7 +234,6 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 
 func (r *codeRenderer) renderInnerHighlight(pre, diff, post, class string) (string, error) {
 	var builder strings.Builder
-	builder.WriteString("<span class=\"line\">")
 
 	if pre != "" {
 		preHighlight, err := r.proxy.HighlightLine(pre)
@@ -260,7 +259,6 @@ func (r *codeRenderer) renderInnerHighlight(pre, diff, post, class string) (stri
 		builder.WriteString(postHighlight)
 	}
 
-	builder.WriteString("</span>")
 	return builder.String(), nil
 }
 
