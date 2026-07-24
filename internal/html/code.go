@@ -234,31 +234,33 @@ func (r *codeRenderer) renderMutation(c *mutations.Conflict, m *mutations.Mutati
 
 func (r *codeRenderer) renderInnerHighlight(pre, diff, post, class string) (string, error) {
 	var builder strings.Builder
+	builder.WriteString("<span class=\"line\">")
 
 	if pre != "" {
-		preHighlight, err := r.proxy.Highlight([]string{pre})
+		preHighlight, err := r.proxy.HighlightLine(pre)
 		if err != nil {
 			return "", err
 		}
-		builder.WriteString(preHighlight[0])
+		builder.WriteString(preHighlight)
 	}
 
 	if diff != "" {
-		diffHighlight, err := r.proxy.Highlight([]string{diff})
+		diffHighlight, err := r.proxy.HighlightLine(diff)
 		if err != nil {
 			return "", err
 		}
-		builder.WriteString(fmt.Sprintf("<span class=\"highlight %s\">%s</span>", class, diffHighlight[0]))
+		builder.WriteString(fmt.Sprintf("<span class=\"highlight %s\">%s</span>", class, diffHighlight))
 	}
 
 	if post != "" {
-		postHighlight, err := r.proxy.Highlight([]string{post})
+		postHighlight, err := r.proxy.HighlightLine(post)
 		if err != nil {
 			return "", err
 		}
-		builder.WriteString(postHighlight[0])
+		builder.WriteString(postHighlight)
 	}
 
+	builder.WriteString("</span>")
 	return builder.String(), nil
 }
 

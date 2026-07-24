@@ -52,13 +52,25 @@ func (p *ProxyHighlighter) CSS() (string, error) {
 // Highlight takes an array of string lines and applies chroma syntax highlighting to them. Context awareness is
 // maintained through the highlighting process.
 func (p *ProxyHighlighter) Highlight(lines []string) ([]string, error) {
-	return p.highlight(lines)
+	file := strings.Join(lines, "\n")
+	highlight, err := p.highlight(file)
+	if err != nil {
+		return nil, err
+	}
+	return chromaLines(highlight)
 }
 
-func (p *ProxyHighlighter) highlight(lines []string) ([]string, error) {
-	file := strings.Join(lines, "\n")
+func (p *ProxyHighlighter) HighlightLine(line string) (string, error) {
+	highlight, err := p.highlight(line)
+	if err != nil {
+		return "", err
+	}
+	strhtml := highlight.String()
+	return strhtml[45 : len(strhtml)-20], err
+}
 
-	iterator, err := p.lexer.Tokenise(nil, file)
+func (p *ProxyHighlighter) highlight(content string) (*bytes.Buffer, error) {
+	iterator, err := p.lexer.Tokenise(nil, content)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +80,7 @@ func (p *ProxyHighlighter) highlight(lines []string) ([]string, error) {
 		return nil, err
 	}
 
-	return chromaLines(&result)
+	return &result, nil
 }
 
 func chromaLines(chromaHTML *bytes.Buffer) ([]string, error) {
