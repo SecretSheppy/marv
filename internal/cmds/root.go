@@ -62,6 +62,8 @@ func getConfig(yml []byte) *config.Config {
 		os.Exit(1)
 	}
 
+	cfg.LoadPersistentData()
+
 	return cfg
 }
 
@@ -236,7 +238,7 @@ func getThemeOrDefault(name string) *themes.Theme {
 	if err == nil {
 		return theme
 	}
-	theme, err = loadTheme("darcula")
+	theme, err = loadTheme(config.DefaultTheme)
 	if err != nil {
 		panic(err)
 	}
