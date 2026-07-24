@@ -66,7 +66,7 @@ func (p *ProxyHighlighter) HighlightLine(line string) (string, error) {
 		return "", err
 	}
 	strhtml := highlight.String()
-	return strhtml[45 : len(strhtml)-20], err
+	return strings.ReplaceAll(strhtml[45:len(strhtml)-20], "\n", ""), err
 }
 
 func (p *ProxyHighlighter) highlight(content string) (*bytes.Buffer, error) {
