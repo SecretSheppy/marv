@@ -207,11 +207,23 @@
 }
 
 .mutation-description {
-    max-width: 400px; /* TODO: use media breakpoints to resize this value */
-    /* TODO: use js to show full html on hover */
+    /* NOTE: For screens of 1080 width */
+    max-width: 400px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+@media screen and (min-width: 1400px) {
+    .mutation-description {
+        max-width: 650px;
+    }
+}
+
+@media screen and (min-width: 1850px) {
+    .mutation-description {
+        max-width: 850px
+    }
 }
 
 /* colours for the various status icons, set by class */
