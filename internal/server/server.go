@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/SecretSheppy/marv/fwlib"
+	"github.com/SecretSheppy/marv/internal/config"
 	"github.com/SecretSheppy/marv/internal/html"
 	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/internal/themes"
@@ -23,9 +24,9 @@ type Server struct {
 	renderer   *html.Renderer
 }
 
-func NewServer(port int, theme *themes.Theme, frameworks []fwlib.Framework, db *review.Repository) *Server {
+func NewServer(conf *config.Config, theme *themes.Theme, frameworks []fwlib.Framework, db *review.Repository) *Server {
 	return &Server{
-		port:       port,
+		port:       conf.Marv.Port,
 		frameworks: frameworks,
 		db:         db,
 		renderer: html.NewRenderer(&html.Document{
@@ -44,7 +45,7 @@ func NewServer(port int, theme *themes.Theme, frameworks []fwlib.Framework, db *
 				"scripts/review.js",
 			},
 			Theme: theme,
-		}, db, frameworks),
+		}, db, frameworks, conf.Marv.Debug),
 	}
 }
 

@@ -14,6 +14,7 @@ type Output struct {
 type Marv struct {
 	Port   int    `yaml:"port"`
 	Output Output `yaml:"output"`
+	Debug  bool   `yaml:"debug,omitempty"`
 	Theme  string `yaml:"-"`
 }
 

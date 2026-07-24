@@ -74,6 +74,7 @@ type Document struct {
 
 type shared struct {
 	db         *review.Repository
+	debug      bool
 	document   *Document
 	frameworks []fwlib.Framework
 }
@@ -83,10 +84,10 @@ type Renderer struct {
 	shared *shared
 }
 
-func NewRenderer(document *Document, db *review.Repository, frameworks []fwlib.Framework) *Renderer {
+func NewRenderer(document *Document, db *review.Repository, frameworks []fwlib.Framework, debug bool) *Renderer {
 	return &Renderer{
 		cache:  make(cache),
-		shared: &shared{db: db, document: document, frameworks: frameworks},
+		shared: &shared{db: db, debug: debug, document: document, frameworks: frameworks},
 	}
 }
 
@@ -221,15 +222,12 @@ func (r *Renderer) RenderTree() ([]byte, error) {
 }
 
 func (r *Renderer) renderCode(config *RenderConfig) ([]byte, string, error) {
-	c, err := newCodeRenderer(r.shared, config)
-	if err != nil {
-		return nil, "", err
-	}
+	c := newCodeRenderer(r.shared, config)
 	var temp bytes.Buffer
 	if err := c.Render(&temp); err != nil {
 		return nil, "", err
 	}
-	css, err := c.SyntaxHighlighter().CSS()
+	css, err := c.Highlighter().CSS()
 	if err != nil {
 		return nil, "", err
 	}
