@@ -212,3 +212,19 @@ func LoadTheme(file string, fsys fs.FS) (*Theme, error) {
 	}
 	return theme, nil
 }
+
+func List(fsys fs.FS) []string {
+	themes := make([]string, 0)
+	fs.WalkDir(fsys, "themes", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !d.IsDir() {
+			themes = append(themes, path[7:len(path)-5])
+		}
+
+		return nil
+	})
+	return themes
+}

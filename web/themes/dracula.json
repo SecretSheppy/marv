@@ -1,0 +1,84 @@
+{
+    "name": "Dracula",
+    "document": {
+        "background": "#282A36"
+    },
+    "ui": {
+        "text": {
+            "font-family": "Helvetica",
+            "title-size": "14px",
+            "font-size": "13px",
+            "color": {
+                "main": "#F8F8F2",
+                "dark": "#6272A4"
+            }
+        },
+        "colors": {
+            "primary-background": "#21222C",
+            "secondary-background": "#44475A",
+            "hover-background": "#3E3F4B",
+            "accent": {
+                "hover-background": "#6272A4",
+                "focus-background": "#BD93F9"
+            },
+            "statistics": {
+                "positive": "#50FA7B",
+                "mediocre": "#F1FA8C",
+                "negative": "#FF5555"
+            },
+            "link-color": "#8BE9FD"
+        },
+        "components": {
+            "divider": "solid 1px #44475A",
+            "header-height": "41px"
+        }
+    },
+    "code": {
+        "chroma-theme": "dracula",
+        "text": {
+            "font-family": "monospace",
+            "font-size": "0.83rem"
+        },
+        "background": "#282A36",
+        "line-number-color": "#6272A4",
+        "line-height": "24px",
+        "diff": {
+            "remove": {
+                "default": "#FF555520",
+                "dark": "#75212E",
+                "inline": "#FF555530"
+            },
+            "insert": {
+                "default": "#50FA7B20",
+                "dark": "#2E7536",
+                "inline": "#50FA7B30"
+            }
+        },
+        "components": {
+            "mutation-border": "solid 1px #44475A",
+            "line-number-border": "solid 1px #3E3F4B"
+        }
+    },
+    "status": {
+        "killed": {
+            "foreground": "#50FA7B",
+            "background": "#2E7536"
+        },
+        "survived": {
+            "foreground": "#FF5555",
+            "background": "#75212E"
+        },
+        "crashed": {
+            "foreground": "#FFB86C",
+            "background": "#7A4D1A"
+        },
+        "timeout": {
+            "foreground": "#F1FA8C",
+            "background": "#7A7A2E"
+        },
+        "no-coverage": {
+            "foreground": "#6272A4",
+            "background": "#44475A"
+        }
+    }
+}

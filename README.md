@@ -32,6 +32,7 @@ mutations format (through the Marv mutations schema) and visualization for resul
     * [Build from source](#build-from-source)
     * [Libraries](#libraries)
   * [Usage](#usage)
+  * [Themes](#themes)
   * [Gallery](#gallery)
   * [Export Formats](#export-formats)
     * [Marv Mutations Schema](#marv-mutations-schema)
@@ -143,6 +144,22 @@ marv
 
 5. If you have correctly configured the frameworks then that is it! Provided you keep the `.marv.yml` configuration
 file then all you have to do in future is simply run `marv`.
+
+## Themes
+
+Marv has a variety of user interface themes. A list of the themes included in Marv can be seen by running the following
+command:
+
+```cli
+marv themes list
+```
+
+A persistent theme can be set using the `set` command seen below. Any persistent theme can always be temporarily
+overridden with the `--theme` (`-t`) flag.
+
+```cli
+marv themes set [theme]
+```
 
 ## Gallery
 
