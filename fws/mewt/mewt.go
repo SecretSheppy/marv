@@ -183,6 +183,10 @@ func (m *Mewt) TransformResults() error {
 		fileBytes := []byte(file.Text)
 
 		for _, mutant := range file.Mutants {
+			if mutant.Outcome == nil {
+				continue
+			}
+
 			op, desc := mutant.operator()
 			oldLines := strings.Split(mutant.OldText, "\n")
 			startCharOffset := mutant.charOffset(fileBytes)
