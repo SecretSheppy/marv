@@ -19,6 +19,29 @@
         &:not(:last-child) {
             border-right: var(--main-divider);
         }
+
+        &:has(div.sortable) {
+            padding: 0;
+        }
+
+        & > .sortable {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+
+            & > .icon {
+                width: 13px;
+            }
+
+            & > .min-spacer {
+                min-width: 10px;
+            }
+
+            &:hover {
+                cursor: pointer;
+                background: var(--main-hover-bg);
+            }
+        }
     }
 
     td {
