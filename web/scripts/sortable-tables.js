@@ -1,6 +1,6 @@
 'use strict';
 
-const DATA_ASCENDING = 'data-ascending'
+const DATA_DESCENDING = 'data-descending'
 
 function dataValue(element, item) {
     let value = element.childNodes.item(item).getAttribute('data-value')
@@ -8,14 +8,14 @@ function dataValue(element, item) {
 }
 
 function isAscending(titles, column) {
-    let data = titles.childNodes.item(column).getAttribute(DATA_ASCENDING);
-    titles.childNodes.forEach(node => node.setAttribute(DATA_ASCENDING, ''))
+    let data = titles.childNodes.item(column).getAttribute(DATA_DESCENDING);
+    titles.childNodes.forEach(node => node.setAttribute(DATA_DESCENDING, ''))
     if (data == null || data === '' || data === 'false') {
-        titles.childNodes.item(column).setAttribute(DATA_ASCENDING, 'true');
-        return false;
+        titles.childNodes.item(column).setAttribute(DATA_DESCENDING, 'true');
+        return true;
     }
-    titles.childNodes.item(column).setAttribute(DATA_ASCENDING, 'false');
-    return true;
+    titles.childNodes.item(column).setAttribute(DATA_DESCENDING, 'false');
+    return false;
 }
 
 function sortTableByColumn(table, column) {
@@ -42,19 +42,19 @@ function sortTableByColumnOnClick(event) {
     let table = event.target.closest('table');
     let column = event.target.closest('div.sortable').getAttribute('data-column');
     let ascending = sortTableByColumn(table, column)
-    history.pushState({}, "", "?column=" + column + "&ascending=" + ascending)
+    history.pushState({}, "", "?column=" + column + "&descending=" + ascending)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     let params = new URLSearchParams(window.location.search)
     let column = params.get('column')
-    let ascending = params.get('ascending')
+    let ascending = params.get('descending')
     if (column != null && ascending != null) {
         let table = document.querySelector('.generic-table');
         let th = table.childNodes.item(0) // tbody
             .childNodes.item(0) // tr:first-child
             .childNodes.item(column) // th for column: column
-        th.setAttribute(DATA_ASCENDING, ascending)
+        th.setAttribute(DATA_DESCENDING, ascending)
         sortTableByColumn(table, column)
     }
 
