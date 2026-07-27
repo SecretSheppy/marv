@@ -1,7 +1,8 @@
 'use strict';
 
 function dataValue(element, item) {
-    return element.childNodes.item(item).getAttribute('data-value')
+    let value = element.childNodes.item(item).getAttribute('data-value')
+    return value === 'NaN' ? -1 : value;
 }
 
 function shouldReverse(titles, column) {
@@ -21,7 +22,7 @@ function sortTableByColumn(event) {
     let elements = [...tbody.childNodes];
     let titles = elements.splice(0, 1)[0];
 
-    let column = event.target.getAttribute('data-column');
+    let column = event.target.closest('div.sortable').getAttribute('data-column');
     let reverse = shouldReverse(titles, column);
     console.log(reverse)
     let sorted = elements.sort((a, b) => {
