@@ -95,7 +95,7 @@ func (r *Renderer) getResources() (string, error) {
 	meta := r.cache.get("resources")
 	if meta == "" {
 		var temp bytes.Buffer
-		if err := newResourcesRenderer(r.shared).Render(&temp); err != nil {
+		if err := newResourcesRenderer(r.shared).RenderResources(&temp); err != nil {
 			return "", err
 		}
 		meta = temp.String()
@@ -157,10 +157,21 @@ func (r *Renderer) renderFilters(buff *bytes.Buffer) {
 		"</div>")
 }
 
+func (r *Renderer) renderSortableTableHeader(buff *bytes.Buffer, name string, column int) {
+	buff.WriteString(fmt.Sprintf(`<th><div class="sortable" data-column="%d">%s<div class="min-spacer"></div><img class="icon" src="%s" alt="arrows up down icon" /></div></th>`,
+		column, name, r.shared.document.Theme.Icon("arrows-sort.svg")))
+}
+
 func (r *Renderer) RenderStart() ([]byte, error) {
 	title := "Results Overview"
+
+	var scripts bytes.Buffer
+	if err := newResourcesRenderer(&shared{document: &Document{Scripts: []string{"scripts/sortable-tables.js"}}}).RenderScripts(&scripts); err != nil {
+		return nil, err
+	}
+
 	var buff bytes.Buffer
-	if err := r.renderHead(&buff, title, "<meta name=\"filtering-enabled\" content=\"%v\">"); err != nil {
+	if err := r.renderHead(&buff, title, "<meta name=\"filtering-enabled\" content=\"%v\">", scripts.String()); err != nil {
 		return nil, err
 	}
 
@@ -176,13 +187,13 @@ func (r *Renderer) RenderStart() ([]byte, error) {
 	buff.WriteString(fmt.Sprintf("<h3 class=\"content-title\">%s</h3></div>", title))
 
 	buff.WriteString("<div class=\"overflow-wrapper\"><table class=\"generic-table\">")
-	buff.WriteString("<tr>" +
-		"<th>File</th>" +
-		"<th>Coverage</th>" +
-		"<th>Score</th>" +
-		"<th>Score of Covered</th>")
-	for _, status := range mutations.Statuses {
-		buff.WriteString(fmt.Sprintf("<th>%s</th>", status.Text()))
+	buff.WriteString("<tr>")
+	headings := []string{"File", "Coverage", "Score", "Of Covered"}
+	for i, column := range headings {
+		r.renderSortableTableHeader(&buff, column, i)
+	}
+	for i, status := range mutations.Statuses {
+		r.renderSortableTableHeader(&buff, status.Text(), i+len(headings))
 	}
 	buff.WriteString("</tr>")
 
@@ -192,14 +203,13 @@ func (r *Renderer) RenderStart() ([]byte, error) {
 			lang := languages.GetLanguageFromFile(f)
 			stats := framework.Mutations().StatisticsFrom(f)
 			buff.WriteString("<tr>")
-			buff.WriteString(fmt.Sprintf("<td><a href=\"/%s/mutants/%s\">"+
-				"<img class=\"icon\" src=\"%s\" alt=\"%s language icon\"/>%s</a></td>",
-				meta.Name, f, lang.Icon(), lang.Name(), f))
-			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Coverage(), 2)))
-			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.Score(), 2)))
-			buff.WriteString(fmt.Sprintf("<td>%s</td>", formatColouredStat(stats.ScoreOfCovered(), 2)))
+			buff.WriteString(fmt.Sprintf(`<td data-value="%s"><a href="/%s/mutants/%s"><img class="icon" src="%s" alt="%s language icon"/>%s</a></td>`,
+				f, meta.Name, f, lang.Icon(), lang.Name(), f))
+			buff.WriteString(fmt.Sprintf(`<td data-value="%.2f">%s</td>`, stats.Coverage(), formatColouredStat(stats.Coverage(), 2)))
+			buff.WriteString(fmt.Sprintf(`<td data-value="%.2f">%s</td>`, stats.Score(), formatColouredStat(stats.Score(), 2)))
+			buff.WriteString(fmt.Sprintf(`<td data-value="%.2f">%s</td>`, stats.ScoreOfCovered(), formatColouredStat(stats.ScoreOfCovered(), 2)))
 			for _, status := range mutations.Statuses {
-				buff.WriteString(fmt.Sprintf("<td>%.0f</td>", stats.StatusCounts[status]))
+				buff.WriteString(fmt.Sprintf(`<td data-value="%.0f">%.0f</td>`, stats.StatusCounts[status], stats.StatusCounts[status]))
 			}
 			buff.WriteString("</tr>")
 		}
