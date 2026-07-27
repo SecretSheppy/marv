@@ -60,6 +60,9 @@ type Mutant struct {
 }
 
 func (m *Mutant) status() mutations.Status {
+	if m.Outcome == nil {
+		return mutations.Pending
+	}
 	switch m.Outcome.Status {
 	case "TestFail":
 		return mutations.Killed
@@ -183,10 +186,6 @@ func (m *Mewt) TransformResults() error {
 		fileBytes := []byte(file.Text)
 
 		for _, mutant := range file.Mutants {
-			if mutant.Outcome == nil {
-				continue
-			}
-
 			op, desc := mutant.operator()
 			oldLines := strings.Split(mutant.OldText, "\n")
 			startCharOffset := mutant.charOffset(fileBytes)
