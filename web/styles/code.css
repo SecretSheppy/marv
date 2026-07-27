@@ -212,6 +212,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--main-text-fg);
 }
 
 @media screen and (min-width: 1400px) {
@@ -317,5 +318,6 @@
     .status-text {
         font-weight: 500;
         font-size: var(--ui-font-size);
+        color: var(--main-text-fg);
     }
 }
