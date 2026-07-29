@@ -1,6 +1,8 @@
 package infection
 
 import (
+	"strings"
+
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mtelib"
 	"github.com/SecretSheppy/marv/internal/mutations"
@@ -66,8 +68,19 @@ func (i *Infection) TransformResults() error {
 	i.mte.Transform(bar)
 	fwlib.FinishProgressbar(bar)
 
+	i.correctDescriptionCodeBlocks()
 	i.correctLineLengthOverhangs()
 	return nil
+}
+
+func (i *Infection) correctDescriptionCodeBlocks() {
+	for _, conflicts := range i.mte.Mutations() {
+		for _, conflict := range conflicts {
+			for _, mutation := range conflict.Mutations {
+				mutation.Description = strings.ReplaceAll(mutation.Description, "```php", "```")
+			}
+		}
+	}
 }
 
 // see infection/README.md as to why this method is necessary and for visual examples of it in practise.
