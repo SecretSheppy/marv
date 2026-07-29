@@ -39,6 +39,7 @@ func formatDescription(description string) string {
 				open = false
 				continue
 			}
+			tail = 0
 			fallthrough
 		case open:
 			code.Write(d[i : i+1])
