@@ -287,7 +287,7 @@ func (r *codeRenderer) renderAllMutationData(buff *bytes.Buffer, m *mutations.Mu
 	}
 	buff.WriteString("</p>")
 
-	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Description:</span> %s</p>", html.EscapeString(m.Description)))
+	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Description:</span> %s</p>", formatDescription(html.EscapeString(m.GetDescription()))))
 
 	// Mutation Operator
 	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutation Operator:</span> %s</p>", html.EscapeString(m.Operation)))
