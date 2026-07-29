@@ -265,7 +265,7 @@ func (r *codeRenderer) renderInnerHighlight(pre, diff, post, class string) (stri
 func (r *codeRenderer) renderMutationHeader(buff *bytes.Buffer, m *mutations.Mutation) {
 	buff.WriteString("<tr><td colspan=\"100%\"><div class=\"mutation-header\">")
 	buff.WriteString(m.Status.IconWithText())
-	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", html.EscapeString(m.GetDescription())))
+	buff.WriteString(fmt.Sprintf("<p class=\"mutation-description\">%s</p>", formatDescription(html.EscapeString(m.GetDescription()))))
 	buff.WriteString("<div class=\"spacer\"></div><div class=\"mutation-options\">")
 	buff.WriteString("<button class=\"review-btn option-btn\"><img class=\"icon\" src=\"" + getIconURL(r.shared.document.Theme, "pen-solid.svg") + "\" alt=\"pen icon\" />Review</button>")
 	buff.WriteString(fmt.Sprintf("<a title=\"view mutation %s\" href=\"/%s/mutant/%s?m=%s#%s\">%.7s</a>", m.ID, r.config.Framework.Meta().Name, r.config.FilePath, m.ID, m.ID, m.ID))
@@ -287,7 +287,7 @@ func (r *codeRenderer) renderAllMutationData(buff *bytes.Buffer, m *mutations.Mu
 	}
 	buff.WriteString("</p>")
 
-	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Description:</span> %s</p>", html.EscapeString(m.Description)))
+	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Description:</span> %s</p>", formatDescription(html.EscapeString(m.GetDescription()))))
 
 	// Mutation Operator
 	buff.WriteString(fmt.Sprintf("<p><span class=\"data-type\">Mutation Operator:</span> %s</p>", html.EscapeString(m.Operation)))

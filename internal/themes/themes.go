@@ -69,11 +69,12 @@ type UIColors struct {
 	Accent              UIColorsAccent     `json:"accent"`
 	Statistics          UIColorsStatistics `json:"statistics"`
 	LinkColor           string             `json:"link-color"`
+	CodeBlockBackground string             `json:"code-block-background"`
 }
 
 func (u UIColors) CSS() string {
-	return fmt.Sprintf("--main-bg:%s;--main-secondary-bg:%s;--main-hover-bg:%s;%s%s--link-fg:%s;",
-		u.PrimaryBackground, u.SecondaryBackground, u.HoverBackground, u.Accent.CSS(), u.Statistics.CSS(), u.LinkColor)
+	return fmt.Sprintf("--main-bg:%s;--main-secondary-bg:%s;--main-hover-bg:%s;%s%s--link-fg:%s;--code-inline-bg:%s;",
+		u.PrimaryBackground, u.SecondaryBackground, u.HoverBackground, u.Accent.CSS(), u.Statistics.CSS(), u.LinkColor, u.CodeBlockBackground)
 }
 
 type UIComponents struct {
