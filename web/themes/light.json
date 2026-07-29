@@ -26,7 +26,8 @@
                 "mediocre": "#F0AD4C",
                 "negative": "#CF3232"
             },
-            "link-color": "#0B79D0"
+            "link-color": "#0B79D0",
+            "code-block-background": "#D7DFE7"
         },
         "components": {
             "divider": "solid 1px #E5E7EB",
