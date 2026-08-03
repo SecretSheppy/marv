@@ -111,7 +111,7 @@ func (r *codeRenderer) render() ([]byte, error) {
 
 	var buff bytes.Buffer
 	buff.WriteString("<table id=\"code-table\" class=\"bg code\">")
-	for i := 0; i < len(r.lines); i++ {
+	for i := 0; i < len(r.highlighted); i++ {
 		if len(rendered) > 0 {
 			if conflict := rendered[0]; conflict.start == i {
 				buff.WriteString(conflict.render)
