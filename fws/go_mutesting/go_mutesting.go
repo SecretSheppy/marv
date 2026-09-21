@@ -147,6 +147,17 @@ func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status, b
 		}
 		endLine := startLine + removedLineCount - 1
 
+		// NOTE: go-mutesting (all versions) sometimes creates broken branch/case mutants where nothing was changed and
+		// the originalStartLine field is 0. when this happens, marv will filter these mutations out as broken provided
+		// it reaches that point in its execution. to ensure that happens, we substitute the end char as 0 using the
+		// below function.
+		lenEndLineOrZero := func() int {
+			if endLine < 0 {
+				return 0
+			}
+			return len(lines[endLine])
+		}
+
 		m := &mutations.Mutation{
 			Operation: mutator.MutatorName,
 			Start: &mutations.Range{
@@ -155,7 +166,7 @@ func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status, b
 			},
 			End: &mutations.Range{
 				Line: endLine,
-				Char: len(lines[endLine]),
+				Char: lenEndLineOrZero(),
 			},
 			Status:      status,
 			Replacement: replacement.String(),
