@@ -1,25 +1,60 @@
 # Pitest (PIT)
 
-[Pitest](https://github.com/hcoles/pitest) is a mutation testing framework for Java. It is supported by all Marv
-versions `1.0.0+`.
+> [!WARNING]
+> [Pitest (PIT)](https://github.com/hcoles/pitest) is a mutation testing framework for Java. It is experimentally supported by
+> all Marv versions `1.0.0+`. For more information see [decompilers](#decompilers) and [source code mutation formatting](#source-code-mutation-formatting).
 
 ## Contents
 
-* [Running Pitest](#running-pitest)
-* [Getting Started With Pitest In Marv](#getting-started-with-pitest-in-marv)
+* [Running PIT](#running-pit)
+* [Getting Started With PIT In Marv](#getting-started-with-pit-in-marv)
 * [Decompilers](#decompilers)
 * [Source Code Mutation Formatting](#source-code-mutation-formatting)
 
-## Running Pitest
+## Running PIT
 
-Pitest must be run with the `-Dfeatures="+EXPORT"` flag which exports the mutated class files. This is required because
-Marv will decompile these class files to construct each mutants replacement string.
+For compatibility with Marv, PIT must be run with the `-Dfeatures="+EXPORT"` flag which exports the mutated class files.
+This is required because Marv will decompile these class files to construct each mutants replacement string. Marv also
+requires PIT to produce and XML report.
 
-```cli
-mvn org.pitest:pitest-maven:mutationCoverage -Dfeatures="+EXPORT"
+This can all be added to a projects `pom.xml` file with the below plugin xml:
+
+```xml
+<plugin>
+    <groupId>org.pitest</groupId>
+    <artifactId>pitest-maven</artifactId>
+    <version>LATEST</version>
+    
+    <!-- dependency required for junit5 projects -->
+    <dependencies>
+        <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+    </dependencies>
+    
+    <!-- output formats and additional features -->
+    <configuration>
+        <outputFormats>
+            <!-- tells PIT to produce and xml report -->
+            <outputFormat>XML</outputFormat>
+        </outputFormats>
+        <features>
+            <!-- tells PIT to export the bytecode mutations -->
+            <feature>+EXPORT</feature>
+        </features>
+    </configuration>
+</plugin>
 ```
 
-## Getting Started With Pitest In Marv
+With the above plugin added to a `pom.xml` file, PIT can be run with the normal maven PIT command:
+
+```cli
+mvn clean test-compile org.pitest:pitest-maven:mutationCoverage
+```
+
+## Getting Started With PIT In Marv
 
 > [!IMPORTANT]
 > Marv has to decompile the source code mutations to display results from Pitest. Please ensure you
