@@ -124,7 +124,7 @@ func (p *Pitest) Yaml() fwlib.FWConfig {
 }
 
 func (p *Pitest) LoadResults() error {
-	log.Warn().Msgf("%s - experimental framwork that relies on decompilation of binary files. results may not be 100%% accurate!", p.Meta().Name)
+	log.Warn().Msgf("%s - experimental framework that relies on decompilation of binary files. results may not be 100%% accurate!", p.Meta().Name)
 	log.Info().Msgf("%s - loading results", p.Meta().Name)
 
 	rawxml, err := os.ReadFile(p.yml.Cfg.XmlPath)
