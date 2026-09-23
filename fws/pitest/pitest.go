@@ -154,11 +154,11 @@ func (p *Pitest) TransformResults() error {
 	}
 	fwlib.FinishProgressbar(indexBar)
 
-	log.Info().Msgf("%s - using %s", p.Meta().Name, p.dcomp)
-
 	if err := p.dcomp.Setup(); err != nil {
 		return err
 	}
+	log.Info().Msgf("%s - using %s", p.Meta().Name, p.dcomp)
+
 	transformBar := fwlib.NewProgressbar(len(fileMutations), "[3/3] transforming")
 	var errs []error
 	p.ms, errs = transform(p, fileMutations, transformBar)
