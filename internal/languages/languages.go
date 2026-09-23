@@ -85,7 +85,7 @@ var languages = []*Language{
 	},
 	{
 		name: "TypeScript",
-		icon: "/resources/languages/ts_log_128.svg",
+		icon: "/resources/languages/ts_logo_128.svg",
 		mext: "ts",
 		exts: []string{"ts", "tsx"},
 	},
