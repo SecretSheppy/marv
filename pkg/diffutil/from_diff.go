@@ -15,6 +15,8 @@ const (
 	NilLineIndex = -1
 )
 
+var ErrNoRemovedLines = errors.New("no removed lines in text diff")
+
 func lineType(line string) DiffType {
 	switch line[:1] {
 	case "-":
@@ -66,7 +68,9 @@ func (d DiffLines) StringLines() []string {
 }
 
 type DiffConfig struct {
-	PrefixLines, SuffixLines, FirstRemovedLineNumber int
+	PrefixLines            int // number of prefix metadata lines to be trimmed from diff
+	SuffixLines            int // number of suffix metadata lines to be trimmed from diff
+	FirstRemovedLineNumber int // line number associated with the first removed line
 }
 
 type FormattedDiff struct {
@@ -74,37 +78,77 @@ type FormattedDiff struct {
 	diffLines DiffLines
 }
 
-func FromFormattedDiff(diff string, config *DiffConfig) *FormattedDiff {
+func FromFormattedDiff(sourceLines []string, diff string, config *DiffConfig) (*FormattedDiff, error) {
 	var (
 		lines     = strings.Split(diff, "\n")
 		diffLines = make(DiffLines, 0)
 		from      = config.PrefixLines
 		to        = len(lines) - config.SuffixLines
 	)
+
 	for _, line := range lines[from:to] {
 		diffLines = append(diffLines, &DiffLine{Type: lineType(line), Text: line[1:]})
 	}
-	return &FormattedDiff{
+
+	fDiff := &FormattedDiff{
 		config:    config,
 		diffLines: diffLines,
 	}
+	if err := fDiff.syncLineNumbers(sourceLines); err != nil {
+		return nil, err
+	}
+	if err := fDiff.syncLineFormatting(sourceLines); err != nil {
+		return nil, err
+	}
+	return fDiff, nil
 }
 
-func (f *FormattedDiff) firstRemovedLineIndex() int {
+// returns an array of indexes for each removed line.
+func (f *FormattedDiff) removedLineIndexes() []int {
+	removed := make([]int, 0)
 	for i, line := range f.diffLines {
 		if line.Type == Removed {
-			return i
+			removed = append(removed, i)
 		}
 	}
-	return NilLineIndex
+	return removed
 }
 
-func (f *FormattedDiff) Number() error {
-	firstRemoved := f.firstRemovedLineIndex()
-	if firstRemoved == NilLineIndex {
-		return errors.New("must set DiffConfig.FirstRemovedLineNumber to number diff lines")
+// verifies whether the diff line content matches the source line content. the indent formatting from both lines is
+// removed in the process to ensure that any formatting differences from the text diff do not affect the outcome.
+func (f *FormattedDiff) linesSynced(lines []string, removedIndexes []int, sourceIndex int) bool {
+	firstRemoved := removedIndexes[0]
+	for _, index := range removedIndexes {
+		diffLine := strings.TrimSpace(f.diffLines[index].Text)
+		// NOTE: sourceIndex is adjusted to match the same line as in the diff by using the current index (which will
+		// always be bigger than the first removed index) and subtracting the first removed index.
+		sourceLine := strings.TrimSpace(lines[sourceIndex+(index-firstRemoved)])
+		if diffLine != sourceLine {
+			return false
+		}
 	}
-	number := f.config.FirstRemovedLineNumber - firstRemoved
+	return true
+}
+
+// syncs the DiffLine numbers with the original source code. This is used for cases where the produced
+// text diff may be slightly different to the actual change made (i.e. an extra deleted blank line is present in the
+// diff before the expected first line.)
+func (f *FormattedDiff) syncLineNumbers(lines []string) error {
+	removed := f.removedLineIndexes()
+	if len(removed) == 0 {
+		return ErrNoRemovedLines
+	}
+
+	if !f.linesSynced(lines, removed, f.config.FirstRemovedLineNumber) {
+		for i := -3; i <= 3; i++ {
+			if f.linesSynced(lines, removed, f.config.FirstRemovedLineNumber+i) {
+				f.config.FirstRemovedLineNumber = f.config.FirstRemovedLineNumber + i
+				break
+			}
+		}
+	}
+
+	number := f.config.FirstRemovedLineNumber - removed[0]
 	for _, line := range f.diffLines {
 		if line.Type == Inserted {
 			line.Number = NilLineIndex
@@ -116,12 +160,19 @@ func (f *FormattedDiff) Number() error {
 	return nil
 }
 
-func (f *FormattedDiff) SyncLineFormatting(source []string) {
-	text := source[f.config.FirstRemovedLineNumber]
+// syncs the line formatting from the source lines into the diff.
+func (f *FormattedDiff) syncLineFormatting(lines []string) error {
+	text := lines[f.config.FirstRemovedLineNumber]
 	trim := strings.TrimSpace(text)
 	truePadding := len(text) - len(trim)
 
-	diffLineText := f.diffLines[f.firstRemovedLineIndex()].Text
+	removed := f.removedLineIndexes()
+	if len(removed) == 0 {
+		return ErrNoRemovedLines
+	}
+	first := removed[0]
+
+	diffLineText := f.diffLines[first].Text
 	diffLineTrim := strings.TrimSpace(diffLineText)
 	diffPadding := len(diffLineText) - len(diffLineTrim)
 
@@ -130,6 +181,7 @@ func (f *FormattedDiff) SyncLineFormatting(source []string) {
 	for _, line := range f.diffLines {
 		line.Text = strings.Repeat(" ", padding) + line.Text
 	}
+	return nil
 }
 
 func (f *FormattedDiff) Lines() DiffLines {

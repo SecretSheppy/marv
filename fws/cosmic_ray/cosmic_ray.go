@@ -134,18 +134,27 @@ func (c *CosmicRay) TransformResults() error {
 			return err
 		}
 
-		diff := diffutil.FromFormattedDiff(result.Diff, &diffutil.DiffConfig{
+		diff, err := diffutil.FromFormattedDiff(lines, result.Diff, &diffutil.DiffConfig{
 			PrefixLines:            4,
 			FirstRemovedLineNumber: result.StartLine(),
 		})
-		if err = diff.Number(); err != nil {
+		if err != nil {
 			return err
 		}
-		diff.SyncLineFormatting(lines)
 
 		removed, inserted := diff.Lines().LineChanges()
 		prefix := removed.Get(result.StartLine()).Text[:result.StartChar()]
-		suffix := removed.Get(result.EndLine()).Text[result.EndChar():]
+
+		// NOTE: adjustments for if the endCharacter is 0, as this is better interpreted as ending on the last character
+		// of the line above.
+		endLine := result.EndLine()
+		endChar := result.EndChar()
+		if result.EndChar() == 0 && result.EndLine() != result.StartLine() {
+			endLine -= 1
+			endChar = len(removed.Get(endLine).Text)
+		}
+
+		suffix := removed.Get(endLine).Text[endChar:]
 		start := len(prefix)
 		end := len(suffix)
 
@@ -153,20 +162,24 @@ func (c *CosmicRay) TransformResults() error {
 		ins := strings.Join(inserted.StringLines(), "\n")
 
 		original := rem[start : len(rem)-end]
-		replacement := ins[start : len(ins)-end]
+		replacement := ins
+		// NOTE: deletion operators will cause ins to have a length of 0, making the slicing syntax invalid.
+		if len(ins) > start {
+			replacement = ins[start : len(ins)-end]
+		}
 
 		c.ms.Append(result.ModulePath, &mutations.Mutation{
 			ID:                uuid.New(),
 			FrameworkMutantID: result.JobID.String(),
-			Description:       fmt.Sprintf("Replaced `%s` with `%s`", original, replacement),
+			Description:       getDescription(original, replacement),
 			Operation:         result.OperatorName,
 			Start: &mutations.Range{
 				Line: result.StartLine(),
 				Char: result.StartChar(),
 			},
 			End: &mutations.Range{
-				Line: result.EndLine(),
-				Char: result.EndChar(),
+				Line: endLine,
+				Char: endChar,
 			},
 			Status:      result.status(),
 			Replacement: replacement,
@@ -175,6 +188,14 @@ func (c *CosmicRay) TransformResults() error {
 
 	fwlib.FinishProgressbar(bar)
 	return nil
+}
+
+// generates an appropriate textual description based on the contents of original and replacement.
+func getDescription(original, replacement string) string {
+	if replacement == "" {
+		return fmt.Sprintf("Deleted `%s`", original)
+	}
+	return fmt.Sprintf("Replaced `%s` with `%s`", original, replacement)
 }
 
 func (c *CosmicRay) Mutations() mutations.Mutations {
