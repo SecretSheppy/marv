@@ -145,9 +145,8 @@ func (c *CosmicRay) TransformResults() error {
 		removed, inserted := diff.Lines().LineChanges()
 		prefix := removed.Get(result.StartLine()).Text[:result.StartChar()]
 
-		// TODO: need to do some re-ranging or something to ensure that the diffs removed lines match up with the ones
-		//  that cosmic-ray reported, also need to re-range awkward things like: end line with end char = 0 to
-		//  end line - 1, end char = len(end line - 1)
+		// NOTE: adjustments for if the endCharacter is 0, as this is better interpreted as ending on the last character
+		// of the line above.
 		endLine := result.EndLine()
 		endChar := result.EndChar()
 		if result.EndChar() == 0 && result.EndLine() != result.StartLine() {
@@ -164,6 +163,7 @@ func (c *CosmicRay) TransformResults() error {
 
 		original := rem[start : len(rem)-end]
 		replacement := ins
+		// NOTE: deletion operators will cause ins to have a length of 0, making the slicing syntax invalid.
 		if len(ins) > start {
 			replacement = ins[start : len(ins)-end]
 		}
@@ -171,9 +171,8 @@ func (c *CosmicRay) TransformResults() error {
 		c.ms.Append(result.ModulePath, &mutations.Mutation{
 			ID:                uuid.New(),
 			FrameworkMutantID: result.JobID.String(),
-			// TODO: if inserted == "", change description to be "Removed `%s`"
-			Description: fmt.Sprintf("Replaced `%s` with `%s`", original, replacement),
-			Operation:   result.OperatorName,
+			Description:       getDescription(original, replacement),
+			Operation:         result.OperatorName,
 			Start: &mutations.Range{
 				Line: result.StartLine(),
 				Char: result.StartChar(),
@@ -189,6 +188,14 @@ func (c *CosmicRay) TransformResults() error {
 
 	fwlib.FinishProgressbar(bar)
 	return nil
+}
+
+// generates an appropriate textual description based on the contents of original and replacement.
+func getDescription(original, replacement string) string {
+	if replacement == "" {
+		return fmt.Sprintf("Deleted `%s`", original)
+	}
+	return fmt.Sprintf("Replaced `%s` with `%s`", original, replacement)
 }
 
 func (c *CosmicRay) Mutations() mutations.Mutations {
