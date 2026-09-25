@@ -20,7 +20,9 @@ func TestDiffLinesExtraction(t *testing.T) {
 		SuffixLines:            0,
 		FirstRemovedLineNumber: 3,
 	})
-	if err := fdiff.Number(); err != nil {
+	if err := fdiff.SyncLineNumbers([]string{
+		"", "", "", "except (AssertionError, ValueError):",
+	}); err != nil {
 		t.Error(err)
 	}
 	lines := fdiff.Lines()
@@ -55,18 +57,19 @@ func TestDiffLinesPadding(t *testing.T) {
 		SuffixLines:            0,
 		FirstRemovedLineNumber: 3,
 	})
-	if err := fdiff.Number(); err != nil {
-		t.Error(err)
-	}
-	// NOTE: we want to sync an extra 4 spaces into the diff lines
-	fdiff.SyncLineFormatting([]string{
+	ls := []string{
 		"        major, minor, patch = urllib3_version_list  # noqa: F811",
 		"        major, minor, patch = int(major), int(minor), int(patch)",
 		"        # urllib3 >= 1.21.1",
 		"        assert major >= 1",
 		"        if major == 1:",
 		"            assert minor >= 21",
-	})
+	}
+	if err := fdiff.SyncLineNumbers(ls); err != nil {
+		t.Error(err)
+	}
+	// NOTE: we want to sync an extra 4 spaces into the diff lines
+	fdiff.SyncLineFormatting(ls)
 	lines := fdiff.Lines()
 	if len(lines) != 7 {
 		t.Errorf("expected 7 lines but got %d", len(lines))

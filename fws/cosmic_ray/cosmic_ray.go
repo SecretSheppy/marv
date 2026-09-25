@@ -138,14 +138,25 @@ func (c *CosmicRay) TransformResults() error {
 			PrefixLines:            4,
 			FirstRemovedLineNumber: result.StartLine(),
 		})
-		if err = diff.Number(); err != nil {
+		if err = diff.SyncLineNumbers(lines); err != nil {
 			return err
 		}
 		diff.SyncLineFormatting(lines)
 
 		removed, inserted := diff.Lines().LineChanges()
 		prefix := removed.Get(result.StartLine()).Text[:result.StartChar()]
-		suffix := removed.Get(result.EndLine()).Text[result.EndChar():]
+
+		// TODO: need to do some re-ranging or something to ensure that the diffs removed lines match up with the ones
+		//  that cosmic-ray reported, also need to re-range awkward things like: end line with end char = 0 to
+		//  end line - 1, end char = len(end line - 1)
+		endLine := result.EndLine()
+		endChar := result.EndChar()
+		if result.EndChar() == 0 && result.EndLine() != result.StartLine() {
+			endLine -= 1
+			endChar = len(removed.Get(endLine).Text)
+		}
+
+		suffix := removed.Get(endLine).Text[endChar:]
 		start := len(prefix)
 		end := len(suffix)
 
@@ -153,20 +164,24 @@ func (c *CosmicRay) TransformResults() error {
 		ins := strings.Join(inserted.StringLines(), "\n")
 
 		original := rem[start : len(rem)-end]
-		replacement := ins[start : len(ins)-end]
+		replacement := ins
+		if len(ins) > start {
+			replacement = ins[start : len(ins)-end]
+		}
 
 		c.ms.Append(result.ModulePath, &mutations.Mutation{
 			ID:                uuid.New(),
 			FrameworkMutantID: result.JobID.String(),
-			Description:       fmt.Sprintf("Replaced `%s` with `%s`", original, replacement),
-			Operation:         result.OperatorName,
+			// TODO: if inserted == "", change description to be "Removed `%s`"
+			Description: fmt.Sprintf("Replaced `%s` with `%s`", original, replacement),
+			Operation:   result.OperatorName,
 			Start: &mutations.Range{
 				Line: result.StartLine(),
 				Char: result.StartChar(),
 			},
 			End: &mutations.Range{
-				Line: result.EndLine(),
-				Char: result.EndChar(),
+				Line: endLine,
+				Char: endChar,
 			},
 			Status:      result.status(),
 			Replacement: replacement,
