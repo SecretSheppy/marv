@@ -112,9 +112,12 @@ func (c *CosmicRay) LoadResults() error {
 	if err != nil {
 		return err
 	}
+
+	// NOTE: Cosmic Ray only provides the diffs for results, not for mutation_specs, so we use cross join to ensure
+	// that only the results with diffs are processed by marv.
 	return db.
 		Table("mutation_specs").
-		Joins("left join work_results on work_results.job_id = mutation_specs.job_id").
+		Joins("cross join work_results on work_results.job_id = mutation_specs.job_id").
 		Scan(&c.results).Error
 }
 
