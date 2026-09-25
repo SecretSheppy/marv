@@ -134,14 +134,13 @@ func (c *CosmicRay) TransformResults() error {
 			return err
 		}
 
-		diff := diffutil.FromFormattedDiff(result.Diff, &diffutil.DiffConfig{
+		diff, err := diffutil.FromFormattedDiff(lines, result.Diff, &diffutil.DiffConfig{
 			PrefixLines:            4,
 			FirstRemovedLineNumber: result.StartLine(),
 		})
-		if err = diff.SyncLineNumbers(lines); err != nil {
+		if err != nil {
 			return err
 		}
-		diff.SyncLineFormatting(lines)
 
 		removed, inserted := diff.Lines().LineChanges()
 		prefix := removed.Get(result.StartLine()).Text[:result.StartChar()]

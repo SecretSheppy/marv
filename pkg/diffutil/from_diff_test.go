@@ -15,14 +15,15 @@ func TestDiffLinesExtraction(t *testing.T) {
      warnings.warn(
          f"urllib3 ({urllib3.__version__}) or chardet "
          f"({chardet_version})/charset_normalizer ({charset_normalizer_version}) "`
-	fdiff := FromFormattedDiff(diff, &DiffConfig{
+	ls := []string{
+		"", "", "", "except (AssertionError, ValueError):",
+	}
+	fdiff, err := FromFormattedDiff(ls, diff, &DiffConfig{
 		PrefixLines:            4,
 		SuffixLines:            0,
 		FirstRemovedLineNumber: 3,
 	})
-	if err := fdiff.SyncLineNumbers([]string{
-		"", "", "", "except (AssertionError, ValueError):",
-	}); err != nil {
+	if err != nil {
 		t.Error(err)
 	}
 	lines := fdiff.Lines()
@@ -52,11 +53,6 @@ func TestDiffLinesPadding(t *testing.T) {
 +    assert major != 1
      if major == 1:
          assert minor >= 21`
-	fdiff := FromFormattedDiff(diff, &DiffConfig{
-		PrefixLines:            4,
-		SuffixLines:            0,
-		FirstRemovedLineNumber: 3,
-	})
 	ls := []string{
 		"        major, minor, patch = urllib3_version_list  # noqa: F811",
 		"        major, minor, patch = int(major), int(minor), int(patch)",
@@ -65,11 +61,14 @@ func TestDiffLinesPadding(t *testing.T) {
 		"        if major == 1:",
 		"            assert minor >= 21",
 	}
-	if err := fdiff.SyncLineNumbers(ls); err != nil {
+	fdiff, err := FromFormattedDiff(ls, diff, &DiffConfig{
+		PrefixLines:            4,
+		SuffixLines:            0,
+		FirstRemovedLineNumber: 3,
+	})
+	if err != nil {
 		t.Error(err)
 	}
-	// NOTE: we want to sync an extra 4 spaces into the diff lines
-	fdiff.SyncLineFormatting(ls)
 	lines := fdiff.Lines()
 	if len(lines) != 7 {
 		t.Errorf("expected 7 lines but got %d", len(lines))
@@ -94,9 +93,16 @@ func TestExtractingBlankLines(t *testing.T) {
 -
 +warnings.simplefilter("default", FileModeWarning, append=False)
 +`
-	fdiff := FromFormattedDiff(diff, &DiffConfig{
-		PrefixLines: 4,
+	ls := []string{
+		"", "", "", "", "warnings.simplefilter(\"default\", FileModeWarning, append=True)", "",
+	}
+	fdiff, err := FromFormattedDiff(ls, diff, &DiffConfig{
+		PrefixLines:            4,
+		FirstRemovedLineNumber: 4,
 	})
+	if err != nil {
+		t.Error(err)
+	}
 	lines := fdiff.Lines()
 	if len(lines) != 7 {
 		t.Errorf("expected 7 lines but got %d", len(lines))
