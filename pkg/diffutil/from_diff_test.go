@@ -2,6 +2,39 @@ package diffutil
 
 import "testing"
 
+func TestTrimLeadingLines(t *testing.T) {
+	diff := `--- mutation diff ---
+--- asrc/requests/__init__.py
++++ bsrc/requests/__init__.py
+@@ -115,7 +115,7 @@
+         chardet_version,
+         charset_normalizer_version,
+     )
+-
+-except (AssertionError, ValueError):
+-
++
++except (AssertionError, CosmicRayTestingException):
++
+     warnings.warn(
+         f"urllib3 ({urllib3.__version__}) or chardet "
+         f"({chardet_version})/charset_normalizer ({charset_normalizer_version}) "`
+	ls := []string{
+		"", "", "", "except (AssertionError, ValueError):",
+	}
+	fdiff, err := FromFormattedDiff(ls, diff, &DiffConfig{
+		PrefixLines:            4,
+		SuffixLines:            0,
+		FirstRemovedLineNumber: 3,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	if len(fdiff.Lines()) != 8 {
+		t.Errorf("failed to trim blank leading and trailing lines: got %d lines, expected 8", len(fdiff.Lines()))
+	}
+}
+
 func TestDiffLinesExtraction(t *testing.T) {
 	diff := `--- mutation diff ---
 --- asrc/requests/__init__.py
@@ -104,13 +137,10 @@ func TestExtractingBlankLines(t *testing.T) {
 		t.Error(err)
 	}
 	lines := fdiff.Lines()
-	if len(lines) != 7 {
-		t.Errorf("expected 7 lines but got %d", len(lines))
+	if len(lines) != 5 {
+		t.Errorf("expected 5 lines but got %d", len(lines))
 	}
-	if lines[4].Type != Removed {
+	if lines[3].Type != Removed {
 		t.Errorf("expected line 4 to be REMOVED but got %v", lines[4].Type)
-	}
-	if lines[4].Text != "" {
-		t.Errorf("expected line 4 to be \"\" but got:\n\n%s\n\n", lines[4].Text)
 	}
 }

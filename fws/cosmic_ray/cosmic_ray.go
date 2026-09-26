@@ -54,6 +54,7 @@ type MutationResult struct {
 	EndPosCol    int
 	JobID        uuid.UUID
 	TestOutcome  string
+	Output       string
 	Diff         string
 }
 
@@ -128,7 +129,13 @@ func (c *CosmicRay) TransformResults() error {
 	c.files = make(map[string][]string)
 	bar := fwlib.NewProgressbar(len(c.results), "transforming")
 
+	runFailCount := 0
 	for _, result := range c.results {
+		if result.Output == "" || result.Output == "timeout" {
+			runFailCount++
+			continue
+		}
+
 		lines, err := c.getOrAddFile(result.ModulePath)
 		if err != nil {
 			return err
@@ -187,6 +194,9 @@ func (c *CosmicRay) TransformResults() error {
 	}
 
 	fwlib.FinishProgressbar(bar)
+	if runFailCount > 0 {
+		log.Warn().Msgf("ignoring %d mutations where evaluation was incomplete due to cosmic-ray timeout configuration", runFailCount)
+	}
 	return nil
 }
 
