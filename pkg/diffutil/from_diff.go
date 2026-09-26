@@ -36,6 +36,67 @@ type DiffLine struct {
 
 type DiffLines []*DiffLine
 
+// trims the provided line indexes if the contents
+func (d DiffLines) trimLinesIfBothBlank(removed, inserted int) DiffLines {
+	removedLine := strings.TrimSpace(d[removed].Text)
+	insertedLine := strings.TrimSpace(d[inserted].Text)
+	trim := removedLine == "" && insertedLine == ""
+	trimmed := make(DiffLines, 0)
+	for i, line := range d {
+		if trim && (i == removed || i == inserted) {
+			continue
+		}
+		trimmed = append(trimmed, line)
+	}
+	return trimmed
+}
+
+// trims and leading blank lines.
+func (d DiffLines) trimLeadingLines() DiffLines {
+	removed, inserted := NilLineIndex, NilLineIndex
+
+	for i, line := range d {
+		if line.Type == Removed && removed == NilLineIndex {
+			removed = i
+		}
+		if line.Type == Inserted && inserted == NilLineIndex {
+			inserted = i
+		}
+	}
+
+	return d.trimLinesIfBothBlank(removed, inserted)
+}
+
+// trims any trailing blank lines.
+func (d DiffLines) trimTrailingLines() DiffLines {
+	var removed, inserted int
+
+	for i, line := range d {
+		switch line.Type {
+		case Removed:
+			removed = i
+		case Inserted:
+			inserted = i
+		}
+	}
+
+	return d.trimLinesIfBothBlank(removed, inserted)
+}
+
+// trims leading and trailing blank lines that are sometimes erroneously added to diffs.
+func (d DiffLines) trimLeadingAndTrailingLines() DiffLines {
+	removed, inserted := d.LineChanges()
+	if len(removed) <= 1 || len(inserted) <= 1 {
+		return d
+	}
+	trimmed := d.trimLeadingLines()
+	removed, inserted = trimmed.LineChanges()
+	if len(removed) <= 1 || len(inserted) <= 1 {
+		return trimmed
+	}
+	return trimmed.trimTrailingLines()
+}
+
 func (d DiffLines) Get(number int) *DiffLine {
 	for _, line := range d {
 		if line.Number == number {
@@ -92,7 +153,7 @@ func FromFormattedDiff(sourceLines []string, diff string, config *DiffConfig) (*
 
 	fDiff := &FormattedDiff{
 		config:    config,
-		diffLines: diffLines,
+		diffLines: diffLines.trimLeadingAndTrailingLines(),
 	}
 	if err := fDiff.syncLineNumbers(sourceLines); err != nil {
 		return nil, err
