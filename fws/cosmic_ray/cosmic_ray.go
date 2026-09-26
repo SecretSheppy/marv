@@ -195,7 +195,7 @@ func (c *CosmicRay) TransformResults() error {
 
 	fwlib.FinishProgressbar(bar)
 	if runFailCount > 0 {
-		log.Warn().Msgf("ignoring %d mutations where cosmic-ray was unable to complete evaluation due to timeout configuration", runFailCount)
+		log.Warn().Msgf("ignoring %d mutations where evaluation was incomplete due to cosmic-ray timeout configuration", runFailCount)
 	}
 	return nil
 }
