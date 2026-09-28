@@ -7,6 +7,7 @@ import (
 	"github.com/SecretSheppy/marv/fws/generic"
 	"github.com/SecretSheppy/marv/fws/go_mutesting"
 	"github.com/SecretSheppy/marv/fws/infection"
+	"github.com/SecretSheppy/marv/fws/littledarwin"
 	"github.com/SecretSheppy/marv/fws/major"
 	"github.com/SecretSheppy/marv/fws/mewt"
 	"github.com/SecretSheppy/marv/fws/mull"
@@ -25,6 +26,7 @@ func Frameworks() []fwlib.Framework {
 		generic.NewGeneric(),
 		go_mutesting.NewGoMutesting(),
 		infection.NewInfection(),
+		littledarwin.NewLittleDarwin(),
 		major.NewMajor(),
 		mewt.NewMewt(),
 		mull.NewMull(),
