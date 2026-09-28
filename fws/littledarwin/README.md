@@ -26,8 +26,3 @@ littledarwin:
 ```terminaloutput
 marv
 ```
-
-## Unsupported Mutations
-
-At current, Marv only supports single line mutations produced by LittleDarwin. This is due to the way LittleDarwin
-reports code changes in the comment at the top of the mutants jar file.

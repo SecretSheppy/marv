@@ -113,10 +113,8 @@ func (l *LittleDarwin) LoadResults() error {
 func (l *LittleDarwin) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", l.Meta().Name)
 	bar := fwlib.NewProgressbar(len(l.muts), "transforming")
-
 	l.ms = make(mutations.Mutations)
 	l.files = make(map[string][]string)
-	skipped := make([]string, 0)
 
 	for _, mutation := range l.muts {
 		if l.files[mutation.SourceFilePath] == nil {
@@ -149,9 +147,24 @@ func (l *LittleDarwin) TransformResults() error {
 			return err
 		}
 
+		// NOTE: if there is no difference between before and after, then the line the mutation is on is very long, and
+		// has been broken across several lines in the file, despite being treated as one line by the parser. To find
+		// the mutant, we do the extra content below.
 		if before == after {
-			skipped = append(skipped, fmt.Sprintf("    %s %s", mutation.Status, mutation.MutatedFilePath))
-			continue
+			for scanner.Scan() {
+				lines = append(lines, scanner.Text())
+			}
+			source := strings.Join(l.files[mutation.SourceFilePath], "\n")
+			mutant := strings.Join(lines[9:], "\n")
+			edits := udiff.Strings(source, mutant)
+			diff, err := udiff.ToUnifiedDiff("original", "new", source, edits, 0)
+			if err != nil {
+				return err
+			}
+			hunk := diff.Hunks[0]
+			lineNum = hunk.FromLine
+			before = hunk.Lines[0].Content
+			after = hunk.Lines[1].Content
 		}
 
 		edits := udiff.Strings(before, after)
@@ -176,13 +189,8 @@ func (l *LittleDarwin) TransformResults() error {
 		l.ms.Append(mutation.SourceFilePath, m)
 		bar.Add(1)
 	}
+
 	fwlib.FinishProgressbar(bar)
-
-	if len(skipped) > 0 {
-		skippedStr := strings.Join(skipped, "\n")
-		log.Warn().Msgf("%s - framework implementation does not support multiline mutations. the following skipped mutations are not included in overall mutation score statistics:\n%s", l.Meta().Name, skippedStr)
-	}
-
 	return nil
 }
 
