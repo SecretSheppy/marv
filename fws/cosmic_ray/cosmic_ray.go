@@ -161,6 +161,15 @@ func (c *CosmicRay) TransformResults() error {
 			endChar = len(removed.Get(endLine).Text)
 		}
 
+		adjustEndChar := false
+		for removed.Get(endLine) == nil {
+			adjustEndChar = true
+			endLine--
+		}
+		if adjustEndChar {
+			endChar = len(removed.Get(endLine).Text)
+		}
+
 		suffix := removed.Get(endLine).Text[endChar:]
 		start := len(prefix)
 		end := len(suffix)
