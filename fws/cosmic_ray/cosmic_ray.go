@@ -3,6 +3,7 @@ package cosmic_ray
 import (
 	"fmt"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/SecretSheppy/marv/fwlib"
@@ -114,6 +115,13 @@ func (c *CosmicRay) LoadResults() error {
 		return err
 	}
 
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+
+	defer sqlDB.Close()
+
 	// NOTE: Cosmic Ray only provides the diffs for results, not for mutation_specs, so we use cross join to ensure
 	// that only the results with diffs are processed by marv.
 	return db.
@@ -130,9 +138,15 @@ func (c *CosmicRay) TransformResults() error {
 	bar := fwlib.NewProgressbar(len(c.results), "transforming")
 
 	runFailCount := 0
+	incompetentCount := 0
 	for _, result := range c.results {
 		if result.Output == "" || result.Output == "timeout" {
 			runFailCount++
+			continue
+		}
+
+		if result.TestOutcome == "INCOMPETENT" {
+			incompetentCount++
 			continue
 		}
 
@@ -156,10 +170,6 @@ func (c *CosmicRay) TransformResults() error {
 		// of the line above.
 		endLine := result.EndLine()
 		endChar := result.EndChar()
-		if result.EndChar() == 0 && result.EndLine() != result.StartLine() {
-			endLine -= 1
-			endChar = len(removed.Get(endLine).Text)
-		}
 
 		adjustEndChar := false
 		for removed.Get(endLine) == nil {
@@ -206,6 +216,12 @@ func (c *CosmicRay) TransformResults() error {
 	if runFailCount > 0 {
 		log.Warn().Msgf("ignoring %d mutations where evaluation was incomplete due to cosmic-ray timeout configuration", runFailCount)
 	}
+	if incompetentCount > 0 {
+		log.Warn().Msgf("ignoring %d mutations that failed to compile", incompetentCount)
+	}
+
+	c.results = nil
+	runtime.GC() // NOTE: force GC here as cosmic-ray dbs can be huge
 	return nil
 }
 

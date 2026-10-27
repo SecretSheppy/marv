@@ -224,7 +224,7 @@ func (f *FormattedDiff) syncLineNumbers(lines []string) error {
 // syncs the line formatting from the source lines into the diff.
 func (f *FormattedDiff) syncLineFormatting(lines []string) error {
 	text := lines[f.config.FirstRemovedLineNumber]
-	trim := strings.TrimSpace(text)
+	trim := strings.TrimLeft(text, " ")
 	truePadding := len(text) - len(trim)
 
 	removed := f.removedLineIndexes()
