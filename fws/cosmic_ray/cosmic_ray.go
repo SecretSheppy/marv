@@ -162,10 +162,6 @@ func (c *CosmicRay) TransformResults() error {
 		// of the line above.
 		endLine := result.EndLine()
 		endChar := result.EndChar()
-		if result.EndChar() == 0 && result.EndLine() != result.StartLine() {
-			endLine -= 1
-			endChar = len(removed.Get(endLine).Text)
-		}
 
 		adjustEndChar := false
 		for removed.Get(endLine) == nil {
