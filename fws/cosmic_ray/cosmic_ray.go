@@ -3,6 +3,7 @@ package cosmic_ray
 import (
 	"fmt"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/SecretSheppy/marv/fwlib"
@@ -114,6 +115,13 @@ func (c *CosmicRay) LoadResults() error {
 		return err
 	}
 
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+
+	defer sqlDB.Close()
+
 	// NOTE: Cosmic Ray only provides the diffs for results, not for mutation_specs, so we use cross join to ensure
 	// that only the results with diffs are processed by marv.
 	return db.
@@ -211,6 +219,9 @@ func (c *CosmicRay) TransformResults() error {
 	if incompetentCount > 0 {
 		log.Warn().Msgf("ignoring %d mutations that failed to compile", incompetentCount)
 	}
+
+	c.results = nil
+	runtime.GC() // NOTE: force GC here as cosmic-ray dbs can be huge
 	return nil
 }
 
