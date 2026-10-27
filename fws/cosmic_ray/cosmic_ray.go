@@ -130,9 +130,15 @@ func (c *CosmicRay) TransformResults() error {
 	bar := fwlib.NewProgressbar(len(c.results), "transforming")
 
 	runFailCount := 0
+	incompetentCount := 0
 	for _, result := range c.results {
 		if result.Output == "" || result.Output == "timeout" {
 			runFailCount++
+			continue
+		}
+
+		if result.TestOutcome == "INCOMPETENT" {
+			incompetentCount++
 			continue
 		}
 
@@ -205,6 +211,9 @@ func (c *CosmicRay) TransformResults() error {
 	fwlib.FinishProgressbar(bar)
 	if runFailCount > 0 {
 		log.Warn().Msgf("ignoring %d mutations where evaluation was incomplete due to cosmic-ray timeout configuration", runFailCount)
+	}
+	if incompetentCount > 0 {
+		log.Warn().Msgf("ignoring %d mutations that failed to compile", incompetentCount)
 	}
 	return nil
 }
