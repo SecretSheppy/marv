@@ -1,6 +1,7 @@
 package mutations
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -328,4 +329,31 @@ func (s Statistics) ScoreOfCovered() float64 {
 
 func (s Statistics) Coverage() float64 {
 	return s.Covered() / s.Count * 100
+}
+
+func (s Statistics) MarshalJSON() ([]byte, error) {
+	// NOTE: a struct is used instead of a map to ensure the fields are serialized in a consistent order.
+	return json.Marshal(struct {
+		Count                  float64            `json:"count"`
+		StatusCounts           map[Status]float64 `json:"status_counts"`
+		Detected               float64            `json:"detected"`
+		Undetected             float64            `json:"undetected"`
+		Covered                float64            `json:"covered"`
+		Valid                  float64            `json:"valid"`
+		Invalid                float64            `json:"invalid"`
+		MutationScore          float64            `json:"mutation_score"`
+		MutationScoreOfCovered float64            `json:"mutation_score_of_covered"`
+		MutationCoverage       float64            `json:"mutation_coverage"`
+	}{
+		Count:                  s.Count,
+		StatusCounts:           s.StatusCounts,
+		Detected:               s.Detected(),
+		Undetected:             s.Undetected(),
+		Covered:                s.Covered(),
+		Valid:                  s.Valid(),
+		Invalid:                s.Invalid(),
+		MutationScore:          s.Score(),
+		MutationScoreOfCovered: s.Coverage(),
+		MutationCoverage:       s.Coverage(),
+	})
 }
