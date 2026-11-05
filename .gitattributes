@@ -1,0 +1,3 @@
+# forcing lf endings on pitest test data.
+test/fws/pitest/*.class text eof=lf
+test/fws/pitest/*.java text eof=lf
