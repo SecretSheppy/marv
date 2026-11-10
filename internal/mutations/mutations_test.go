@@ -5,8 +5,6 @@ import (
 	"slices"
 	"strings"
 	"testing"
-
-	"github.com/google/uuid"
 )
 
 func TestStatusToTextConversion(t *testing.T) {
@@ -199,8 +197,8 @@ func TestSortCorrectlyOrdersConflictsFromFirstToLastBasedOnStartLine(t *testing.
 }
 
 func TestConflictsGetMutant(t *testing.T) {
-	m1ID := uuid.New()
-	m2ID := uuid.New()
+	m1ID := MutationID("1")
+	m2ID := MutationID("2")
 
 	m1 := Mutation{ID: m1ID}
 	m2 := Mutation{ID: m2ID}
@@ -211,18 +209,18 @@ func TestConflictsGetMutant(t *testing.T) {
 	}
 
 	tests := []struct {
-		ID                uuid.UUID
+		ID                MutationID
 		Mutation          *Mutation
 		ExpectedStartLine int
 	}{
 		{m1ID, &m1, 45},
 		{m2ID, &m2, 65},
-		{uuid.Nil, nil, 0},
+		{"", nil, 0},
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("correctly retrieves mutant %s", test.ID), func(t *testing.T) {
 			conflict, mutant := c.GetMutant(test.ID)
-			if test.ID == uuid.Nil && conflict == nil && mutant == nil {
+			if test.ID == "" && conflict == nil && mutant == nil {
 				return // this passes the test as if id is nil then it is not looking for anything
 			}
 			if conflict.StartLine != test.ExpectedStartLine {
@@ -290,37 +288,6 @@ func TestExtractingBrokenMutantsFromMutationsMap(t *testing.T) {
 	}
 	if slices.Contains(con2.Mutations, brokenMut2) {
 		t.Errorf("conflict2 of correct mutations contains brokenMut2")
-	}
-}
-
-func TestEnsureGenerateIDsAssignsAnIDToAllMutations(t *testing.T) {
-	m := Mutations{
-		"file1.lang": Conflicts{
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-		},
-		"file2.lang": Conflicts{
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-		},
-		"file3.lang": Conflicts{
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-		},
-		"file4.lang": Conflicts{
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-			&Conflict{Mutations: []*Mutation{{Status: Killed}}},
-		},
-	}
-	m.GenerateIDs()
-	for _, conflicts := range m {
-		for _, conflict := range conflicts {
-			for _, mutation := range conflict.Mutations {
-				if mutation.ID == uuid.Nil {
-					t.Errorf("mutation was not assigned an id")
-				}
-			}
-		}
 	}
 }
 

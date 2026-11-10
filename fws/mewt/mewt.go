@@ -6,7 +6,6 @@ import (
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 	"gorm.io/driver/sqlite"
@@ -195,7 +194,6 @@ func (m *Mewt) TransformResults() error {
 			}
 
 			m.ms.Append(file.Path, &mutations.Mutation{
-				ID:                uuid.New(),
 				FrameworkMutantID: strconv.Itoa(mutant.MutantID),
 				Description:       desc,
 				Operation:         op,

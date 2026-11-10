@@ -1,15 +1,15 @@
 package review
 
 import (
-	"github.com/google/uuid"
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
 type Review struct {
-	MutationID          uuid.UUID `gorm:"primaryKey"`
-	FrameworkMutationID string    // improve compatibility where frameworks issue mutant ids
+	MutationID          mutations.MutationID `gorm:"primaryKey"`
+	FrameworkMutationID string               // improve compatibility where frameworks issue mutant ids
 	Framework           string
 	Review              string
 }
@@ -31,7 +31,7 @@ func NewRepository() (*Repository, error) {
 	return &Repository{db: db}, err
 }
 
-func (r *Repository) GetReviewByMutationID(id uuid.UUID) (*Review, error) {
+func (r *Repository) GetReviewByMutationID(id mutations.MutationID) (*Review, error) {
 	var review Review
 	if err := r.db.First(&review, "mutation_id = ?", id).Error; err != nil {
 		return nil, err

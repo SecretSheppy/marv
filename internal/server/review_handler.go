@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -22,11 +22,7 @@ func (s *Server) reviewHandler(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, r, nil, http.StatusNotFound, "error: no active framework with name "+fwName)
 		return
 	}
-	mutantID, err := uuid.Parse(vars["mutant-id"])
-	if err != nil {
-		writeAPIError(w, r, err, http.StatusInternalServerError, "error: failed to parse mutant id")
-		return
-	}
+	mutantID := mutations.MutationID(vars["mutant-id"])
 
 	var reviewReq reviewRequest
 	if err := json.NewDecoder(r.Body).Decode(&reviewReq); err != nil {

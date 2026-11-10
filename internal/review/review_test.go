@@ -5,34 +5,34 @@ import (
 	"testing"
 
 	"github.com/SecretSheppy/marv/fws/mockfw"
-	"github.com/google/uuid"
+	"github.com/SecretSheppy/marv/internal/mutations"
 )
 
 var (
 	fw = mockfw.MockFW{}
 
 	review = &Review{
-		MutationID: uuid.New(),
+		MutationID: mutations.MutationID("1"),
 		Framework:  fw.Meta().Name,
 		Review:     "hello there",
 	}
 	review2 = &Review{
-		MutationID: uuid.New(),
+		MutationID: mutations.MutationID("2"),
 		Framework:  fw.Meta().Name,
 		Review:     "review number 2",
 	}
 	review3 = &Review{
-		MutationID: uuid.New(),
+		MutationID: mutations.MutationID("3"),
 		Framework:  fw.Meta().Name,
 		Review:     "review number 3",
 	}
 	review4 = &Review{
-		MutationID: uuid.New(),
+		MutationID: mutations.MutationID("4"),
 		Framework:  "not-mock-fw",
 		Review:     "review number 4",
 	}
 	review5 = &Review{
-		MutationID: uuid.New(),
+		MutationID: mutations.MutationID("5"),
 		Framework:  fw.Meta().Name,
 	}
 

@@ -1,7 +1,13 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Marv Mutations Schema",
+    "version": "1.1.0",
     "$defs": {
+        "MutationID": {
+            "type": "string",
+            "description": "a unique SHA-256 hash for a particular mutation based on a mutations operator, file, range and repalcement string",
+            "minLength": 64
+        },
         "UUID": {
             "type": "string",
             "description": "A UUID",
@@ -72,7 +78,7 @@
                         ],
                         "properties": {
                             "ID": {
-                                "$ref": "#/$defs/UUID"
+                                "$ref": "#/$defs/MutationID"
                             },
                             "FrameworkMutantID": {
                                 "type": "string",
