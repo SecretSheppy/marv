@@ -2,11 +2,13 @@ package cmds
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/signal"
 	"path"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/fws"
@@ -29,7 +31,8 @@ var (
 	mergeOutput, verbose, debug             bool
 	frameworks                              []string
 
-	rootCmd = &cobra.Command{
+	initTime = time.Now().Format("2006-01-02T15-04-05")
+	rootCmd  = &cobra.Command{
 		Use:   "marv",
 		Short: "marv is a tool that allows for efficient analysis and review of mutations through visualisations",
 		Long: `Mutations Analysis, Review and Visualisation (Marv) is a tool that allows for efficient analysis and 
@@ -116,11 +119,14 @@ func transformMutations(conf *config.Config, activeFws []fwlib.Framework) error 
 func extractBrokenMutations(conf *config.Config, fw fwlib.Framework) error {
 	broken := fw.Mutations().ExtractBrokenMutations()
 	if len(broken) > 0 {
-		out := path.Join(conf.Marv.Output.Path, fw.Meta().Name+"-broken.json")
+		name := fmt.Sprintf("%s-broken.json", fw.Meta().Name)
+		out := path.Join(conf.Marv.Output.Path, name)
+
 		marshal, err := json.Marshal(broken)
 		if err != nil {
 			return err
 		}
+
 		os.WriteFile(out, marshal, 0644)
 		log.Warn().Msgf("%s - extracted %d broken mutations and dumped them in %s", fw.Meta().Name, len(broken), out)
 	}
@@ -134,7 +140,8 @@ func export(conf *config.Config, activeFws []fwlib.Framework) error {
 			return err
 		}
 
-		out := path.Join(conf.Marv.Output.Path, fw.Meta().Name+".json")
+		name := fmt.Sprintf("%s.json", fw.Meta().Name)
+		out := path.Join(conf.Marv.Output.Path, name)
 		if err := os.WriteFile(out, marshal, 0644); err != nil {
 			return err
 		}
@@ -153,7 +160,8 @@ func mergeAndExport(conf *config.Config, activeFws []fwlib.Framework) error {
 		return err
 	}
 
-	out := path.Join(conf.Marv.Output.Path, "mutations.json")
+	name := "mutations.json"
+	out := path.Join(conf.Marv.Output.Path, name)
 	return os.WriteFile(out, marshal, 0644)
 }
 
@@ -193,13 +201,15 @@ func exportMutationReviews(conf *config.Config, activeFws []fwlib.Framework, db 
 			rs = append(rs, reviews...)
 			continue
 		}
-		out := path.Join(conf.Marv.Output.Path, meta.Name+"-review.json")
+		name := fmt.Sprintf("%s-review.json", meta.Name)
+		out := path.Join(conf.Marv.Output.Path, name)
 		if err := exportReviews(conf, reviews, out); err != nil {
 			return err
 		}
 	}
 	if conf.Marv.Output.Merge && len(rs) != 0 {
-		out := path.Join(conf.Marv.Output.Path, "mutations-review.json")
+		name := "mutations-review.json"
+		out := path.Join(conf.Marv.Output.Path, name)
 		return exportReviews(conf, rs, out)
 	}
 	return nil
@@ -208,6 +218,11 @@ func exportMutationReviews(conf *config.Config, activeFws []fwlib.Framework, db 
 func exportCommand() (*config.Config, []fwlib.Framework) {
 	yml := getMarvYml()
 	conf := getConfig(yml)
+
+	conf.Marv.Output.Path = path.Join(conf.Marv.Output.Path, initTime)
+	if err := os.MkdirAll(conf.Marv.Output.Path, 0755); err != nil {
+		log.Fatal().Err(err).Msg("Failed to create output directory")
+	}
 
 	activeFws, err := fws.ActiveFrameworks(yml)
 	if err != nil {
@@ -269,7 +284,6 @@ func rootCommand() {
 	log.Info().Msgf("Use Ctrl + C to exit. Upon interrupt reviews will be saved in %s directory", conf.Marv.Output.Path)
 	if err := server.NewServer(conf, theme, activeFws, db).Serve(verbose); err != nil {
 		log.Fatal().Err(err).Msg("Failed to serve")
-		os.Exit(1)
 	}
 }
 
