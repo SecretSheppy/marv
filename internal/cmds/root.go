@@ -168,7 +168,17 @@ func mergeAndExport(conf *config.Config, activeFws []fwlib.Framework) error {
 	for _, fw := range activeFws {
 		merged.Merge(fw.Mutations())
 	}
-	return writeJSON(merged, conf.Marv.Output.Path, "mutations.json")
+	if err := writeJSON(merged, conf.Marv.Output.Path, "mutations.json"); err != nil {
+		return err
+	}
+
+	marshal, err := merged.StatisticsFrom("").MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	out := path.Join(conf.Marv.Output.Path, "mutations-stats.json")
+	return os.WriteFile(out, marshal, 0644)
 }
 
 func exportTransformedMutations(conf *config.Config, activeFws []fwlib.Framework) error {
