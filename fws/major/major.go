@@ -243,6 +243,8 @@ func (m *Major) TransformResults() error {
 		})
 	}
 
+	m.mutants = nil
+	m.details = nil
 	fwlib.FinishProgressbar(bar)
 	return nil
 }

@@ -175,6 +175,7 @@ func (g *GoMutesting) transformResults(ms []Mutation, status mutations.Status, b
 		g.ms.Append(mutator.OriginalFilePath, m)
 		bar.Add(1)
 	}
+	g.report = Report{}
 	return nil
 }
 

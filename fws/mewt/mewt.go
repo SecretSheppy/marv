@@ -163,6 +163,14 @@ func (m *Mewt) LoadResults() error {
 func (m *Mewt) TransformResults() error {
 	log.Info().Msgf("%s - transforming results", m.Meta().Name)
 
+	// NOTE: releases database after transformation of results has finished
+	sqlDB, err := m.mdb.DB()
+	if err != nil {
+		return err
+	}
+
+	defer sqlDB.Close()
+
 	m.ms = make(mutations.Mutations)
 	m.files = make(map[string][]string)
 

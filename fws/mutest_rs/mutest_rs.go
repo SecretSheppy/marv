@@ -138,6 +138,8 @@ func (m *MutestRS) TransformResults() error {
 	}
 	fwlib.FinishProgressbar(bar)
 
+	m.muts = nil
+	m.eval = nil
 	m.ms = ms
 	return nil
 }

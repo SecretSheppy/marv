@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"runtime"
 	"strconv"
 	"syscall"
 	"time"
@@ -111,6 +112,8 @@ func transformMutations(conf *config.Config, activeFws []fwlib.Framework) error 
 
 		fw.Mutations().MergeConflicting()
 		fw.Mutations().GenerateIDs()
+
+		runtime.GC() // NOTE: force GC here as the mutation dbs and structures can be huge
 	}
 	return nil
 }

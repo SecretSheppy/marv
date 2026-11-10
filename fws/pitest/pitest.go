@@ -169,6 +169,7 @@ func (p *Pitest) TransformResults() error {
 			err.(*transformError).log()
 		}
 	}
+	p.muts = nil
 	return p.dcomp.Teardown()
 }
 

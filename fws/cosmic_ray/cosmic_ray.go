@@ -3,7 +3,6 @@ package cosmic_ray
 import (
 	"fmt"
 	"path"
-	"runtime"
 	"strings"
 
 	"github.com/SecretSheppy/marv/fwlib"
@@ -220,7 +219,6 @@ func (c *CosmicRay) TransformResults() error {
 	}
 
 	c.results = nil
-	runtime.GC() // NOTE: force GC here as cosmic-ray dbs can be huge
 	return nil
 }
 

@@ -190,6 +190,7 @@ func (l *LittleDarwin) TransformResults() error {
 		bar.Add(1)
 	}
 
+	l.muts = nil
 	fwlib.FinishProgressbar(bar)
 	return nil
 }
