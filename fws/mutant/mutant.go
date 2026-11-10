@@ -287,6 +287,7 @@ func (m *Mutant) TransformResults() error {
 		}
 	}
 
+	m.results = Results{}
 	fwlib.FinishProgressbar(bar)
 	return nil
 }

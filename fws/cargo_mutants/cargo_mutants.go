@@ -165,6 +165,7 @@ func (c *CargoMutants) TransformResults() error {
 		c.ms.Append(file, outcome.toMarvMutation())
 		bar.Add(1)
 	}
+	c.outcomes = Outcomes{}
 	fwlib.FinishProgressbar(bar)
 	return nil
 }
