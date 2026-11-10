@@ -1,6 +1,8 @@
 package mutations
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -95,9 +97,19 @@ func (r Range) String() string {
 	return fmt.Sprintf("L%dC%d", r.Line, r.Char)
 }
 
+// MutationID is a SHA-256 hash of a mutants operator:filepath:start_line:start_char:end_line:end_char:replacement
+type MutationID string
+
+// NewMutationID creates a new mutation ID given a file and mutation
+func NewMutationID(filepath string, m *Mutation) MutationID {
+	str := fmt.Sprintf("%s:%s:%d:%d:%d:%d:%s", m.Operation, filepath, m.Start.Line, m.Start.Char, m.End.Line, m.End.Char, m.Replacement)
+	sum := sha256.Sum256([]byte(str))
+	return MutationID(hex.EncodeToString(sum[:]))
+}
+
 // Mutation represents a single mutation.
 type Mutation struct {
-	ID                uuid.UUID
+	ID                MutationID
 	FrameworkMutantID string // FrameworkMutantID is an optional identifier provided by a framework.
 	Description       string // Description functions as the mutations title, it is displayed to the user when they preview the mutation.
 	Operation         string // Operation is an optional (short) description of the operation.
@@ -186,7 +198,7 @@ func (c Conflicts) Sort() {
 	})
 }
 
-func (c Conflicts) GetMutant(ID uuid.UUID) (*Conflict, *Mutation) {
+func (c Conflicts) GetMutant(ID MutationID) (*Conflict, *Mutation) {
 	for _, conflict := range c {
 		for _, mutation := range conflict.Mutations {
 			if mutation.ID == ID {
@@ -265,13 +277,13 @@ func (m Mutations) ExtractBrokenMutations() []*Mutation {
 	return broken
 }
 
-// GenerateIDs generates UUIDs for all conflicts and mutations
+// GenerateIDs generates MutationID's for all conflicts and mutations
 func (m Mutations) GenerateIDs() {
-	for _, conflicts := range m {
+	for file, conflicts := range m {
 		for _, conflict := range conflicts {
 			conflict.ID = uuid.New()
 			for _, mutation := range conflict.Mutations {
-				mutation.ID = uuid.New()
+				mutation.ID = NewMutationID(file, mutation)
 			}
 		}
 	}

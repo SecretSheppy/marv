@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/SecretSheppy/marv/internal/html"
-	"github.com/google/uuid"
+	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/gorilla/mux"
 )
 
@@ -21,11 +21,7 @@ func (s *Server) mutantHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mutantID, err := uuid.Parse(r.URL.Query().Get("m"))
-	if err != nil {
-		writeError(w, r, err, http.StatusBadRequest, "Malformed mutant ID")
-		return
-	}
+	mutantID := mutations.MutationID(r.URL.Query().Get("m"))
 
 	render, err := s.renderer.RenderMutant(&html.RenderConfig{
 		Framework: framework,

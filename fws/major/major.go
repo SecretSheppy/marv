@@ -12,7 +12,6 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/pkg/fio"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
@@ -228,7 +227,6 @@ func (m *Major) TransformResults() error {
 		}
 		startChar := strings.Index(m.files[mutant.file()][mutant.LineNumber-1], mutant.Original)
 		m.ms.Append(mutant.file(), &mutations.Mutation{
-			ID:                uuid.New(),
 			FrameworkMutantID: strconv.Itoa(mutant.ID),
 			Description:       fmt.Sprintf("Replaced `%s` with `%s`", mutant.OriginalType, mutant.NewType),
 			Operation:         mutant.Operator,

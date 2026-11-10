@@ -10,7 +10,6 @@ import (
 	"github.com/SecretSheppy/marv/fwlib"
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/pkg/fio"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
@@ -90,7 +89,6 @@ func (o *Outcome) getMarvStatus() mutations.Status {
 
 func (o *Outcome) toMarvMutation() *mutations.Mutation {
 	return &mutations.Mutation{
-		ID:          uuid.New(),
 		Description: o.Scenario.Mutant.description(),
 		Operation:   o.Scenario.Mutant.Genre,
 		Start: &mutations.Range{

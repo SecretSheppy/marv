@@ -125,7 +125,6 @@ func (m *MutationResult) toMarvMutation(lines []string, originalCode string, sta
 		strings.TrimSpace(strings.Join(lines[startLine:endLine+1], "\n")),
 		strings.TrimSpace(replacement))
 	return &mutations.Mutation{
-		ID:                uuid.New(),
 		FrameworkMutantID: m.MutationIdentification,
 		Description:       desc,
 		Operation:         mutations.UnrecoverableOperator,

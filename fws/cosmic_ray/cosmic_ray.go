@@ -195,7 +195,6 @@ func (c *CosmicRay) TransformResults() error {
 		}
 
 		c.ms.Append(result.ModulePath, &mutations.Mutation{
-			ID:                uuid.New(),
 			FrameworkMutantID: result.JobID.String(),
 			Description:       getDescription(original, replacement),
 			Operation:         result.OperatorName,

@@ -316,7 +316,7 @@ func TestEnsureGenerateIDsAssignsAnIDToAllMutations(t *testing.T) {
 	for _, conflicts := range m {
 		for _, conflict := range conflicts {
 			for _, mutation := range conflict.Mutations {
-				if mutation.ID == uuid.Nil {
+				if mutation.ID == "" {
 					t.Errorf("mutation was not assigned an id")
 				}
 			}

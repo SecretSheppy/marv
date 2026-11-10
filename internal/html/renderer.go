@@ -2,7 +2,6 @@ package html
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"path"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/SecretSheppy/marv/internal/mutations"
 	"github.com/SecretSheppy/marv/internal/review"
 	"github.com/SecretSheppy/marv/internal/themes"
-	"github.com/google/uuid"
 )
 
 func getIconURL(theme *themes.Theme, name string) string {
@@ -287,10 +285,10 @@ func (r *Renderer) renderMutants(config *RenderConfig) ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-func (r *Renderer) RenderMutant(config *RenderConfig, mutantID uuid.UUID) ([]byte, error) {
+func (r *Renderer) RenderMutant(config *RenderConfig, mutantID mutations.MutationID) ([]byte, error) {
 	conflict, mutant := config.conflicts().GetMutant(mutantID)
 	if mutant == nil {
-		return nil, errors.New("mutant not found with id " + mutantID.String())
+		return nil, fmt.Errorf("mutant not found with id %s", mutantID)
 	}
 	config.Conflicts = mutations.Conflicts{
 		&mutations.Conflict{
