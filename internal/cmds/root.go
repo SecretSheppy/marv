@@ -133,16 +133,30 @@ func extractBrokenMutations(conf *config.Config, fw fwlib.Framework) error {
 	return nil
 }
 
+func writeJSON(obj any, pth, name string) error {
+	marshal, err := json.Marshal(obj)
+	if err != nil {
+		return err
+	}
+	out := path.Join(pth, name)
+	return os.WriteFile(out, marshal, 0644)
+}
+
 func export(conf *config.Config, activeFws []fwlib.Framework) error {
 	for _, fw := range activeFws {
-		marshal, err := json.Marshal(fw.Mutations())
+		msName := fmt.Sprintf("%s.json", fw.Meta().Name)
+		if err := writeJSON(fw.Mutations(), conf.Marv.Output.Path, msName); err != nil {
+			return err
+		}
+
+		marshal, err := fw.Mutations().StatisticsFrom("").MarshalJSON()
 		if err != nil {
 			return err
 		}
 
-		name := fmt.Sprintf("%s.json", fw.Meta().Name)
+		name := fmt.Sprintf("%s-stats.json", fw.Meta().Name)
 		out := path.Join(conf.Marv.Output.Path, name)
-		if err := os.WriteFile(out, marshal, 0644); err != nil {
+		if err = os.WriteFile(out, marshal, 0644); err != nil {
 			return err
 		}
 	}
@@ -154,15 +168,7 @@ func mergeAndExport(conf *config.Config, activeFws []fwlib.Framework) error {
 	for _, fw := range activeFws {
 		merged.Merge(fw.Mutations())
 	}
-
-	marshal, err := json.Marshal(merged)
-	if err != nil {
-		return err
-	}
-
-	name := "mutations.json"
-	out := path.Join(conf.Marv.Output.Path, name)
-	return os.WriteFile(out, marshal, 0644)
+	return writeJSON(merged, conf.Marv.Output.Path, "mutations.json")
 }
 
 func exportTransformedMutations(conf *config.Config, activeFws []fwlib.Framework) error {
@@ -173,17 +179,6 @@ func exportTransformedMutations(conf *config.Config, activeFws []fwlib.Framework
 		return mergeAndExport(conf, activeFws)
 	}
 	return export(conf, activeFws)
-}
-
-func exportReviews(conf *config.Config, reviews []review.Review, out string) error {
-	marshal, err := json.Marshal(reviews)
-	if err != nil {
-		return err
-	}
-	if err := os.WriteFile(out, marshal, 0644); err != nil {
-		return err
-	}
-	return nil
 }
 
 func exportMutationReviews(conf *config.Config, activeFws []fwlib.Framework, db *review.Repository) error {
@@ -202,15 +197,12 @@ func exportMutationReviews(conf *config.Config, activeFws []fwlib.Framework, db 
 			continue
 		}
 		name := fmt.Sprintf("%s-review.json", meta.Name)
-		out := path.Join(conf.Marv.Output.Path, name)
-		if err := exportReviews(conf, reviews, out); err != nil {
+		if err := writeJSON(reviews, conf.Marv.Output.Path, name); err != nil {
 			return err
 		}
 	}
 	if conf.Marv.Output.Merge && len(rs) != 0 {
-		name := "mutations-review.json"
-		out := path.Join(conf.Marv.Output.Path, name)
-		return exportReviews(conf, rs, out)
+		return writeJSON(conf, conf.Marv.Output.Path, "mutations-review.json")
 	}
 	return nil
 }
