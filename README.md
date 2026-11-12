@@ -10,6 +10,7 @@ mutations format (through the Marv mutations schema) and visualization for resul
 
 * High quality visualizations of source code mutations
 * Calculates a range of metrics by which to evaluate the results
+* Diff multiple mutation runs to see what has changed
 * Generates textual descriptions of mutations where none are provided
 * Filter mutants by mutation status
 * Work with results from multiple frameworks simultaneously
@@ -32,6 +33,7 @@ mutations format (through the Marv mutations schema) and visualization for resul
     * [Build from source](#build-from-source)
     * [Libraries](#libraries)
   * [Usage](#usage)
+  * [Diff Mutation Runs](#diff-mutation-runs)
   * [Themes](#themes)
   * [Gallery](#gallery)
   * [Export Formats](#export-formats)
@@ -145,6 +147,18 @@ marv
 
 5. If you have correctly configured the frameworks then that is it! Provided you keep the `.marv.yml` configuration
 file then all you have to do in future is simply run `marv`.
+
+## Diff Mutation Runs
+
+Marv can diff two separate Marv mutations files to produce a diff file which lists removed mutations, added mutations
+and changed mutations (with their old and new statuses). This can be done with the following command:
+
+```cli
+marv diff export -b [previous-run.json] -a [current-run.json]
+```
+
+The diff is saved to a file called `diff.json` in the current working directory and follows the
+[Marv Diff Schema](api/marv-diff-schema.json).
 
 ## Themes
 
