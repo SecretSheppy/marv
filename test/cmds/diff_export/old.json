@@ -1,0 +1,121 @@
+{
+    "src/black/__init__.py": [
+        {
+            "ID": "eebc2d19-9e48-41a6-a92d-4d262862d5a5",
+            "StartLine": 93,
+            "EndLine": 93,
+            "Mutations": [
+                {
+                    "ID": "a9b4cea3fbb4fa24dfbb1c16b8ce5622ed41ebb4f8adc9a5dee1296374bb2451",
+                    "FrameworkMutantID": "85a707e1-11a0-4f69-bc78-e62fc8ec43ec",
+                    "Description": "Replaced `0` with `1`",
+                    "Operation": "core/NumberReplacer",
+                    "Start": {
+                        "Line": 93,
+                        "Char": 9
+                    },
+                    "End": {
+                        "Line": 93,
+                        "Char": 10
+                    },
+                    "Status": "SURVIVED",
+                    "Replacement": "1"
+                },
+                {
+                    "ID": "3a7bfb1e4ba7d426e01a61d8db39644c23a528cf996de7622855bbea7995aeb9",
+                    "FrameworkMutantID": "baf4a8bc-1077-4012-bc77-f722f4b8515b",
+                    "Description": "Replaced `0` with `-1`",
+                    "Operation": "core/NumberReplacer",
+                    "Start": {
+                        "Line": 93,
+                        "Char": 9
+                    },
+                    "End": {
+                        "Line": 93,
+                        "Char": 10
+                    },
+                    "Status": "SURVIVED",
+                    "Replacement": "-1"
+                }
+            ]
+        },
+        {
+            "ID": "aff56ec6-845f-41dc-bfd0-9c3691e67662",
+            "StartLine": 94,
+            "EndLine": 94,
+            "Mutations": [
+                {
+                    "ID": "2be9d4af972d7657f26997980a16df61e8390ba5f7ed74a0e8f0622bb670f05f",
+                    "FrameworkMutantID": "2c68e877-1592-4a72-97dc-c4b809b2dbb8",
+                    "Description": "Replaced `1` with `2`",
+                    "Operation": "core/NumberReplacer",
+                    "Start": {
+                        "Line": 94,
+                        "Char": 10
+                    },
+                    "End": {
+                        "Line": 94,
+                        "Char": 11
+                    },
+                    "Status": "SURVIVED",
+                    "Replacement": "2"
+                },
+                {
+                    "ID": "f893fc2cb3cde5b8b92956f203591c4e371c7357fd00857c311303f1a8d44da1",
+                    "FrameworkMutantID": "b2f0adf0-c33a-4d22-bcd2-6aecb5b62c65",
+                    "Description": "Replaced `1` with `0`",
+                    "Operation": "core/NumberReplacer",
+                    "Start": {
+                        "Line": 94,
+                        "Char": 10
+                    },
+                    "End": {
+                        "Line": 94,
+                        "Char": 11
+                    },
+                    "Status": "SURVIVED",
+                    "Replacement": "0"
+                }
+            ]
+        },
+        {
+            "ID": "ff622a5e-6371-47d0-ba93-2100fd24f1d6",
+            "StartLine": 95,
+            "EndLine": 95,
+            "Mutations": [
+                {
+                    "ID": "831369bba773d10320390563996f662511fbc392b668ce4086154007a2a4b47f",
+                    "FrameworkMutantID": "c16a0057-4d72-4d8a-8dc5-bd9ebb4e29be",
+                    "Description": "Replaced `2` with `3`",
+                    "Operation": "core/NumberReplacer",
+                    "Start": {
+                        "Line": 95,
+                        "Char": 11
+                    },
+                    "End": {
+                        "Line": 95,
+                        "Char": 12
+                    },
+                    "Status": "SURVIVED",
+                    "Replacement": "3"
+                },
+                {
+                    "ID": "abe319a8314571ab0f584f2385a59fcad3689d6db7f2ab232f61aa6352b532a7",
+                    "FrameworkMutantID": "9a2390bd-8557-4129-b7a9-365221b4804e",
+                    "Description": "Replaced `2` with `1`",
+                    "Operation": "core/NumberReplacer",
+                    "Start": {
+                        "Line": 95,
+                        "Char": 11
+                    },
+                    "End": {
+                        "Line": 95,
+                        "Char": 12
+                    },
+                    "Status": "KILLED",
+                    "Replacement": "1"
+                }
+            ]
+        }
+    ]
+}
