@@ -289,6 +289,28 @@ func (m Mutations) GenerateIDs() {
 	}
 }
 
+func (m Mutations) GetIDs() []MutationID {
+	ids := make([]MutationID, 0)
+	for _, conflicts := range m {
+		for _, conflict := range conflicts {
+			for _, mutation := range conflict.Mutations {
+				ids = append(ids, mutation.ID)
+			}
+		}
+	}
+	return ids
+}
+
+func (m Mutations) GetMutationByID(mutationID MutationID) *Mutation {
+	for _, conflict := range m {
+		_, mutation := conflict.GetMutant(mutationID)
+		if mutation != nil {
+			return mutation
+		}
+	}
+	return nil
+}
+
 func (m Mutations) StatisticsFrom(prefix string) Statistics {
 	s := Statistics{
 		StatusCounts: make(map[Status]float64),

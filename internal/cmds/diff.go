@@ -1,6 +1,15 @@
 package cmds
 
-import "github.com/spf13/cobra"
+import (
+	"encoding/json"
+	"os"
+	"strings"
+
+	"github.com/SecretSheppy/marv/internal/mutations"
+	mapset "github.com/deckarep/golang-set/v3"
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
+)
 
 var before, after string
 
@@ -12,23 +21,74 @@ var diffCmd = &cobra.Command{
 	},
 }
 
+type Change struct {
+	ID        mutations.MutationID `json:"id"`
+	OldStatus mutations.Status     `json:"old_status"`
+	NewStatus mutations.Status     `json:"new_status"`
+}
+
 var diffExportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "produces a Marv diff file from two Marv mutation schema files",
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: export the Marv mutations diff file
+		if !strings.HasSuffix(before, ".json") {
+			log.Error().Msg("--before (-b) must be a valid JSON file")
+			os.Exit(1)
+		}
 
-		// TODO: read in before file
-		// TODO: read in after file
+		if !strings.HasSuffix(after, ".json") {
+			log.Error().Msg("--after (-a) must be a valid JSON file")
+			os.Exit(1)
+		}
 
-		// TODO: produce list of IDs in before file
-		// TODO: produce list of IDs in after file
+		b, err := os.ReadFile(before)
+		if err != nil {
+			log.Fatal().Err(err).Msg("error reading file")
+		}
 
-		// TODO: produce list of IDs from before not in after
-		// TODO: produce list of IDs from after not in before
+		a, err := os.ReadFile(after)
+		if err != nil {
+			log.Fatal().Err(err).Msg("error reading file")
+		}
 
-		// TODO: go through each ID in both files and determine whether their status is still the same.
-		//  - if status is not the same, put the ID in the changes list with the old and new status.
+		var beforeResults, afterResults mutations.Mutations
+		if err := json.Unmarshal(b, &beforeResults); err != nil {
+			log.Fatal().Err(err).Msg("error unmarshalling JSON")
+		}
+		if err := json.Unmarshal(a, &afterResults); err != nil {
+			log.Fatal().Err(err).Msg("error unmarshalling JSON")
+		}
+
+		beforeIDs := mapset.NewSet[mutations.MutationID](beforeResults.GetIDs()...)
+		afterIDs := mapset.NewSet[mutations.MutationID](afterResults.GetIDs()...)
+
+		intersection := beforeIDs.Intersect(afterIDs)
+		changes := make([]Change, 0)
+		for _, id := range intersection.ToSlice() {
+			beforeStatus := beforeResults.GetMutationByID(id).Status
+			afterStatus := afterResults.GetMutationByID(id).Status
+			if beforeStatus != afterStatus {
+				changes = append(changes, Change{
+					ID:        id,
+					OldStatus: beforeStatus,
+					NewStatus: afterStatus,
+				})
+			}
+		}
+
+		marhsal, err := json.Marshal(struct {
+			Removed []mutations.MutationID `json:"removed"`
+			Added   []mutations.MutationID `json:"added"`
+			Changed []Change               `json:"changed"`
+		}{
+			Removed: beforeIDs.Difference(intersection).ToSlice(),
+			Added:   afterIDs.Difference(intersection).ToSlice(),
+			Changed: changes,
+		})
+
+		if err = os.WriteFile("diff.json", marhsal, 0644); err != nil {
+			log.Fatal().Err(err).Msg("error writing file")
+		}
 	},
 }
 
