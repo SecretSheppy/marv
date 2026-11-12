@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Marv Diff Schema",
+    "version": "1.0.0",
+    "$defs": {
+        "MutationID": {
+            "type": "string",
+            "description": "a unique SHA-256 hash for a particular mutation based on a mutations operator, file, range and repalcement string",
+            "minLength": 64
+        },
+        "Status": {
+            "type": "string",
+            "description": "The mutations status after being run against the programs test suite",
+            "enum": [
+                "KILLED",
+                "SURVIVED",
+                "CRASHED",
+                "TIMEOUT",
+                "NO_COVERAGE",
+                "PENDING",
+                "IGNORED"
+            ]
+        }
+    },
+    "type": "object",
+    "description": "an object which stores mutation changes between two Marv mutation results files",
+    "properties": {
+        "removed": {
+            "type": "array",
+            "description": "array of MutationIDs",
+            "items": {
+                "$ref": "#/$defs/MutationID"
+            },
+            "uniqueItems": true
+        },
+        "added": {
+            "type": "array",
+            "description": "array of MutationIDs",
+            "items": {
+                "$ref": "#/$defs/MutationID"
+            },
+            "uniqueItems": true
+        },
+        "changed": {
+            "type": "array",
+            "description": "array of mutation changes",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "$ref": "#/$defs/MutationID"
+                    },
+                    "old_status": {
+                        "$ref": "#/$defs/Status"
+                    },
+                    "new_status": {
+                        "$ref": "#/$defs/Status"
+                    }
+                },
+                "required": ["id", "old_status", "new_status"],
+                "additionalProperties": false
+
+            }
+        }
+    }
+}
