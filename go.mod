@@ -18,6 +18,7 @@ require (
 )
 
 require (
+	github.com/deckarep/golang-set/v3 v3.0.0 // indirect
 	github.com/dlclark/regexp2/v2 v2.8.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
