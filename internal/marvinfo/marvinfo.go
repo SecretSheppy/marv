@@ -1,5 +1,5 @@
 package marvinfo
 
 func Version() string {
-	return "1.4.0"
+	return "1.4.1"
 }
